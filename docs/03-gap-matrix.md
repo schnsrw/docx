@@ -14,7 +14,8 @@ Columns:
 
 | ID | Gap | Source | Sev | Effort | Upstream | Status | Test |
 |----|-----|--------|-----|--------|----------|--------|------|
-| **textbox-render** | Textboxes in .docx don't render correctly (per #318) | GH #318 | P0→P2 | M | Y | **basic-rendering-verified** — 10/10 tests pass on `e2e/fixtures/textbox-test.docx` (9 textboxes, containers + content + position + border all render correctly). Live-demo failure user observed may be older deployed version or a specific edge case not exercised by this fixture. Needs the user's failing .docx to narrow further. | `e2e/tests/textbox-rendering.spec.ts` |
+| **textbox-render-body** | Body textboxes render | GH #318 (general) | P2 | M | Y | **basic-rendering-verified** — 10/10 tests pass on `e2e/fixtures/textbox-test.docx` (9 body textboxes — containers + content + position + border all render correctly). Deeper visual fidelity (positioning relative to text wrap, fill nuances) not yet stressed. | `e2e/tests/textbox-rendering.spec.ts` |
+| **textbox-render-header** | Textboxes inside page headers don't render at all | GH #318 (header sub-case explicitly cited in issue body) | **P0** | M | Y | **failing-test** — 3/3 tests fail. `.layout-textbox` count is 0 inside header content (expected 1). Inspection of `packages/core/src/docx/headerFooterParser.ts` (639 lines) found no call to `textBoxParser` / `shapeParser`; line 622 only checks `rc.type === 'drawing'` as a boolean predicate (`hasImages`). The header path doesn't actually parse textbox content. Fix scope: wire shape/textbox parsing into the header parser, then verify painter renders header textboxes. | `e2e/tests/textbox-in-header.spec.ts` + `scripts/make-header-textbox-fixture.mjs` |
 | **comment-id-collision** | Comment IDs collide between peers (module-level scalar) | GH #257 | P0 | S | Y (maintainers proposed fix) | open | — |
 | **highlight-roundtrip** | Highlight export emits invalid OOXML; highlights disappear after roundtrip | openspec/ooxml-roundtrip-fidelity | P1 | M | Y | open | — |
 | **theme-color-roundtrip** | Theme color resolution corrupts text colors (black→white in headers) | openspec/ooxml-roundtrip-fidelity | P1 | M | Y | open | — |
@@ -53,13 +54,13 @@ Columns:
 
 The next ≤3 gaps actively in flight. Update when one closes / opens.
 
-1. **comment-id-collision (#257)** — next P0. Direct hazard for our Yjs plan. Fix recommended by maintainers (option B: numeric ID partitioning).
-2. *(open slot)*
+1. **textbox-render-header** — failing test in place, root-cause hypothesis identified (`headerFooterParser.ts` doesn't invoke textbox/shape parsers). Next: trace exact parse chain, wire textbox parsing into header path.
+2. **comment-id-collision (#257)** — direct hazard for our Yjs plan. Fix recommended by maintainers (option B). After textbox-header lands.
 3. *(open slot)*
 
 ## Recently moved
 
-- **textbox-render** — demoted P0→P2 after baseline verification. Basic rendering works; deeper fidelity gap (if any) requires a specific failing `.docx` to characterize. Watch list, not active.
+- **textbox-render-body** — was P0, demoted to P2 after 10/10 tests passed on `textbox-test.docx`. Watch list, not active. Replaced as P0 by `textbox-render-header`.
 
 ## Recently closed
 
