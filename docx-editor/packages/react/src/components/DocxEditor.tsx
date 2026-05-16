@@ -25,6 +25,8 @@ import type {
   Document,
   Theme,
   HeaderFooter,
+  HeaderReference,
+  FooterReference,
   SectionProperties,
 } from '@eigenpal/docx-core/types/document';
 import defaultLocale from '../../i18n/en.json';
@@ -4428,23 +4430,50 @@ body { background: white; }
     let firstHeader: HeaderFooter | null = null;
     let firstFooter: HeaderFooter | null = null;
 
-    if (headers && sectionProps?.headerReferences) {
-      const defaultRef = sectionProps.headerReferences.find((r) => r.type === 'default');
+    // Per OOXML §17.6.21, a `<w:sectPr>` that omits a `<w:headerReference>`
+    // or `<w:footerReference>` for a given type INHERITS that reference
+    // from the most recent preceding section that defined it. Multi-section
+    // documents (e.g. the SDS template the user supplied — 30 sections,
+    // header refs only on sections[0]) need this walk; the last section's
+    // properties alone don't carry the reference forward to the renderer.
+    const findInheritedRefs = (
+      kind: 'headerReferences' | 'footerReferences'
+    ): HeaderReference[] | FooterReference[] | undefined => {
+      const own = sectionProps?.[kind];
+      if (own && own.length > 0) return own;
+      const sections = pkg.document?.sections;
+      if (!Array.isArray(sections)) return undefined;
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const refs = sections[i]?.properties?.[kind];
+        if (refs && refs.length > 0) return refs;
+      }
+      return undefined;
+    };
+
+    const effHeaderRefs = findInheritedRefs('headerReferences') as
+      | HeaderReference[]
+      | undefined;
+    const effFooterRefs = findInheritedRefs('footerReferences') as
+      | FooterReference[]
+      | undefined;
+
+    if (headers && effHeaderRefs) {
+      const defaultRef = effHeaderRefs.find((r) => r.type === 'default');
       if (defaultRef?.rId) {
         header = headers.get(defaultRef.rId) ?? null;
       }
-      const firstRef = sectionProps.headerReferences.find((r) => r.type === 'first');
+      const firstRef = effHeaderRefs.find((r) => r.type === 'first');
       if (firstRef?.rId) {
         firstHeader = headers.get(firstRef.rId) ?? null;
       }
     }
 
-    if (footers && sectionProps?.footerReferences) {
-      const defaultRef = sectionProps.footerReferences.find((r) => r.type === 'default');
+    if (footers && effFooterRefs) {
+      const defaultRef = effFooterRefs.find((r) => r.type === 'default');
       if (defaultRef?.rId) {
         footer = footers.get(defaultRef.rId) ?? null;
       }
-      const firstRef = sectionProps.footerReferences.find((r) => r.type === 'first');
+      const firstRef = effFooterRefs.find((r) => r.type === 'first');
       if (firstRef?.rId) {
         firstFooter = footers.get(firstRef.rId) ?? null;
       }
