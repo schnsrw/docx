@@ -34,6 +34,14 @@ test('SDS real-world doc — every major content type paints', async ({ page }) 
   await editor.loadDocxFile('fixtures/sds-real-world.docx');
   await page.waitForTimeout(1500);
 
+  // NOTE on page virtualization: the editor lazily renders page content
+  // via IntersectionObserver — pages outside the current viewport are
+  // empty shells and pages already scrolled past can be evicted back to
+  // shells. So a single snapshot only reflects what's near the current
+  // viewport, NOT every painted element in the document. We snapshot
+  // the initial viewport (top of doc) and assert against that — what
+  // the user sees on load. A virtualization-aware audit that scrolls
+  // and accumulates would be a separate test.
   const report = await page.evaluate(() => {
     const visible = (el: HTMLElement) => !el.closest('.paged-editor__hidden-pm');
     const q = (sel: string) =>
@@ -49,7 +57,8 @@ test('SDS real-world doc — every major content type paints', async ({ page }) 
       images: Array.from(document.querySelectorAll<HTMLImageElement>('img')).filter((el) =>
         visible(el as unknown as HTMLElement)
       ).length,
-      bodyText: (document.querySelector('.paged-editor__pages') as HTMLElement)?.innerText.length ?? 0,
+      bodyText:
+        (document.querySelector('.paged-editor__pages') as HTMLElement)?.innerText.length ?? 0,
     };
   });
 

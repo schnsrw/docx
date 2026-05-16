@@ -1681,6 +1681,16 @@ function buildPageRenderArgs(
 
 /**
  * State for a single page shell used in incremental rendering.
+
+ *
+ * Pages outside the visible viewport are lightweight DOM shells (just
+ * the outer `.layout-page` div). Their full content (header, body,
+ * footer fragments) is populated by `populatePageShell` when an
+ * IntersectionObserver fires on the shell, and torn back down to a
+ * shell when it leaves the viewport (memory ceiling). This is
+ * transparent to the user — scrolling repopulates instantly — but
+ * tests that snapshot a single moment will only see the populated
+ * pages, not every page in the doc.
  */
 interface PageShellState {
   element: HTMLElement;
