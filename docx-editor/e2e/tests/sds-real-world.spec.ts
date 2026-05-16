@@ -3,16 +3,14 @@
  * (Safety Data Sheet, ZH locale, large body + 1 body textbox + 1
  * header textbox + 1 table).
  *
- * Important: this doc uses legacy **VML** for its textboxes
- * (`<v:shape>` + `<v:textbox>` + `<w:txbxContent>`), NOT the modern
- * DrawingML format (`<wps:wsp>` + `<wps:txbx>`). Our textbox parser /
- * enricher handles DrawingML only — VML textbox support is a separate,
- * still-open gap tracked in `docs/03-gap-matrix.md`. So this file:
- *   - asserts the doc loads end-to-end without error,
- *   - and pins the VML-textbox gap as a known failure (test.fixme).
+ * This doc uses legacy **VML** for its textboxes
+ * (`<v:shape type="#_x0000_t202">` / `<v:textbox>` / `<w:txbxContent>`)
+ * rather than DrawingML. Both paths are supported now:
+ *   - DrawingML: `textBoxParser.ts` (modern `<wps:wsp>` / `<wps:txbx>`).
+ *   - VML:      `vmlTextBoxParser.ts` (legacy `<w:pict>` / `<v:shape>`).
  *
- * When VML textbox support lands, drop the fixme — the assertion should
- * then pass.
+ * Both are invoked from `textBoxEnricher.ts`'s second pass so headers
+ * and bodies get the same treatment regardless of format.
  */
 
 import { test, expect } from '@playwright/test';
@@ -36,13 +34,10 @@ test.describe('Real-world doc (SDS) — smoke test', () => {
     await expect(editorEl).toBeVisible({ timeout: 5000 });
   });
 
-  test.fixme(
-    'VML textboxes render as .layout-textbox containers (gap: textbox-render-vml)',
-    async ({ page }) => {
-      // Currently fails — VML textbox parsing not implemented. Tracked
-      // in docs/03-gap-matrix.md as textbox-render-vml.
-      const count = await page.locator('.layout-textbox').count();
-      expect(count).toBeGreaterThanOrEqual(1);
-    }
-  );
+  test('VML textboxes render as .layout-textbox containers', async ({ page }) => {
+    // SDS has 1 body VML textbox + 1 header VML textbox (the header
+    // repeats on every page), so count is >= 1.
+    const count = await page.locator('.layout-textbox').count();
+    expect(count, 'expected at least one rendered VML textbox container').toBeGreaterThanOrEqual(1);
+  });
 });

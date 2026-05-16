@@ -38,6 +38,7 @@ import {
   getTextBoxContentElement,
   parseTextBoxContent,
 } from './textBoxParser';
+import { isVmlTextBoxPict, parseVmlTextBox } from './vmlTextBoxParser';
 
 /**
  * Enrich a parsed paragraph with text-box content from its raw XML.
@@ -62,10 +63,40 @@ export function enrichParagraphTextBoxes(
   for (const xmlChild of xmlChildren) {
     if (getLocalName(xmlChild.name ?? '') !== 'r') continue;
 
-    // Find w:drawing children in this run
+    // Find w:drawing or w:pict children in this run.
+    // - w:drawing → modern DrawingML textbox (wps:wsp / wps:txbx)
+    // - w:pict   → legacy VML textbox (v:shape type="#_x0000_t202")
     const runElements = getChildElements(xmlChild);
     for (const runEl of runElements) {
-      if (getLocalName(runEl.name ?? '') === 'drawing' && isTextBoxDrawing(runEl)) {
+      const elName = getLocalName(runEl.name ?? '');
+
+      // Legacy VML path (e.g. some Office-saved docs, scanner outputs).
+      if (elName === 'pict' && isVmlTextBoxPict(runEl)) {
+        const vmlTextBox = parseVmlTextBox(runEl, parseParagraph);
+        if (vmlTextBox && runIndex < paragraph.content.length) {
+          const parsedContent = paragraph.content[runIndex];
+          if (parsedContent.type === 'run') {
+            const shape: Shape = {
+              type: 'shape',
+              shapeType: 'rect',
+              size: vmlTextBox.size,
+              position: vmlTextBox.position,
+              wrap: vmlTextBox.wrap,
+              fill: vmlTextBox.fill,
+              outline: vmlTextBox.outline,
+              textBody: {
+                content: vmlTextBox.content,
+                margins: vmlTextBox.margins,
+              },
+            };
+            if (vmlTextBox.id) shape.id = vmlTextBox.id;
+            parsedContent.content.push({ type: 'shape', shape });
+          }
+        }
+        continue;
+      }
+
+      if (elName === 'drawing' && isTextBoxDrawing(runEl)) {
         // Parse the text box structure
         const textBox = parseTextBox(runEl);
         if (textBox) {
