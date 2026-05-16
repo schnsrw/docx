@@ -1064,6 +1064,7 @@ function marksToTextFormatting(marks: readonly Mark[]): TextFormatting {
           themeColor: attrs.themeColor,
           themeTint: attrs.themeTint,
           themeShade: attrs.themeShade,
+          auto: attrs.auto || undefined,
         };
         break;
       }

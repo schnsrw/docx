@@ -17,6 +17,7 @@ export const TextColorExtension = createMarkExtension({
       themeColor: { default: null },
       themeTint: { default: null },
       themeShade: { default: null },
+      auto: { default: null },
     },
     parseDOM: [
       {
@@ -42,7 +43,7 @@ export const TextColorExtension = createMarkExtension({
     return {
       commands: {
         setTextColor: (attrs: TextColorAttrs) => {
-          if (!attrs.rgb && !attrs.themeColor) {
+          if (!attrs.rgb && !attrs.themeColor && !attrs.auto) {
             return removeMark(ctx.schema.marks.textColor);
           }
           return setMark(ctx.schema.marks.textColor, attrs as Record<string, unknown>);

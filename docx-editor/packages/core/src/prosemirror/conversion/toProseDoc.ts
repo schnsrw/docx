@@ -1521,13 +1521,18 @@ function textFormattingToMarks(
   }
 
   // Text color
-  if (formatting.color && !formatting.color.auto) {
+  // `auto` alone (no theme slot) maps to the contextual default and
+  // doesn't need a mark, but `auto + themeColor` carries Word's
+  // theme-resolved intent and must round-trip — see
+  // `theme-color-roundtrip.test.ts`.
+  if (formatting.color && (!formatting.color.auto || formatting.color.themeColor)) {
     marks.push(
       schema.mark('textColor', {
         rgb: formatting.color.rgb,
         themeColor: formatting.color.themeColor,
         themeTint: formatting.color.themeTint,
         themeShade: formatting.color.themeShade,
+        auto: formatting.color.auto || null,
       })
     );
   }

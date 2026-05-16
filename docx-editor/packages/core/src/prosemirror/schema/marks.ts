@@ -16,6 +16,11 @@ export interface TextColorAttrs {
   themeColor?: ThemeColorSlot;
   themeTint?: string;
   themeShade?: string;
+  // Word writes `<w:color w:val="auto" w:themeColor="dark1"/>` for
+  // theme-resolved text (e.g. table headers). Carrying `auto` keeps
+  // the OOXML round-trip faithful — without it Word resolves against
+  // a different theme on re-open and the color flips.
+  auto?: boolean;
 }
 
 /**
