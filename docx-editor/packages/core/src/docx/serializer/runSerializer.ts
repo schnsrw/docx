@@ -911,9 +911,14 @@ function serializeShapeContent(content: ShapeContent): string {
     }
   }
 
-  // Build wps:wsp
+  // Build wps:wsp. Word emits the non-visual *common* properties
+  // (`<wps:cNvPr id="..." name="..."/>`) first inside <wps:wsp>;
+  // without it the audit shows wps:cNvPr dropped (8 in medical-
+  // incident-form alone). The id+name are what accessibility tooling
+  // and Office's "Selection Pane" use to identify the shape.
   const wsp = [
     '<wps:wsp>',
+    `<wps:cNvPr id="${docPrId}" name="${escapeXml(docPrName)}"/>`,
     `<wps:cNvSpPr${isTextBox ? ' txBox="1"' : ''}/>`,
     spPr,
     textBody,

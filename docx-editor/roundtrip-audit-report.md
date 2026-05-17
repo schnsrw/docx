@@ -23,7 +23,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `w:col` | 14 | 1 |
 | `v:f` | 12 | 1 |
 | `v:shape` | 11 | 2 |
-| `wps:cNvPr` | 10 | 2 |
 | `v:textbox` | 8 | 2 |
 | `w:id` | 8 | 1 |
 | `w15:color` | 8 | 1 |
@@ -73,6 +72,7 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `w:headerReference` | 3 | 2 |
 | `v:shapetype` | 2 | 1 |
 | `v:imagedata` | 2 | 1 |
+| `a:shade` | 2 | 1 |
 
 ## Per-fixture detail
 
@@ -91,7 +91,6 @@ No round-trip drops.
 |-----|----|-----|
 | `v:f` | 12 | 0 |
 | `w:txbxContent` | 10 | 0 |
-| `wps:cNvPr` | 8 | 0 |
 | `w:id` | 8 | 0 |
 | `w15:color` | 8 | 0 |
 | `w14:checkbox` | 8 | 0 |
@@ -119,7 +118,8 @@ No round-trip drops.
 | `a:lnRef` | 3 | 0 |
 | `a:fillRef` | 3 | 0 |
 | `a:effectRef` | 3 | 0 |
-| _…22 more_ | | |
+| `a:fontRef` | 3 | 0 |
+| _…21 more_ | | |
 
 ### table-indent
 
@@ -340,7 +340,6 @@ No round-trip drops.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `wps:cNvPr` | 2 | 0 |
 | `wps:txbx` | 2 | 0 |
 | `w:txbxContent` | 2 | 0 |
 | `mc:AlternateContent` | 1 | 0 |
