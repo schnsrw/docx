@@ -1,5 +1,8 @@
 name: CI
 
+# Runs against the editor fork at docx-editor/ (the actual buildable
+# package; the outer repo's root holds infra docs + planning).
+
 on:
   push:
     branches: [main]
@@ -9,6 +12,10 @@ on:
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: docx-editor
 
 jobs:
   lint:
@@ -73,7 +80,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       # Cache the Playwright browser binaries. The cache key embeds the
-      # @playwright/test version pulled from bun.lock so a Playwright
+      # @playwright/test version pulled from node_modules so a Playwright
       # bump invalidates automatically.
       - name: Resolve Playwright version
         id: pw
@@ -107,6 +114,6 @@ jobs:
         with:
           name: playwright-report
           path: |
-            playwright-report
-            screenshots/test-results
+            docx-editor/playwright-report
+            docx-editor/screenshots/test-results
           retention-days: 7

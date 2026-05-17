@@ -1,9 +1,12 @@
 name: Deploy demo to GitHub Pages
 
+# Builds the Vite demo under docx-editor/examples/vite and publishes the
+# static output to GitHub Pages at https://schnsrw.github.io/docx/.
+# Repo settings → Pages → Source must be "GitHub Actions" for this to land.
+
 on:
   push:
     branches: [main]
-  # Manual trigger for re-deploys without a new commit.
   workflow_dispatch:
 
 concurrency:
@@ -14,6 +17,10 @@ permissions:
   contents: read
   pages: write
   id-token: write
+
+defaults:
+  run:
+    working-directory: docx-editor
 
 jobs:
   build:
@@ -30,9 +37,6 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
-      # The repo is published at https://<owner>.github.io/<repo>/ — Vite
-      # needs `--base /<repo>/` baked in so asset URLs resolve. Falls back
-      # to '/' for forks served at a custom domain or root path.
       - name: Resolve Pages base path
         id: base
         run: |
@@ -51,7 +55,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: examples/vite/dist
+          path: docx-editor/examples/vite/dist
 
   deploy:
     name: Deploy to Pages
