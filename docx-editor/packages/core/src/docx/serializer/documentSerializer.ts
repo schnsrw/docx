@@ -299,9 +299,23 @@ function serializePageMargins(props: SectionProperties): string {
 
 /**
  * Serialize columns (w:cols)
+ *
+ * Word emits `<w:cols w:space="708"/>` even for single-column sections
+ * (it captures the default inter-column gutter). Bailing on
+ * `columnCount === undefined` dropped the element across 11 fixtures
+ * in scripts/roundtrip-audit.mjs. Emit whenever any column-related
+ * field is set, and prefer the self-closing form when there are no
+ * `<w:col>` children — matches Word byte-for-byte for the default
+ * single-column case.
  */
 function serializeColumns(props: SectionProperties): string {
-  if (!props.columnCount && !props.columns?.length) return '';
+  const hasAnyColumnField =
+    props.columnCount !== undefined ||
+    (props.columns && props.columns.length > 0) ||
+    props.columnSpace !== undefined ||
+    props.equalWidth !== undefined ||
+    props.separator !== undefined;
+  if (!hasAnyColumnField) return '';
 
   const attrs: string[] = [];
 
@@ -338,9 +352,10 @@ function serializeColumns(props: SectionProperties): string {
       .join('');
   }
 
-  if (attrs.length === 0 && !colElements) return '';
-
   const attrsStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
+  // Self-closing form when no <w:col> children — matches Word's default
+  // emission for single-column sections.
+  if (!colElements) return `<w:cols${attrsStr}/>`;
   return `<w:cols${attrsStr}>${colElements}</w:cols>`;
 }
 

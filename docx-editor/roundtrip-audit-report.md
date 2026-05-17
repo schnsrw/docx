@@ -26,7 +26,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `a:extLst` | 18 | 5 |
 | `a14:useLocalDpi` | 18 | 5 |
 | `v:rect` | 18 | 3 |
-| `w:cols` | 18 | 11 |
 | `w10:wrap` | 18 | 2 |
 | `a:srcRect` | 17 | 5 |
 | `wps:txbx` | 16 | 3 |
@@ -45,6 +44,7 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `w14:uncheckedState` | 8 | 1 |
 | `w:textAlignment` | 8 | 2 |
 | `w:overflowPunct` | 8 | 1 |
+| `w:cols` | 7 | 1 |
 | `v:group` | 6 | 2 |
 | `w:rFonts` | 6 | 1 |
 | `w:fldChar` | 6 | 1 |
@@ -119,7 +119,7 @@ No round-trip drops.
 | `wps:style` | 3 | 0 |
 | `a:lnRef` | 3 | 0 |
 | `a:fillRef` | 3 | 0 |
-| _…29 more_ | | |
+| _…28 more_ | | |
 
 ### table-indent
 
@@ -187,7 +187,6 @@ No round-trip drops.
 | `w:gridAfter` | 1 | 0 |
 | `w:wAfter` | 1 | 0 |
 | `w:textAlignment` | 1 | 0 |
-| `w:cols` | 1 | 0 |
 
 ### theme-color-auto
 
@@ -207,7 +206,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 38 | 0 |
-| `w:cols` | 1 | 0 |
 
 ### border-overlay-layout-demo
 
@@ -255,7 +253,6 @@ No round-trip drops.
 | `w:fldChar` | 6 | 0 |
 | `w:rStyle` | 4 | 0 |
 | `w:headerReference` | 2 | 0 |
-| `w:cols` | 2 | 0 |
 | `wp14:sizeRelH` | 2 | 0 |
 | `wp14:pctWidth` | 2 | 0 |
 | `wp14:sizeRelV` | 2 | 0 |
@@ -274,7 +271,6 @@ No round-trip drops.
 | `a:extLst` | 1 | 0 |
 | `a14:useLocalDpi` | 1 | 0 |
 | `a:srcRect` | 1 | 0 |
-| `w:cols` | 1 | 0 |
 
 ### styled-content
 
@@ -286,7 +282,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 92 | 0 |
-| `w:cols` | 1 | 0 |
 
 ### issue-387-font-theme-override
 
@@ -307,7 +302,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 38 | 0 |
-| `w:cols` | 1 | 0 |
 
 ### textbox-test
 
@@ -342,7 +336,6 @@ No round-trip drops.
 | `a:extLst` | 1 | 0 |
 | `a14:useLocalDpi` | 1 | 0 |
 | `a:srcRect` | 1 | 0 |
-| `w:cols` | 1 | 0 |
 
 ### float-wrap-comprehensive-test
 
@@ -384,7 +377,6 @@ No round-trip drops.
 | `w:adjustRightInd` | 36 | 0 |
 | `w:gridAfter` | 1 | 0 |
 | `w:wAfter` | 1 | 0 |
-| `w:cols` | 1 | 0 |
 
 ### header-with-table-and-paragraphs
 
@@ -415,4 +407,3 @@ No round-trip drops.
 | `a:extLst` | 1 | 0 |
 | `a14:useLocalDpi` | 1 | 0 |
 | `a:srcRect` | 1 | 0 |
-| `w:cols` | 1 | 0 |
