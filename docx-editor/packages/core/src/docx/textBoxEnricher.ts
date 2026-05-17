@@ -246,29 +246,17 @@ function extractShapeFromWsp(
   }
   const isConnector = !!cNvCnPr || geomPrst === 'line' || geomPrst?.startsWith('straightConnector') === true;
 
-  // Size from xfrm.ext inside spPr (per OOXML §20.4.2.3, shapes inside
-  // a group carry their own a:xfrm with offsets relative to the group's
-  // coordinate space). Falls back to 100×100 px (≈ 952500 EMU) so empty
-  // shapes still get a non-zero footprint.
+  // Size + offset + rotation from xfrm inside spPr (per OOXML §20.4.2.3).
+  // `a:xfrm@rot` is in 1/60000 degrees, plus `flipH`/`flipV` booleans.
   let cx = 952500;
   let cy = 952500;
   let offX = 0;
   let offY = 0;
-  if (spPr) {
-    const xfrm = getChildElements(spPr).find((el) => el.name === 'a:xfrm');
-    if (xfrm) {
-      const ext = getChildElements(xfrm).find((el) => el.name === 'a:ext');
-      if (ext) {
-        cx = Number(getAttribute(ext, null, 'cx') ?? cx);
-        cy = Number(getAttribute(ext, null, 'cy') ?? cy);
-      }
-      const off = getChildElements(xfrm).find((el) => el.name === 'a:off');
-      if (off) {
-        offX = Number(getAttribute(off, null, 'x') ?? 0);
-        offY = Number(getAttribute(off, null, 'y') ?? 0);
-      }
-    }
-  }
+  const xform = readXfrmDetails(spPr);
+  if (xform.cx !== undefined) cx = xform.cx;
+  if (xform.cy !== undefined) cy = xform.cy;
+  offX = xform.offX;
+  offY = xform.offY;
 
   let fill = parseFill(spPr ?? null) ?? undefined;
   const outline = parseOutline(spPr ?? null) ?? undefined;
@@ -322,6 +310,13 @@ function extractShapeFromWsp(
     textBody: { content },
   };
   if (id) shape.id = id;
+  if (xform.rotation || xform.flipH || xform.flipV) {
+    shape.transform = {
+      ...(xform.rotation ? { rotation: xform.rotation } : {}),
+      ...(xform.flipH ? { flipH: true } : {}),
+      ...(xform.flipV ? { flipV: true } : {}),
+    };
+  }
   parsedRun.content.push({ type: 'shape', shape });
 }
 
@@ -388,17 +383,10 @@ function walkGroupChildren(
   }
 }
 
-/** Read `<a:xfrm><a:off x cy>` EMU offset from a wps:spPr / wpg:grpSpPr. */
+/** Read `<a:xfrm><a:off x y>` EMU offset from a wps:spPr / wpg:grpSpPr. */
 function readXfrmOff(spPr: XmlElement | undefined): { x: number; y: number } {
-  if (!spPr) return { x: 0, y: 0 };
-  const xfrm = findChild(spPr, 'a:xfrm');
-  if (!xfrm) return { x: 0, y: 0 };
-  const off = findChild(xfrm, 'a:off');
-  if (!off) return { x: 0, y: 0 };
-  return {
-    x: Number(getAttribute(off, null, 'x') ?? 0),
-    y: Number(getAttribute(off, null, 'y') ?? 0),
-  };
+  const d = readXfrmDetails(spPr);
+  return { x: d.offX, y: d.offY };
 }
 
 /**
@@ -462,25 +450,11 @@ function extractImageFromPic(
   if (!rId) return;
 
   const spPr = findChild(pic, 'pic:spPr');
-  let cx = 0;
-  let cy = 0;
-  let offX = 0;
-  let offY = 0;
-  if (spPr) {
-    const xfrm = findChild(spPr, 'a:xfrm');
-    if (xfrm) {
-      const ext = findChild(xfrm, 'a:ext');
-      if (ext) {
-        cx = Number(getAttribute(ext, null, 'cx') ?? 0);
-        cy = Number(getAttribute(ext, null, 'cy') ?? 0);
-      }
-      const off = findChild(xfrm, 'a:off');
-      if (off) {
-        offX = Number(getAttribute(off, null, 'x') ?? 0);
-        offY = Number(getAttribute(off, null, 'y') ?? 0);
-      }
-    }
-  }
+  const xform = readXfrmDetails(spPr);
+  const cx = xform.cx ?? 0;
+  const cy = xform.cy ?? 0;
+  const offX = xform.offX;
+  const offY = xform.offY;
   if (!cx || !cy) return;
 
   const resolved = resolveImageData(rId, ctx.rels ?? undefined, ctx.media ?? undefined);
@@ -512,6 +486,69 @@ function extractImageFromPic(
   if (id) image.id = id;
   if (alt) image.alt = alt;
   if (name && !image.title) image.title = name;
+  if (xform.rotation || xform.flipH || xform.flipV) {
+    image.transform = {
+      ...(xform.rotation ? { rotation: xform.rotation } : {}),
+      ...(xform.flipH ? { flipH: true } : {}),
+      ...(xform.flipV ? { flipV: true } : {}),
+    };
+  }
 
   parsedRun.content.push({ type: 'drawing', image });
+}
+
+/**
+ * Pull size + offset + rotation + flip flags out of an `<a:xfrm>` (or
+ * `<wpg:grpSpPr><a:xfrm>`). Rotation comes back in CSS degrees, not the
+ * 1/60000ths Word stores. Returns offsets as 0 when missing so callers
+ * never need to null-check the numbers.
+ */
+function readXfrmDetails(spPr: XmlElement | undefined): {
+  cx?: number;
+  cy?: number;
+  offX: number;
+  offY: number;
+  rotation?: number;
+  flipH?: boolean;
+  flipV?: boolean;
+} {
+  const out = { cx: undefined as number | undefined, cy: undefined as number | undefined, offX: 0, offY: 0 } as {
+    cx?: number;
+    cy?: number;
+    offX: number;
+    offY: number;
+    rotation?: number;
+    flipH?: boolean;
+    flipV?: boolean;
+  };
+  if (!spPr) return out;
+  const xfrm = getChildElements(spPr).find((el) => el.name === 'a:xfrm');
+  if (!xfrm) return out;
+
+  const ext = getChildElements(xfrm).find((el) => el.name === 'a:ext');
+  if (ext) {
+    out.cx = Number(getAttribute(ext, null, 'cx') ?? 0);
+    out.cy = Number(getAttribute(ext, null, 'cy') ?? 0);
+  }
+  const off = getChildElements(xfrm).find((el) => el.name === 'a:off');
+  if (off) {
+    out.offX = Number(getAttribute(off, null, 'x') ?? 0);
+    out.offY = Number(getAttribute(off, null, 'y') ?? 0);
+  }
+
+  // Word stores rotation in 1/60000 degrees (`rot="5400000"` = 90°).
+  // Convert to CSS degrees so consumers can use it directly.
+  const rot = getAttribute(xfrm, null, 'rot');
+  if (rot) {
+    const n = Number(rot);
+    if (Number.isFinite(n) && n !== 0) {
+      // Keep the result in 0–360 to avoid CSS picking the long path
+      // around when the source value is huge.
+      out.rotation = (((n / 60000) % 360) + 360) % 360;
+    }
+  }
+  if (getAttribute(xfrm, null, 'flipH') === '1') out.flipH = true;
+  if (getAttribute(xfrm, null, 'flipV') === '1') out.flipV = true;
+
+  return out;
 }
