@@ -3713,50 +3713,51 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
   // browsers' "Save as PDF" destination in the print dialog uses the
   // print window's <title> as the default filename, so we let callers
   // pass one. The visible HTML and CSS are identical for print and PDF.
-  const triggerPrintFlow = useCallback((windowTitle: string) => {
-    const pagesEl = containerRef.current?.querySelector('.paged-editor__pages');
-    if (!pagesEl) {
-      window.print();
-      onPrint?.();
-      return;
-    }
-
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      // Popup blocked — fall back to window.print()
-      window.print();
-      onPrint?.();
-      return;
-    }
-
-    // Collect all @font-face rules from the current page
-    const fontFaceRules: string[] = [];
-    for (const sheet of Array.from(document.styleSheets)) {
-      try {
-        for (const rule of Array.from(sheet.cssRules)) {
-          if (rule instanceof CSSFontFaceRule) {
-            fontFaceRules.push(rule.cssText);
-          }
-        }
-      } catch {
-        // Cross-origin stylesheets can't be read — skip
+  const triggerPrintFlow = useCallback(
+    (windowTitle: string) => {
+      const pagesEl = containerRef.current?.querySelector('.paged-editor__pages');
+      if (!pagesEl) {
+        window.print();
+        onPrint?.();
+        return;
       }
-    }
 
-    // Clone pages and remove transforms/shadows
-    const pagesClone = pagesEl.cloneNode(true) as HTMLElement;
-    pagesClone.style.cssText = 'display: block; margin: 0; padding: 0;';
-    for (const page of Array.from(pagesClone.querySelectorAll('.layout-page'))) {
-      const el = page as HTMLElement;
-      el.style.boxShadow = 'none';
-      el.style.margin = '0';
-    }
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        // Popup blocked — fall back to window.print()
+        window.print();
+        onPrint?.();
+        return;
+      }
 
-    const titleEscaped = windowTitle
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    printWindow.document.write(`<!DOCTYPE html>
+      // Collect all @font-face rules from the current page
+      const fontFaceRules: string[] = [];
+      for (const sheet of Array.from(document.styleSheets)) {
+        try {
+          for (const rule of Array.from(sheet.cssRules)) {
+            if (rule instanceof CSSFontFaceRule) {
+              fontFaceRules.push(rule.cssText);
+            }
+          }
+        } catch {
+          // Cross-origin stylesheets can't be read — skip
+        }
+      }
+
+      // Clone pages and remove transforms/shadows
+      const pagesClone = pagesEl.cloneNode(true) as HTMLElement;
+      pagesClone.style.cssText = 'display: block; margin: 0; padding: 0;';
+      for (const page of Array.from(pagesClone.querySelectorAll('.layout-page'))) {
+        const el = page as HTMLElement;
+        el.style.boxShadow = 'none';
+        el.style.margin = '0';
+      }
+
+      const titleEscaped = windowTitle
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      printWindow.document.write(`<!DOCTYPE html>
 <html><head><title>${titleEscaped}</title>
 <style>
 ${fontFaceRules.join('\n')}
@@ -3767,24 +3768,26 @@ body { background: white; }
 @page { margin: 0; size: auto; }
 </style>
 </head><body>${pagesClone.outerHTML}</body></html>`);
-    printWindow.document.close();
+      printWindow.document.close();
 
-    // Wait for fonts/images then print
-    printWindow.onload = () => {
-      printWindow.print();
-      printWindow.close();
-    };
-
-    // Fallback if onload doesn't fire (some browsers)
-    setTimeout(() => {
-      if (!printWindow.closed) {
+      // Wait for fonts/images then print
+      printWindow.onload = () => {
         printWindow.print();
         printWindow.close();
-      }
-    }, 1000);
+      };
 
-    onPrint?.();
-  }, [onPrint]);
+      // Fallback if onload doesn't fire (some browsers)
+      setTimeout(() => {
+        if (!printWindow.closed) {
+          printWindow.print();
+          printWindow.close();
+        }
+      }, 1000);
+
+      onPrint?.();
+    },
+    [onPrint]
+  );
 
   const handleDirectPrint = useCallback(() => {
     triggerPrintFlow('Print');
@@ -4479,12 +4482,8 @@ body { background: white; }
       return undefined;
     };
 
-    const effHeaderRefs = findInheritedRefs('headerReferences') as
-      | HeaderReference[]
-      | undefined;
-    const effFooterRefs = findInheritedRefs('footerReferences') as
-      | FooterReference[]
-      | undefined;
+    const effHeaderRefs = findInheritedRefs('headerReferences') as HeaderReference[] | undefined;
+    const effFooterRefs = findInheritedRefs('footerReferences') as FooterReference[] | undefined;
 
     if (headers && effHeaderRefs) {
       const defaultRef = effHeaderRefs.find((r) => r.type === 'default');

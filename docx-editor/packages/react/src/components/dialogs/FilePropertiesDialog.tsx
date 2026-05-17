@@ -188,15 +188,13 @@ export function FilePropertiesDialog({
       style={overlayStyle}
       onMouseDown={onClose}
     >
-      <div
-        style={dialogStyle}
-        onMouseDown={stop}
-        onClick={stop}
-      >
+      <div style={dialogStyle} onMouseDown={stop} onClick={stop}>
         <div style={headerStyle}>File Properties</div>
         <div style={bodyStyle}>
           <div style={rowStyle}>
-            <label style={labelStyle} htmlFor="fp-title">Title</label>
+            <label style={labelStyle} htmlFor="fp-title">
+              Title
+            </label>
             <input
               id="fp-title"
               data-testid="fp-title"
@@ -206,7 +204,9 @@ export function FilePropertiesDialog({
             />
           </div>
           <div style={rowStyle}>
-            <label style={labelStyle} htmlFor="fp-subject">Subject</label>
+            <label style={labelStyle} htmlFor="fp-subject">
+              Subject
+            </label>
             <input
               id="fp-subject"
               data-testid="fp-subject"
@@ -216,7 +216,9 @@ export function FilePropertiesDialog({
             />
           </div>
           <div style={rowStyle}>
-            <label style={labelStyle} htmlFor="fp-creator">Author</label>
+            <label style={labelStyle} htmlFor="fp-creator">
+              Author
+            </label>
             <input
               id="fp-creator"
               data-testid="fp-creator"
@@ -226,7 +228,9 @@ export function FilePropertiesDialog({
             />
           </div>
           <div style={rowStyle}>
-            <label style={labelStyle} htmlFor="fp-keywords">Keywords</label>
+            <label style={labelStyle} htmlFor="fp-keywords">
+              Keywords
+            </label>
             <input
               id="fp-keywords"
               data-testid="fp-keywords"
@@ -237,7 +241,9 @@ export function FilePropertiesDialog({
             />
           </div>
           <div style={rowStyle}>
-            <label style={labelStyle} htmlFor="fp-category">Category</label>
+            <label style={labelStyle} htmlFor="fp-category">
+              Category
+            </label>
             <input
               id="fp-category"
               data-testid="fp-category"
@@ -247,7 +253,9 @@ export function FilePropertiesDialog({
             />
           </div>
           <div style={rowStyle}>
-            <label style={labelStyle} htmlFor="fp-description">Description</label>
+            <label style={labelStyle} htmlFor="fp-description">
+              Description
+            </label>
             <textarea
               id="fp-description"
               data-testid="fp-description"

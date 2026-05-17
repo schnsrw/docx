@@ -464,8 +464,7 @@ export function Toolbar({
                     } as MenuEntry,
                   ]
                 : []),
-              ...((onOpen || onSave) &&
-              (hasPrintOrPageSetup || onFileProperties || onExportPdf)
+              ...((onOpen || onSave) && (hasPrintOrPageSetup || onFileProperties || onExportPdf)
                 ? [{ type: 'separator' as const } as MenuEntry]
                 : []),
               ...(showPrintButton && onPrint

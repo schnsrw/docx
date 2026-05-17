@@ -148,8 +148,7 @@ export function MenuBar() {
   );
 
   const hasPrintOrPageSetup = (showPrintButton && onPrint) || onPageSetup;
-  const hasFileMenu =
-    hasPrintOrPageSetup || onOpen || onSave || onFileProperties || onExportPdf;
+  const hasFileMenu = hasPrintOrPageSetup || onOpen || onSave || onFileProperties || onExportPdf;
 
   return (
     <div className="flex items-center" role="menubar" aria-label={t('titleBar.menuBarAriaLabel')}>
@@ -179,8 +178,7 @@ export function MenuBar() {
                   } as MenuEntry,
                 ]
               : []),
-            ...((onOpen || onSave) &&
-            (hasPrintOrPageSetup || onFileProperties || onExportPdf)
+            ...((onOpen || onSave) && (hasPrintOrPageSetup || onFileProperties || onExportPdf)
               ? [{ type: 'separator' as const } as MenuEntry]
               : []),
             ...(showPrintButton && onPrint

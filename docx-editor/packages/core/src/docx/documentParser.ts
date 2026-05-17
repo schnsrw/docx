@@ -24,12 +24,7 @@ import type {
 } from '../types/document';
 import type { StyleMap } from './styleParser';
 import type { NumberingMap } from './numberingParser';
-import {
-  parseXml,
-  findChild,
-  getChildElements,
-  type XmlElement,
-} from './xmlParser';
+import { parseXml, findChild, getChildElements, type XmlElement } from './xmlParser';
 import { parseParagraph, getParagraphText } from './paragraphParser';
 import { parseTable } from './tableParser';
 import { parseSectionProperties, getDefaultSectionProperties } from './sectionParser';

@@ -49,9 +49,7 @@ describe('<w:proofErr> round-trip', () => {
   });
 
   test('unknown proofErr type is ignored (defensive)', () => {
-    const out = parseAndSerialize(
-      '<w:proofErr w:type="bogus"/>' + '<w:r><w:t>hello</w:t></w:r>'
-    );
+    const out = parseAndSerialize('<w:proofErr w:type="bogus"/>' + '<w:r><w:t>hello</w:t></w:r>');
     // Unknown type is dropped — we only serialize the four known enum values.
     expect(out).not.toContain('w:type="bogus"');
     expect(out).toContain('<w:t>hello</w:t>');

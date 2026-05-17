@@ -22,7 +22,11 @@ import { toFlowBlocks } from '../toFlowBlocks';
 const here = dirname(fileURLToPath(import.meta.url));
 const fixturePath = join(
   here,
-  '..', '..', '..', '..', '..',
+  '..',
+  '..',
+  '..',
+  '..',
+  '..',
   'e2e/fixtures/header-with-textbox.docx'
 );
 

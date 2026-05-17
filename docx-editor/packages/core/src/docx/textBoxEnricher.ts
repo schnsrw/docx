@@ -175,8 +175,7 @@ function handleDrawing(drawingEl: XmlElement, parsedRun: RunContent, ctx: Ctx): 
     if (wgp) {
       const anchorPosition =
         container.name === 'wp:anchor' ? parseAnchorPosition(container) : undefined;
-      const anchorWrap =
-        container.name === 'wp:anchor' ? parseAnchorWrap(container) : undefined;
+      const anchorWrap = container.name === 'wp:anchor' ? parseAnchorWrap(container) : undefined;
       walkGroupChildren(wgp, parsedRun, ctx, anchorPosition, anchorWrap);
       return;
     }
@@ -244,7 +243,8 @@ function extractShapeFromWsp(
     const prstGeom = getChildElements(spPr).find((el) => el.name === 'a:prstGeom');
     if (prstGeom) geomPrst = getAttribute(prstGeom, null, 'prst');
   }
-  const isConnector = !!cNvCnPr || geomPrst === 'line' || geomPrst?.startsWith('straightConnector') === true;
+  const isConnector =
+    !!cNvCnPr || geomPrst === 'line' || geomPrst?.startsWith('straightConnector') === true;
 
   // Size + offset + rotation from xfrm inside spPr (per OOXML §20.4.2.3).
   // `a:xfrm@rot` is in 1/60000 degrees, plus `flipH`/`flipV` booleans.
@@ -330,8 +330,7 @@ function injectShapeFromTextBox(textBox: TextBox, parsedRun: RunContent): void {
     fill: textBox.fill,
     outline: textBox.outline,
     textBody: {
-      content:
-        textBox.content.length > 0 ? textBox.content : [{ type: 'paragraph', content: [] }],
+      content: textBox.content.length > 0 ? textBox.content : [{ type: 'paragraph', content: [] }],
       margins: textBox.margins,
     },
   };
@@ -512,7 +511,12 @@ function readXfrmDetails(spPr: XmlElement | undefined): {
   flipH?: boolean;
   flipV?: boolean;
 } {
-  const out = { cx: undefined as number | undefined, cy: undefined as number | undefined, offX: 0, offY: 0 } as {
+  const out = {
+    cx: undefined as number | undefined,
+    cy: undefined as number | undefined,
+    offX: 0,
+    offY: 0,
+  } as {
     cx?: number;
     cy?: number;
     offX: number;

@@ -18,7 +18,11 @@ import type { Paragraph, Run, ShapeContent } from '../../types/document';
 const here = dirname(fileURLToPath(import.meta.url));
 const fixturePath = join(
   here,
-  '..', '..', '..', '..', '..',
+  '..',
+  '..',
+  '..',
+  '..',
+  '..',
   'e2e/fixtures/header-with-textbox.docx'
 );
 

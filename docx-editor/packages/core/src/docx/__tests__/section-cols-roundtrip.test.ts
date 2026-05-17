@@ -26,10 +26,7 @@ describe('<w:cols> round-trip', () => {
     const xml = emit({
       columnCount: 2,
       equalWidth: false,
-      columns: [
-        { width: 3163, space: 40 },
-        { width: 3163 },
-      ],
+      columns: [{ width: 3163, space: 40 }, { width: 3163 }],
     });
     expect(xml).toContain('<w:cols w:num="2"');
     expect(xml).toContain('w:equalWidth="0"');

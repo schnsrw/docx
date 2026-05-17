@@ -43,10 +43,7 @@ import {
 import { RELATIONSHIP_TYPES } from './relsParser';
 import { type RawDocxContent } from './unzip';
 import { escapeXml } from './serializer/xmlUtils';
-import {
-  applyCorePropertiesToXml,
-  EMPTY_CORE_PROPERTIES_XML,
-} from './corePropertiesParser';
+import { applyCorePropertiesToXml, EMPTY_CORE_PROPERTIES_XML } from './corePropertiesParser';
 
 /**
  * Find the highest rId number in a relationships XML string.

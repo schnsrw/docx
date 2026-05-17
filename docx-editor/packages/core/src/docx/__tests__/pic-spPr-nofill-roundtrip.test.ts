@@ -16,6 +16,7 @@ import { serializeRun } from '../serializer/runSerializer';
 
 function imageRun(overrides: Partial<Image> = {}) {
   const image: Image = {
+    type: 'image',
     rId: 'rId7',
     src: 'media/image1.png',
     size: { width: 914400, height: 914400 }, // 1in × 1in EMU

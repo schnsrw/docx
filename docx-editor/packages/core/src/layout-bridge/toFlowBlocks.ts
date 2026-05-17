@@ -1234,8 +1234,7 @@ function convertTable(node: PMNode, startPos: number, options: ToFlowBlocksOptio
     | undefined;
   const leftCellMarginTwips = tableCellMargins?.left ?? DEFAULT_LEFT_CELL_MARGIN_TWIPS;
   const indentPx =
-    originalFormatting?.indent?.value !== undefined &&
-    originalFormatting.indent.type === 'dxa'
+    originalFormatting?.indent?.value !== undefined && originalFormatting.indent.type === 'dxa'
       ? twipsToPixels(originalFormatting.indent.value - leftCellMarginTwips)
       : -twipsToPixels(leftCellMarginTwips);
 
