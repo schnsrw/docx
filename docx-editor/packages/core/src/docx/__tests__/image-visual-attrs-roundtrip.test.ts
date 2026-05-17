@@ -57,15 +57,21 @@ describe('wp:srcRect crop round-trip', () => {
     expect(img?.crop).toEqual({ left: 0.1, top: 0.05, right: 0.15, bottom: 0.2 });
   });
 
-  test('omit a:srcRect element when crop has no non-zero sides', () => {
-    // Without `crop` on the model, the serializer should not emit <a:srcRect/>.
+  test('emit a bare <a:srcRect/> when no crop is set (Word default)', () => {
+    // Word always emits the element — bare when no crop, with attrs
+    // when crop is set. We match that so round-trip preserves the
+    // structural placeholder (per scripts/roundtrip-audit.mjs the
+    // bare form was 17 dropped a:srcRect across 5 fixtures before
+    // this contract change).
     const xml = serializeImage({
       type: 'image',
       rId: 'rId1',
       size: { width: 1000000, height: 500000 },
       wrap: { type: 'inline' },
     });
-    expect(xml).not.toContain('<a:srcRect');
+    expect(xml).toContain('<a:srcRect/>');
+    // Sanity: no spurious attributes when there's no crop.
+    expect(xml).not.toMatch(/<a:srcRect [^/]/);
   });
 
   test('serialize crop fractions back to 1/100000 attrs, omitting zero sides', () => {

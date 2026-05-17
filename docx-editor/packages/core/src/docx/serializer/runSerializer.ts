@@ -715,23 +715,34 @@ function serializePicGraphic(image: Image, sharedId: string): string {
   if (image.transform?.flipH) xfrmAttrs += ' flipH="1"';
   if (image.transform?.flipV) xfrmAttrs += ' flipV="1"';
 
-  // Build <a:blip> with optional <a:alphaModFix> child for transparency.
+  // Build <a:blip> children: optional alphaModFix + the boilerplate
+  // a14:useLocalDpi extension Word always emits ("render at the
+  // document's stored DPI, not the screen's"). Wrapping useLocalDpi
+  // in an a:extLst is what shows up in every Word-saved fixture; the
+  // a14 namespace declaration goes on the inner element, matching
+  // Word's byte layout so the audit doesn't see this as drift.
   const alphaChild =
     image.opacity !== undefined && image.opacity < 1
       ? `<a:alphaModFix amt="${Math.round(Math.max(0, Math.min(1, image.opacity)) * 100000)}"/>`
       : '';
-  const blipEl = alphaChild
-    ? `<a:blip r:embed="${rId}">${alphaChild}</a:blip>`
-    : `<a:blip r:embed="${rId}"/>`;
+  const extLstChild =
+    '<a:extLst>' +
+    '<a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">' +
+    '<a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>' +
+    '</a:ext>' +
+    '</a:extLst>';
+  const blipEl = `<a:blip r:embed="${rId}">${alphaChild}${extLstChild}</a:blip>`;
 
-  // Build optional <a:srcRect/> for wp:srcRect crop. Each side is a
-  // fraction in [0, 1]; OOXML expects 1/100000 units.
+  // Build <a:srcRect>. Each crop side is a fraction in [0, 1]; OOXML
+  // expects 1/100000 units. Word emits a bare `<a:srcRect/>` when no
+  // crop is set rather than omitting the element — match that so the
+  // round-trip audit doesn't lose the structural marker.
   const cropAttrs: string[] = [];
   if (image.crop?.left) cropAttrs.push(`l="${Math.round(image.crop.left * 100000)}"`);
   if (image.crop?.top) cropAttrs.push(`t="${Math.round(image.crop.top * 100000)}"`);
   if (image.crop?.right) cropAttrs.push(`r="${Math.round(image.crop.right * 100000)}"`);
   if (image.crop?.bottom) cropAttrs.push(`b="${Math.round(image.crop.bottom * 100000)}"`);
-  const srcRectEl = cropAttrs.length > 0 ? `<a:srcRect ${cropAttrs.join(' ')}/>` : '';
+  const srcRectEl = cropAttrs.length > 0 ? `<a:srcRect ${cropAttrs.join(' ')}/>` : '<a:srcRect/>';
 
   return [
     '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">',
@@ -739,7 +750,10 @@ function serializePicGraphic(image: Image, sharedId: string): string {
     '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">',
     '<pic:nvPicPr>',
     `<pic:cNvPr id="${id}" name="${escapeXml(name)}"${image.alt ? ` descr="${escapeXml(image.alt)}"` : ''}/>`,
-    '<pic:cNvPicPr/>',
+    // Word always emits a:picLocks noChangeAspect="1" — locking the
+    // aspect ratio at edit time. We don't enforce this on input but
+    // emit the marker to match Word's structural output.
+    '<pic:cNvPicPr><a:picLocks noChangeAspect="1"/></pic:cNvPicPr>',
     '</pic:nvPicPr>',
     '<pic:blipFill>',
     blipEl,

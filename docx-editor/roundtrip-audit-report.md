@@ -16,13 +16,9 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `w:proofErr` | 544 | 8 |
 | `w:txbxContent` | 24 | 4 |
 | `v:fill` | 21 | 3 |
-| `a:picLocks` | 20 | 6 |
 | `w:pict` | 19 | 3 |
-| `a:extLst` | 18 | 5 |
-| `a14:useLocalDpi` | 18 | 5 |
 | `v:rect` | 18 | 3 |
 | `w10:wrap` | 18 | 2 |
-| `a:srcRect` | 17 | 5 |
 | `wps:txbx` | 16 | 3 |
 | `w:type` | 15 | 1 |
 | `w:col` | 14 | 1 |
@@ -73,6 +69,10 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `a:fillRef` | 3 | 1 |
 | `a:effectRef` | 3 | 1 |
 | `a:fontRef` | 3 | 1 |
+| `mc:Fallback` | 3 | 2 |
+| `v:stroke` | 3 | 1 |
+| `v:path` | 3 | 2 |
+| `a:spAutoFit` | 3 | 1 |
 
 ## Per-fixture detail
 
@@ -119,7 +119,7 @@ No round-trip drops.
 | `wps:style` | 3 | 0 |
 | `a:lnRef` | 3 | 0 |
 | `a:fillRef` | 3 | 0 |
-| _…27 more_ | | |
+| _…23 more_ | | |
 
 ### table-indent
 
@@ -210,7 +210,6 @@ No round-trip drops.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `a:picLocks` | 2 | 0 |
 | `w:pgNumType` | 1 | 0 |
 
 ### three-section-header
@@ -238,10 +237,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 156 | 0 |
-| `a:picLocks` | 13 | 0 |
-| `a:extLst` | 13 | 0 |
-| `a14:useLocalDpi` | 13 | 0 |
-| `a:srcRect` | 13 | 0 |
 | `w:overflowPunct` | 8 | 0 |
 | `w:textAlignment` | 7 | 0 |
 | `w:fldChar` | 6 | 0 |
@@ -260,10 +255,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 17 | 0 |
-| `a:picLocks` | 1 | 0 |
-| `a:extLst` | 1 | 0 |
-| `a14:useLocalDpi` | 1 | 0 |
-| `a:srcRect` | 1 | 0 |
 
 ### styled-content
 
@@ -324,10 +315,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 17 | 0 |
-| `a:picLocks` | 1 | 0 |
-| `a:extLst` | 1 | 0 |
-| `a14:useLocalDpi` | 1 | 0 |
-| `a:srcRect` | 1 | 0 |
 
 ### float-wrap-comprehensive-test
 
@@ -389,9 +376,4 @@ No round-trip drops.
 ### example-with-image
 
 
-| Tag | In | Out |
-|-----|----|-----|
-| `a:picLocks` | 1 | 0 |
-| `a:extLst` | 1 | 0 |
-| `a14:useLocalDpi` | 1 | 0 |
-| `a:srcRect` | 1 | 0 |
+No tags vanished on round-trip.
