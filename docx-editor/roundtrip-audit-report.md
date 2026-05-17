@@ -22,7 +22,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `w:type` | 15 | 1 |
 | `w:col` | 14 | 1 |
 | `v:f` | 12 | 1 |
-| `w:trPr` | 12 | 2 |
 | `v:shape` | 11 | 2 |
 | `wps:cNvPr` | 10 | 2 |
 | `v:textbox` | 8 | 2 |
@@ -54,7 +53,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `a:noAutofit` | 4 | 1 |
 | `w:start` | 4 | 2 |
 | `w:end` | 4 | 2 |
-| `w:cnfStyle` | 4 | 2 |
 | `w:pgNumType` | 4 | 4 |
 | `w:rStyle` | 4 | 1 |
 | `mc:AlternateContent` | 3 | 2 |
@@ -73,6 +71,8 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `v:path` | 3 | 2 |
 | `a:spAutoFit` | 3 | 1 |
 | `w:headerReference` | 3 | 2 |
+| `v:shapetype` | 2 | 1 |
+| `v:imagedata` | 2 | 1 |
 
 ## Per-fixture detail
 
@@ -138,10 +138,8 @@ No round-trip drops.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `w:trPr` | 6 | 0 |
 | `w:start` | 2 | 0 |
 | `w:end` | 2 | 0 |
-| `w:cnfStyle` | 2 | 0 |
 | `w:pgNumType` | 1 | 0 |
 | `w:formProt` | 1 | 0 |
 | `w:textDirection` | 1 | 0 |
@@ -182,8 +180,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:bdr` | 1 | 0 |
-| `w:gridAfter` | 1 | 0 |
-| `w:wAfter` | 1 | 0 |
 | `w:textAlignment` | 1 | 0 |
 
 ### theme-color-auto
@@ -264,10 +260,8 @@ No tags vanished on round-trip.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `w:trPr` | 6 | 0 |
 | `w:start` | 2 | 0 |
 | `w:end` | 2 | 0 |
-| `w:cnfStyle` | 2 | 0 |
 | `w:pgNumType` | 1 | 0 |
 | `w:formProt` | 1 | 0 |
 | `w:textDirection` | 1 | 0 |
@@ -335,10 +329,7 @@ No round-trip drops.
 ### Form025U
 
 
-| Tag | In | Out |
-|-----|----|-----|
-| `w:gridAfter` | 1 | 0 |
-| `w:wAfter` | 1 | 0 |
+No tags vanished on round-trip.
 
 ### header-with-table-and-paragraphs
 

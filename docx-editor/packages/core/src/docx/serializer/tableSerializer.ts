@@ -504,6 +504,32 @@ export function serializeTableRowFormatting(
   const parts: string[] = [];
 
   if (formatting) {
+    // Conditional format style — sits at the top of <w:trPr> per
+    // ECMA-376's content-model order.
+    if (formatting.conditionalFormat) {
+      const cnfXml = serializeConditionalFormatStyle(formatting.conditionalFormat);
+      if (cnfXml) parts.push(cnfXml);
+    }
+
+    // Irregular-row grid declarations (gridBefore + wBefore come first,
+    // gridAfter + wAfter later in the schema order).
+    if (formatting.gridBefore !== undefined) {
+      parts.push(`<w:gridBefore w:val="${intAttr(formatting.gridBefore)}"/>`);
+    }
+    if (formatting.wBefore) {
+      parts.push(
+        `<w:wBefore w:w="${intAttr(formatting.wBefore.value)}" w:type="${formatting.wBefore.type}"/>`
+      );
+    }
+    if (formatting.gridAfter !== undefined) {
+      parts.push(`<w:gridAfter w:val="${intAttr(formatting.gridAfter)}"/>`);
+    }
+    if (formatting.wAfter) {
+      parts.push(
+        `<w:wAfter w:w="${intAttr(formatting.wAfter.value)}" w:type="${formatting.wAfter.type}"/>`
+      );
+    }
+
     // Can't split
     if (formatting.cantSplit) {
       parts.push('<w:cantSplit/>');

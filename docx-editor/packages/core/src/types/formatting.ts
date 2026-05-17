@@ -507,6 +507,19 @@ export interface TableRowFormatting {
   hidden?: boolean;
   /** Conditional format style */
   conditionalFormat?: ConditionalFormatStyle;
+
+  // Irregular-row support — these declare extra cells before / after
+  // the row's own <w:tc> entries. Word emits them on rows where the
+  // logical grid is wider than the painted cells (e.g. partially-merged
+  // forms). Without round-trip the irregular shape is lost on save.
+  /** Number of grid columns skipped before the first cell (`<w:gridBefore w:val="N"/>`). */
+  gridBefore?: number;
+  /** Width of the space reserved by `gridBefore` (`<w:wBefore w:w="..." w:type="..."/>`). */
+  wBefore?: TableMeasurement;
+  /** Number of grid columns skipped after the last cell (`<w:gridAfter w:val="N"/>`). */
+  gridAfter?: number;
+  /** Width of the space reserved by `gridAfter` (`<w:wAfter w:w="..." w:type="..."/>`). */
+  wAfter?: TableMeasurement;
 }
 
 /**

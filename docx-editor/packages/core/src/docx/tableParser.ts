@@ -682,6 +682,35 @@ export function parseTableRowProperties(
   const conditionalFormat = parseConditionalFormatStyle(findChild(trPrElement, 'w', 'cnfStyle'));
   if (conditionalFormat) formatting.conditionalFormat = conditionalFormat;
 
+  // Irregular-row gridBefore / gridAfter + their corresponding widths.
+  // Both halves usually appear together but are independent in the spec.
+  const gridBeforeEl = findChild(trPrElement, 'w', 'gridBefore');
+  if (gridBeforeEl) {
+    const v = parseNumericAttribute(gridBeforeEl, 'w', 'val');
+    if (v !== undefined) formatting.gridBefore = v;
+  }
+  const wBeforeEl = findChild(trPrElement, 'w', 'wBefore');
+  if (wBeforeEl) {
+    const w = parseNumericAttribute(wBeforeEl, 'w', 'w');
+    const type = getAttribute(wBeforeEl, 'w', 'type');
+    if (w !== undefined) {
+      formatting.wBefore = { value: w, type: (type ?? 'dxa') as 'dxa' };
+    }
+  }
+  const gridAfterEl = findChild(trPrElement, 'w', 'gridAfter');
+  if (gridAfterEl) {
+    const v = parseNumericAttribute(gridAfterEl, 'w', 'val');
+    if (v !== undefined) formatting.gridAfter = v;
+  }
+  const wAfterEl = findChild(trPrElement, 'w', 'wAfter');
+  if (wAfterEl) {
+    const w = parseNumericAttribute(wAfterEl, 'w', 'w');
+    const type = getAttribute(wAfterEl, 'w', 'type');
+    if (w !== undefined) {
+      formatting.wAfter = { value: w, type: (type ?? 'dxa') as 'dxa' };
+    }
+  }
+
   if (Object.keys(formatting).length === 0) return undefined;
 
   return formatting;
