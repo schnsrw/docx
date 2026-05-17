@@ -17,7 +17,7 @@ function parseRPr(innerXml: string) {
   const rPrXml = `<w:rPr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">${innerXml}</w:rPr>`;
   const root = parseXmlDocument(rPrXml) as XmlElement | null;
   if (!root) throw new Error('Failed to parse rPr fixture');
-  return parseRunProperties(root, null, null);
+  return parseRunProperties(root, null, undefined);
 }
 
 describe('w:lang round-trip on runs', () => {

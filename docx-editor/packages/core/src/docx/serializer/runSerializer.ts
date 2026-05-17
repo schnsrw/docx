@@ -608,9 +608,16 @@ function serializeFill(fill: ShapeFill | undefined): string {
   return '';
 }
 
-/** Serialize shape outline to DrawingML a:ln */
+/** Serialize shape outline to DrawingML a:ln.
+ *
+ * When `outline` is undefined we still emit `<a:ln><a:noFill/></a:ln>`
+ * rather than nothing. Visually identical (no border drawn either way),
+ * but matches Word's own output for "no outline" — without this the
+ * fixtures' explicit `<a:ln><a:noFill/></a:ln>` declarations vanish on
+ * round-trip, which shows up in scripts/roundtrip-audit.mjs as dropped
+ * `a:ln` + `a:noFill` counts. */
 function serializeOutline(outline: ShapeOutline | undefined): string {
-  if (!outline) return '';
+  if (!outline) return '<a:ln><a:noFill/></a:ln>';
   const attrs: string[] = [];
   if (outline.width != null) attrs.push(`w="${outline.width}"`);
   if (outline.cap) attrs.push(`cap="${outline.cap}"`);
@@ -736,7 +743,13 @@ function serializePicGraphic(image: Image, sharedId: string): string {
     `<a:ext cx="${intAttr(cx)}" cy="${intAttr(cy)}"/>`,
     '</a:xfrm>',
     '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>',
-    image.outline ? serializeOutline(image.outline) : '',
+    // pic:spPr's own fill slot — matches Word's default for picture
+    // shape properties ("no fill behind the image"). Round-trip
+    // preserves the original `<a:noFill/>` declaration.
+    '<a:noFill/>',
+    // Outline slot always present so Word's "no outline" declaration
+    // round-trips as `<a:ln><a:noFill/></a:ln>`.
+    serializeOutline(image.outline),
     '</pic:spPr>',
     '</pic:pic>',
     '</a:graphicData>',

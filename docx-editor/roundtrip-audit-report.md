@@ -21,7 +21,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `w:autoSpaceDE` | 84 | 2 |
 | `w:autoSpaceDN` | 84 | 2 |
 | `w:adjustRightInd` | 84 | 2 |
-| `a:noFill` | 35 | 6 |
 | `w:insideH` | 32 | 3 |
 | `w:insideV` | 32 | 3 |
 | `w:txbxContent` | 24 | 4 |
@@ -35,7 +34,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `w:cols` | 18 | 11 |
 | `w10:wrap` | 18 | 2 |
 | `a:srcRect` | 17 | 5 |
-| `a:ln` | 17 | 5 |
 | `wps:txbx` | 16 | 3 |
 | `w:type` | 15 | 1 |
 | `w:col` | 14 | 1 |
@@ -73,6 +71,8 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `w:end` | 4 | 2 |
 | `w:cnfStyle` | 4 | 2 |
 | `w:pgNumType` | 4 | 4 |
+| `w:rStyle` | 4 | 1 |
+| `w:tcBorders` | 4 | 1 |
 
 ## Per-fixture detail
 
@@ -148,11 +148,7 @@ No round-trip drops.
 
 ### drawingml-shape
 
-
-| Tag | In | Out |
-|-----|----|-----|
-| `a:ln` | 1 | 0 |
-| `a:noFill` | 1 | 0 |
+No round-trip drops.
 
 ### vml-rect
 
@@ -222,7 +218,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `a:picLocks` | 2 | 0 |
-| `a:noFill` | 2 | 0 |
 | `w:pgNumType` | 1 | 0 |
 
 ### three-section-header
@@ -253,13 +248,11 @@ No round-trip drops.
 | `w:autoSpaceDE` | 48 | 0 |
 | `w:autoSpaceDN` | 48 | 0 |
 | `w:adjustRightInd` | 48 | 0 |
-| `a:noFill` | 26 | 0 |
 | `w:noProof` | 13 | 0 |
 | `a:picLocks` | 13 | 0 |
 | `a:extLst` | 13 | 0 |
 | `a14:useLocalDpi` | 13 | 0 |
 | `a:srcRect` | 13 | 0 |
-| `a:ln` | 13 | 0 |
 | `w:overflowPunct` | 8 | 0 |
 | `w:textAlignment` | 7 | 0 |
 | `w:fldChar` | 6 | 0 |
@@ -279,13 +272,11 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 17 | 0 |
-| `a:noFill` | 2 | 0 |
 | `w:noProof` | 1 | 0 |
 | `a:picLocks` | 1 | 0 |
 | `a:extLst` | 1 | 0 |
 | `a14:useLocalDpi` | 1 | 0 |
 | `a:srcRect` | 1 | 0 |
-| `a:ln` | 1 | 0 |
 | `w:cols` | 1 | 0 |
 
 ### styled-content
@@ -353,13 +344,11 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 17 | 0 |
-| `a:noFill` | 2 | 0 |
 | `w:noProof` | 1 | 0 |
 | `a:picLocks` | 1 | 0 |
 | `a:extLst` | 1 | 0 |
 | `a14:useLocalDpi` | 1 | 0 |
 | `a:srcRect` | 1 | 0 |
-| `a:ln` | 1 | 0 |
 | `w:cols` | 1 | 0 |
 
 ### float-wrap-comprehensive-test
@@ -430,11 +419,9 @@ No round-trip drops.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `a:noFill` | 2 | 0 |
 | `w:noProof` | 1 | 0 |
 | `a:picLocks` | 1 | 0 |
 | `a:extLst` | 1 | 0 |
 | `a14:useLocalDpi` | 1 | 0 |
 | `a:srcRect` | 1 | 0 |
-| `a:ln` | 1 | 0 |
 | `w:cols` | 1 | 0 |
