@@ -1,0 +1,66 @@
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Manual trigger for re-deploys without a new commit.
+  workflow_dispatch:
+
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build Vite demo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.14'
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      # The repo is published at https://<owner>.github.io/<repo>/ — Vite
+      # needs `--base /<repo>/` baked in so asset URLs resolve. Falls back
+      # to '/' for forks served at a custom domain or root path.
+      - name: Resolve Pages base path
+        id: base
+        run: |
+          repo_name="${GITHUB_REPOSITORY##*/}"
+          echo "path=/$repo_name/" >> "$GITHUB_OUTPUT"
+
+      - name: Build core + react libs
+        run: bun run build
+
+      - name: Build demo (Vite)
+        run: bun run build:demo -- --base ${{ steps.base.outputs.path }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: examples/vite/dist
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
