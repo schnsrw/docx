@@ -441,6 +441,22 @@ export function serializeParagraphFormatting(
       parts.push('<w:suppressAutoHyphens/>');
     }
 
+    // East-Asian + table spacing flags. Defaults are true; an explicit
+    // `<w:val="0"/>` is what shows up when the author disables them
+    // (Form025U, issue-319-sections). Per ECMA-376 these sit between
+    // suppressAutoHyphens and spacing in <w:pPr>'s schema order.
+    if (formatting.autoSpaceDE !== undefined) {
+      parts.push(formatting.autoSpaceDE ? '<w:autoSpaceDE/>' : '<w:autoSpaceDE w:val="0"/>');
+    }
+    if (formatting.autoSpaceDN !== undefined) {
+      parts.push(formatting.autoSpaceDN ? '<w:autoSpaceDN/>' : '<w:autoSpaceDN w:val="0"/>');
+    }
+    if (formatting.adjustRightInd !== undefined) {
+      parts.push(
+        formatting.adjustRightInd ? '<w:adjustRightInd/>' : '<w:adjustRightInd w:val="0"/>'
+      );
+    }
+
     // Spacing
     const spacingXml = serializeSpacing(formatting);
     if (spacingXml) {

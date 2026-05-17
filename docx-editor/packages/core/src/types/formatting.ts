@@ -204,6 +204,11 @@ export interface TextFormatting {
     /** Bidi/complex script language (`w:bidi`). */
     bidi?: string;
   };
+
+  /** Skip spelling/grammar checking on this run (`<w:noProof>`). */
+  noProof?: boolean;
+  /** Hidden when the document is viewed in a web layout (`<w:webHidden>`). */
+  webHidden?: boolean;
 }
 
 // ============================================================================
@@ -367,6 +372,15 @@ export interface ParagraphFormatting {
   // Default run properties for this paragraph
   /** Run properties to apply to all runs (w:rPr) */
   runProperties?: TextFormatting;
+
+  // East-Asian + table spacing. Defaults are true; explicit `<… w:val="0"/>`
+  // is what shows up in source XML when the author disables them.
+  /** Auto-space between East-Asian + Latin text (`<w:autoSpaceDE>`). */
+  autoSpaceDE?: boolean;
+  /** Auto-space between East-Asian + numerals (`<w:autoSpaceDN>`). */
+  autoSpaceDN?: boolean;
+  /** Auto-adjust right indent when a table follows (`<w:adjustRightInd>`). */
+  adjustRightInd?: boolean;
 }
 
 // ============================================================================

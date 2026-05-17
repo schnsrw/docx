@@ -14,11 +14,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | Tag | Total dropped | Fixtures affected |
 |-----|---------------|-------------------|
 | `w:proofErr` | 544 | 8 |
-| `w:noProof` | 175 | 6 |
-| `w:webHidden` | 119 | 1 |
-| `w:autoSpaceDE` | 84 | 2 |
-| `w:autoSpaceDN` | 84 | 2 |
-| `w:adjustRightInd` | 84 | 2 |
 | `w:txbxContent` | 24 | 4 |
 | `v:fill` | 21 | 3 |
 | `a:picLocks` | 20 | 6 |
@@ -73,6 +68,11 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `a:chOff` | 3 | 1 |
 | `a:chExt` | 3 | 1 |
 | `a:lumMod` | 3 | 1 |
+| `wps:style` | 3 | 1 |
+| `a:lnRef` | 3 | 1 |
+| `a:fillRef` | 3 | 1 |
+| `a:effectRef` | 3 | 1 |
+| `a:fontRef` | 3 | 1 |
 
 ## Per-fixture detail
 
@@ -119,7 +119,7 @@ No round-trip drops.
 | `wps:style` | 3 | 0 |
 | `a:lnRef` | 3 | 0 |
 | `a:fillRef` | 3 | 0 |
-| _…28 more_ | | |
+| _…27 more_ | | |
 
 ### table-indent
 
@@ -181,8 +181,6 @@ No round-trip drops.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `w:noProof` | 157 | 0 |
-| `w:webHidden` | 119 | 0 |
 | `w:bdr` | 1 | 0 |
 | `w:gridAfter` | 1 | 0 |
 | `w:wAfter` | 1 | 0 |
@@ -240,10 +238,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 156 | 0 |
-| `w:autoSpaceDE` | 48 | 0 |
-| `w:autoSpaceDN` | 48 | 0 |
-| `w:adjustRightInd` | 48 | 0 |
-| `w:noProof` | 13 | 0 |
 | `a:picLocks` | 13 | 0 |
 | `a:extLst` | 13 | 0 |
 | `a14:useLocalDpi` | 13 | 0 |
@@ -266,7 +260,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 17 | 0 |
-| `w:noProof` | 1 | 0 |
 | `a:picLocks` | 1 | 0 |
 | `a:extLst` | 1 | 0 |
 | `a14:useLocalDpi` | 1 | 0 |
@@ -331,7 +324,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 17 | 0 |
-| `w:noProof` | 1 | 0 |
 | `a:picLocks` | 1 | 0 |
 | `a:extLst` | 1 | 0 |
 | `a14:useLocalDpi` | 1 | 0 |
@@ -372,9 +364,6 @@ No round-trip drops.
 | Tag | In | Out |
 |-----|----|-----|
 | `w:proofErr` | 180 | 0 |
-| `w:autoSpaceDE` | 36 | 0 |
-| `w:autoSpaceDN` | 36 | 0 |
-| `w:adjustRightInd` | 36 | 0 |
 | `w:gridAfter` | 1 | 0 |
 | `w:wAfter` | 1 | 0 |
 
@@ -402,7 +391,6 @@ No round-trip drops.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `w:noProof` | 1 | 0 |
 | `a:picLocks` | 1 | 0 |
 | `a:extLst` | 1 | 0 |
 | `a14:useLocalDpi` | 1 | 0 |

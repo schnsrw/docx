@@ -388,6 +388,16 @@ export function parseRunProperties(
     if (val) formatting.styleId = val;
   }
 
+  // Skip spelling/grammar (w:noProof) and web-hidden (w:webHidden).
+  // Both are boolean flags Word emits verbatim; not acting on them but
+  // preserving them through round-trip avoids reintroducing
+  // spell-check noise the author had silenced.
+  const noProof = findChild(rPr, 'w', 'noProof');
+  if (noProof) formatting.noProof = parseBooleanElement(noProof);
+
+  const webHidden = findChild(rPr, 'w', 'webHidden');
+  if (webHidden) formatting.webHidden = parseBooleanElement(webHidden);
+
   // Language identifier (w:lang). Three independent script slots —
   // preserve every present attribute so round-trip keeps the original
   // hint set rather than collapsing to the Latin one.

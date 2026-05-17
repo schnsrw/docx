@@ -612,6 +612,23 @@ export function parseParagraphProperties(
     formatting.suppressAutoHyphens = parseBooleanElement(suppressAutoHyphens);
   }
 
+  // === East-Asian + table spacing flags ===
+  // Defaults are true; explicit `<w:val="0"/>` is what shows up in
+  // source XML when the author disables them. Preserve verbatim so
+  // round-trip doesn't silently re-enable EA auto-spacing.
+  const autoSpaceDE = findChild(pPr, 'w', 'autoSpaceDE');
+  if (autoSpaceDE) {
+    formatting.autoSpaceDE = parseBooleanElement(autoSpaceDE);
+  }
+  const autoSpaceDN = findChild(pPr, 'w', 'autoSpaceDN');
+  if (autoSpaceDN) {
+    formatting.autoSpaceDN = parseBooleanElement(autoSpaceDN);
+  }
+  const adjustRightInd = findChild(pPr, 'w', 'adjustRightInd');
+  if (adjustRightInd) {
+    formatting.adjustRightInd = parseBooleanElement(adjustRightInd);
+  }
+
   // === Default Run Properties ===
   const rPr = findChild(pPr, 'w', 'rPr');
   if (rPr) {

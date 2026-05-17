@@ -389,6 +389,15 @@ export function serializeTextFormatting(formatting: TextFormatting | undefined):
     parts.push('<w:cs/>');
   }
 
+  // Proofing / web-hidden flags. Boolean run properties — emit the
+  // explicit value when stored as false, otherwise the bare element.
+  if (formatting.noProof !== undefined) {
+    parts.push(formatting.noProof ? '<w:noProof/>' : '<w:noProof w:val="false"/>');
+  }
+  if (formatting.webHidden !== undefined) {
+    parts.push(formatting.webHidden ? '<w:webHidden/>' : '<w:webHidden w:val="false"/>');
+  }
+
   // Language identifier (w:lang). All three script slots are optional;
   // emit only the attributes we parsed so we round-trip the exact input
   // rather than padding with defaults.
