@@ -3,6 +3,20 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
+  // Agent-bridge / agent-panel / agent-timeline / agent-paraid-allocator
+  // tests depend on the AGPL `@eigenpal/docx-editor-agents` package that
+  // was removed from this fork — the demo no longer exposes the
+  // `window.__DOCX_EDITOR_E2E__` hook, agentPanel=1 / agentTimeline=…
+  // URL params, or the AgentPanel render-prop in App.tsx. Their tests
+  // all time out waiting for those hooks. Skip them in CI until the
+  // demo's agent integration is rebuilt (or the tests are removed).
+  testIgnore: [
+    '**/e2e/tests/agent-bridge.spec.ts',
+    '**/e2e/tests/agent-bridge-formatting.spec.ts',
+    '**/e2e/tests/agent-panel.spec.ts',
+    '**/e2e/tests/agent-paraid-allocator.spec.ts',
+    '**/e2e/tests/agent-timeline.spec.ts',
+  ],
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   // Use 4 workers locally for faster execution, 1 in CI for stability
