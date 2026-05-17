@@ -24,12 +24,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `v:f` | 12 | 1 |
 | `v:shape` | 11 | 2 |
 | `v:textbox` | 8 | 2 |
-| `w:id` | 8 | 1 |
-| `w15:color` | 8 | 1 |
-| `w14:checkbox` | 8 | 1 |
-| `w14:checked` | 8 | 1 |
-| `w14:checkedState` | 8 | 1 |
-| `w14:uncheckedState` | 8 | 1 |
 | `w:textAlignment` | 8 | 2 |
 | `w:overflowPunct` | 8 | 1 |
 | `w:cols` | 7 | 1 |
@@ -73,6 +67,12 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `v:shapetype` | 2 | 1 |
 | `v:imagedata` | 2 | 1 |
 | `a:shade` | 2 | 1 |
+| `a:prstTxWarp` | 2 | 1 |
+| `w:formProt` | 2 | 2 |
+| `w:textDirection` | 2 | 2 |
+| `wp14:sizeRelH` | 2 | 1 |
+| `wp14:pctWidth` | 2 | 1 |
+| `wp14:sizeRelV` | 2 | 1 |
 
 ## Per-fixture detail
 
@@ -91,12 +91,6 @@ No round-trip drops.
 |-----|----|-----|
 | `v:f` | 12 | 0 |
 | `w:txbxContent` | 10 | 0 |
-| `w:id` | 8 | 0 |
-| `w15:color` | 8 | 0 |
-| `w14:checkbox` | 8 | 0 |
-| `w14:checked` | 8 | 0 |
-| `w14:checkedState` | 8 | 0 |
-| `w14:uncheckedState` | 8 | 0 |
 | `v:shape` | 7 | 0 |
 | `w:rFonts` | 6 | 0 |
 | `a:spLocks` | 5 | 0 |
@@ -119,7 +113,13 @@ No round-trip drops.
 | `a:fillRef` | 3 | 0 |
 | `a:effectRef` | 3 | 0 |
 | `a:fontRef` | 3 | 0 |
-| _…21 more_ | | |
+| `v:group` | 3 | 0 |
+| `v:stroke` | 3 | 0 |
+| `a:spAutoFit` | 3 | 0 |
+| `mc:AlternateContent` | 2 | 0 |
+| `mc:Choice` | 2 | 0 |
+| `wpg:wgp` | 2 | 0 |
+| _…15 more_ | | |
 
 ### table-indent
 

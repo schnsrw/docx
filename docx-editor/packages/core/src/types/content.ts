@@ -1134,6 +1134,28 @@ export interface SdtProperties {
   listItems?: { displayText: string; value: string }[];
   /** Checkbox checked state */
   checked?: boolean;
+  /**
+   * SDT instance ID (`<w:id w:val="..."/>`). Word writes a stable
+   * integer ID per content control; preserved verbatim so external
+   * tools that key off it (Power Automate flows, custom form bindings)
+   * keep working after round-trip.
+   */
+  sdtId?: number;
+  /**
+   * Review-author color hint for the SDT (`<w15:color w:val="33CCCC"/>`).
+   * Word uses this to tint tracked-changes UI inside the control.
+   */
+  reviewColor?: string;
+  /**
+   * Glyph rendered when a form checkbox is checked (Office 2010
+   * extension — `<w14:checkedState w14:val="0052" w14:font="Wingdings 2"/>`).
+   * Both attributes are part of the saved doc; if the checkbox is
+   * round-tripped without them, Word falls back to a default glyph
+   * pair that may not match the surrounding visual style.
+   */
+  checkedState?: { val: string; font: string };
+  /** Mirror of `checkedState` for the unchecked glyph. */
+  uncheckedState?: { val: string; font: string };
 }
 
 /**

@@ -77,7 +77,9 @@ function parseSdtProperties(sdtPr: XmlElement | null): SdtProperties {
 
   for (const el of sdtPr.elements) {
     if (el.type !== 'element') continue;
-    const name = el.name?.replace(/^w:/, '') ?? '';
+    // SDT children come from three namespaces — strip whichever prefix
+    // is in front so we match on the local name regardless of vintage.
+    const name = el.name?.replace(/^(w14|w15|w):/, '') ?? '';
 
     switch (name) {
       case 'alias':
@@ -89,6 +91,22 @@ function parseSdtProperties(sdtPr: XmlElement | null): SdtProperties {
       case 'lock':
         props.lock = (getAttribute(el, 'w', 'val') ?? 'unlocked') as SdtProperties['lock'];
         break;
+      case 'id': {
+        const raw = getAttribute(el, 'w', 'val');
+        if (raw) {
+          const n = parseInt(raw, 10);
+          if (Number.isFinite(n)) props.sdtId = n;
+        }
+        break;
+      }
+      case 'color': {
+        // Only when this is `<w15:color>` (the review-author hint),
+        // not `<w:color>` — which here would be the legacy run color
+        // and isn't an sdtPr child anyway.
+        const val = getAttribute(el, 'w15', 'val') ?? getAttribute(el, 'w', 'val');
+        if (val) props.reviewColor = val;
+        break;
+      }
       case 'placeholder': {
         const docPart = findChild(el, 'w', 'docPart');
         if (docPart) {
@@ -121,6 +139,21 @@ function parseSdtProperties(sdtPr: XmlElement | null): SdtProperties {
         props.checked = checked
           ? getAttribute(checked, 'w14', 'val') === '1' || getAttribute(checked, 'w', 'val') === '1'
           : false;
+        // Optional glyph pair — preserved so round-trip can re-emit the
+        // exact <w14:checkedState> / <w14:uncheckedState> declared in
+        // the source.
+        const cs = findChild(el, 'w14', 'checkedState');
+        if (cs) {
+          const csVal = getAttribute(cs, 'w14', 'val');
+          const csFont = getAttribute(cs, 'w14', 'font');
+          if (csVal && csFont) props.checkedState = { val: csVal, font: csFont };
+        }
+        const us = findChild(el, 'w14', 'uncheckedState');
+        if (us) {
+          const usVal = getAttribute(us, 'w14', 'val');
+          const usFont = getAttribute(us, 'w14', 'font');
+          if (usVal && usFont) props.uncheckedState = { val: usVal, font: usFont };
+        }
         break;
       }
       case 'picture':

@@ -709,8 +709,14 @@ function serializeInlineSdt(sdt: InlineSdt): string {
 
   if (props.alias) prParts.push(`<w:alias w:val="${escapeXml(props.alias)}"/>`);
   if (props.tag) prParts.push(`<w:tag w:val="${escapeXml(props.tag)}"/>`);
+  if (props.sdtId !== undefined) prParts.push(`<w:id w:val="${props.sdtId}"/>`);
   if (props.lock && props.lock !== 'unlocked') prParts.push(`<w:lock w:val="${props.lock}"/>`);
   if (props.showingPlaceholder) prParts.push('<w:showingPlcHdr/>');
+  // w15:color is the review-author hint for tracked-changes UI. The
+  // w15 namespace declaration is already on <w:document>.
+  if (props.reviewColor) {
+    prParts.push(`<w15:color w:val="${escapeXml(props.reviewColor)}"/>`);
+  }
 
   // Type-specific properties
   switch (props.sdtType) {
@@ -744,11 +750,23 @@ function serializeInlineSdt(sdt: InlineSdt): string {
       prParts.push(`<w:comboBox>${items}</w:comboBox>`);
       break;
     }
-    case 'checkbox':
-      prParts.push(
-        `<w14:checkbox><w14:checked w14:val="${props.checked ? '1' : '0'}"/></w14:checkbox>`
-      );
+    case 'checkbox': {
+      const checkboxParts: string[] = [
+        `<w14:checked w14:val="${props.checked ? '1' : '0'}"/>`,
+      ];
+      if (props.checkedState) {
+        checkboxParts.push(
+          `<w14:checkedState w14:val="${escapeXml(props.checkedState.val)}" w14:font="${escapeXml(props.checkedState.font)}"/>`
+        );
+      }
+      if (props.uncheckedState) {
+        checkboxParts.push(
+          `<w14:uncheckedState w14:val="${escapeXml(props.uncheckedState.val)}" w14:font="${escapeXml(props.uncheckedState.font)}"/>`
+        );
+      }
+      prParts.push(`<w14:checkbox>${checkboxParts.join('')}</w14:checkbox>`);
       break;
+    }
     case 'picture':
       prParts.push('<w:picture/>');
       break;
