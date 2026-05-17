@@ -378,7 +378,7 @@ function getMimeType(path: string): string {
  * @param media - Media files map
  * @returns Object with src (data URL or blob), mimeType, and filename
  */
-function resolveImageData(
+export function resolveImageData(
   rId: string,
   rels: RelationshipMap | undefined,
   media: Map<string, MediaFile> | undefined

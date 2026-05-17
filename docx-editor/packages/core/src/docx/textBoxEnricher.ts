@@ -39,6 +39,7 @@ import type {
   TextBox,
   ImagePosition,
   ImageWrap,
+  Image,
 } from '../types/document';
 import type { StyleMap } from './styleParser';
 import type { NumberingMap } from './numberingParser';
@@ -65,6 +66,7 @@ import {
   parseVmlDecorativeShape,
 } from './vmlTextBoxParser';
 import { parseFill, parseOutline, parseAnchorPosition, parseAnchorWrap } from './drawingUtils';
+import { resolveImageData } from './imageParser';
 
 const WPG_URI = 'http://schemas.microsoft.com/office/word/2010/wordprocessingGroup';
 
@@ -163,8 +165,11 @@ function handleDrawing(drawingEl: XmlElement, parsedRun: RunContent, ctx: Ctx): 
   const graphicData = graphic ? findChild(graphic, 'a:graphicData') : undefined;
   const uri = graphicData ? getAttribute(graphicData, null, 'uri') : null;
 
-  // Group of shapes — enumerate each inner wps:wsp and emit it
-  // separately. Inner shapes inherit the group's anchor position.
+  // Group of shapes — enumerate each inner wps:wsp / pic:pic / nested
+  // wpg:grpSp and emit each. Inner items inherit the group's anchor
+  // position. The wpg:grpSp recursion handles letterhead layouts where
+  // Word groups a logo image with surrounding text boxes (Medical
+  // Incident Report Form's Safetymint logo is one such case).
   if (uri === WPG_URI && container && graphicData) {
     const wgp = findChild(graphicData, 'wpg:wgp');
     if (wgp) {
@@ -172,15 +177,7 @@ function handleDrawing(drawingEl: XmlElement, parsedRun: RunContent, ctx: Ctx): 
         container.name === 'wp:anchor' ? parseAnchorPosition(container) : undefined;
       const anchorWrap =
         container.name === 'wp:anchor' ? parseAnchorWrap(container) : undefined;
-      for (const child of getChildElements(wgp)) {
-        const childName = getLocalName(child.name ?? '');
-        if (childName === 'wsp') {
-          extractShapeFromWsp(child, parsedRun, ctx, anchorPosition, anchorWrap);
-        }
-        // Nested groups, pictures, etc. could be enumerated here in a
-        // future pass; skipping for now keeps the diff focused on the
-        // common letterhead-group case.
-      }
+      walkGroupChildren(wgp, parsedRun, ctx, anchorPosition, anchorWrap);
       return;
     }
   }
@@ -310,4 +307,100 @@ function injectShapeFromTextBox(textBox: TextBox, parsedRun: RunContent): void {
 
 function findChild(parent: XmlElement, fullName: string): XmlElement | undefined {
   return getChildElements(parent).find((el) => el.name === fullName);
+}
+
+/**
+ * Walk a `<wpg:wgp>` (or a nested `<wpg:grpSp>`) and emit each child:
+ *   - `<wps:wsp>` → Shape via `extractShapeFromWsp`
+ *   - `<pic:pic>` → inline image via `extractImageFromPic`
+ *   - `<wpg:grpSp>` → recurse
+ *
+ * Inner content inherits the outer anchor's position so the painter
+ * lands it near where Word draws the group. (Precise per-child
+ * placement within the group's coordinate space is a future pass —
+ * we currently stack children at the group origin.)
+ */
+function walkGroupChildren(
+  group: XmlElement,
+  parsedRun: RunContent,
+  ctx: Ctx,
+  anchorPosition: ImagePosition | undefined,
+  anchorWrap: ImageWrap | undefined
+): void {
+  for (const child of getChildElements(group)) {
+    const local = getLocalName(child.name ?? '');
+    if (local === 'wsp') {
+      extractShapeFromWsp(child, parsedRun, ctx, anchorPosition, anchorWrap);
+    } else if (local === 'pic') {
+      extractImageFromPic(child, parsedRun, ctx, anchorPosition, anchorWrap);
+    } else if (local === 'grpSp') {
+      walkGroupChildren(child, parsedRun, ctx, anchorPosition, anchorWrap);
+    }
+    // Other group children (cNvGrpSpPr, grpSpPr, etc.) are metadata; skip.
+  }
+}
+
+/**
+ * Extract a `<pic:pic>` element directly inside a group as an inline
+ * `Image`. The picture carries its own `<pic:blipFill><a:blip r:embed>`
+ * for the rId, and `<pic:spPr><a:xfrm><a:ext cx cy>` for size. Used by
+ * the group-walker when Word grouped a logo image with surrounding
+ * text shapes — without this branch the image silently dropped.
+ */
+function extractImageFromPic(
+  pic: XmlElement,
+  parsedRun: RunContent,
+  ctx: Ctx,
+  anchorPosition: ImagePosition | undefined,
+  anchorWrap: ImageWrap | undefined
+): void {
+  const blipFill = findChild(pic, 'pic:blipFill');
+  const blip = blipFill ? findChild(blipFill, 'a:blip') : undefined;
+  const rId =
+    (blip && (getAttribute(blip, 'r', 'embed') || getAttribute(blip, null, 'embed'))) || '';
+  if (!rId) return;
+
+  const spPr = findChild(pic, 'pic:spPr');
+  let cx = 0;
+  let cy = 0;
+  if (spPr) {
+    const xfrm = findChild(spPr, 'a:xfrm');
+    if (xfrm) {
+      const ext = findChild(xfrm, 'a:ext');
+      if (ext) {
+        cx = Number(getAttribute(ext, null, 'cx') ?? 0);
+        cy = Number(getAttribute(ext, null, 'cy') ?? 0);
+      }
+    }
+  }
+  if (!cx || !cy) return;
+
+  const resolved = resolveImageData(rId, ctx.rels ?? undefined, ctx.media ?? undefined);
+  if (!resolved.src) return;
+
+  const nvPicPr = findChild(pic, 'pic:nvPicPr');
+  const cNvPr = nvPicPr ? findChild(nvPicPr, 'pic:cNvPr') : undefined;
+  const id = cNvPr ? (getAttribute(cNvPr, null, 'id') ?? undefined) : undefined;
+  const alt = cNvPr ? (getAttribute(cNvPr, null, 'descr') ?? undefined) : undefined;
+  const name = cNvPr ? (getAttribute(cNvPr, null, 'name') ?? undefined) : undefined;
+
+  const image: Image = {
+    type: 'image',
+    rId,
+    src: resolved.src,
+    mimeType: resolved.mimeType,
+    filename: resolved.filename,
+    size: { width: cx, height: cy },
+    // Wrap matches the group's outer anchor wrap if any; otherwise
+    // `inFront` — group children paint out of normal flow, positioned
+    // with the group anchor (closest match to "no wrap" in the
+    // OOXML WrapType enum).
+    wrap: anchorWrap ?? { type: 'inFront' },
+    position: anchorPosition,
+  };
+  if (id) image.id = id;
+  if (alt) image.alt = alt;
+  if (name && !image.title) image.title = name;
+
+  parsedRun.content.push({ type: 'drawing', image });
 }

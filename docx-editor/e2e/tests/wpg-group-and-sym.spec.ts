@@ -77,3 +77,30 @@ test('w:sym Wingdings checkbox glyph translates to ☐ Unicode', async ({ page }
   // also surface now.
   expect(text).toContain('Safetymint');
 });
+
+test('Medical Incident Report Form — Safetymint logo image renders', async ({ page }) => {
+  const editor = new EditorPage(page);
+  await editor.goto();
+  await editor.waitForReady();
+  await editor.loadDocxFile('fixtures/medical-incident-form.docx');
+  await page.waitForTimeout(800);
+
+  // The logo lives inside a wpg:grpSp sub-group of a wpg:wgp wrapped
+  // in mc:AlternateContent. Without the group-recursion + pic:pic
+  // extraction in textBoxEnricher.ts, this image silently dropped
+  // entirely. After the fix, at least one painted img with a data:
+  // src exists in the visible page tree.
+  const imgInfo = await page.evaluate(() => {
+    const visible = (el: HTMLElement) => !el.closest('.paged-editor__hidden-pm');
+    const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('img')).filter(
+      (el) => visible(el as unknown as HTMLElement)
+    );
+    return {
+      count: imgs.length,
+      anyDataSrc: imgs.some((i) => (i.src || '').startsWith('data:image/')),
+    };
+  });
+
+  expect(imgInfo.count, 'painted images present').toBeGreaterThanOrEqual(1);
+  expect(imgInfo.anyDataSrc, 'at least one image has a data: src').toBe(true);
+});
