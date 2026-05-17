@@ -70,9 +70,7 @@ describe('SDT checkbox round-trip', () => {
   });
 
   test('checkbox without explicit glyph pair still round-trips the checked flag', () => {
-    const { out } = roundTrip(
-      '<w14:checkbox><w14:checked w14:val="0"/></w14:checkbox>'
-    );
+    const { out } = roundTrip('<w14:checkbox><w14:checked w14:val="0"/></w14:checkbox>');
     expect(out).toContain('<w14:checkbox><w14:checked w14:val="0"/></w14:checkbox>');
     // No spurious empty checkedState/uncheckedState emitted.
     expect(out).not.toContain('<w14:checkedState');

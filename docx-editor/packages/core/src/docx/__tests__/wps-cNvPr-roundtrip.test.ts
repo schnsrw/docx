@@ -40,7 +40,7 @@ describe('<wps:cNvPr> inside <wps:wsp>', () => {
     expect(xml).toMatch(/<wps:cNvPr id="7" name="TextBox \d+"\/>/);
   });
 
-  test('cNvPr is emitted before cNvSpPr (Word\'s schema order)', () => {
+  test("cNvPr is emitted before cNvSpPr (Word's schema order)", () => {
     const xml = shapeXml({ id: '1', name: 'A' });
     const pr = xml.indexOf('<wps:cNvPr');
     const sp = xml.indexOf('<wps:cNvSpPr');

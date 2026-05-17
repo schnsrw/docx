@@ -446,9 +446,7 @@ export function serializeParagraphFormatting(
     // (Form025U, issue-319-sections). Per ECMA-376 these sit between
     // suppressAutoHyphens and spacing in <w:pPr>'s schema order.
     if (formatting.overflowPunct !== undefined) {
-      parts.push(
-        formatting.overflowPunct ? '<w:overflowPunct/>' : '<w:overflowPunct w:val="0"/>'
-      );
+      parts.push(formatting.overflowPunct ? '<w:overflowPunct/>' : '<w:overflowPunct w:val="0"/>');
     }
     if (formatting.autoSpaceDE !== undefined) {
       parts.push(formatting.autoSpaceDE ? '<w:autoSpaceDE/>' : '<w:autoSpaceDE w:val="0"/>');
@@ -759,9 +757,7 @@ function serializeInlineSdt(sdt: InlineSdt): string {
       break;
     }
     case 'checkbox': {
-      const checkboxParts: string[] = [
-        `<w14:checked w14:val="${props.checked ? '1' : '0'}"/>`,
-      ];
+      const checkboxParts: string[] = [`<w14:checked w14:val="${props.checked ? '1' : '0'}"/>`];
       if (props.checkedState) {
         checkboxParts.push(
           `<w14:checkedState w14:val="${escapeXml(props.checkedState.val)}" w14:font="${escapeXml(props.checkedState.font)}"/>`

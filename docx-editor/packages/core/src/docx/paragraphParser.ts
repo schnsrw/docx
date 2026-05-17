@@ -664,7 +664,13 @@ export function parseParagraphProperties(
   const textAlignmentEl = findChild(pPr, 'w', 'textAlignment');
   if (textAlignmentEl) {
     const val = getAttribute(textAlignmentEl, 'w', 'val');
-    if (val === 'top' || val === 'center' || val === 'baseline' || val === 'bottom' || val === 'auto') {
+    if (
+      val === 'top' ||
+      val === 'center' ||
+      val === 'baseline' ||
+      val === 'bottom' ||
+      val === 'auto'
+    ) {
       formatting.textAlignment = val;
     }
   }
