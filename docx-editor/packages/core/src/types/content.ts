@@ -472,6 +472,28 @@ export interface Image {
     contrast?: number;
     saturation?: number;
   };
+  /**
+   * Raw `<w:drawing>` (or `<mc:AlternateContent>` envelope) XML captured at
+   * parse time. When the serializer sees this on an Image that hasn't been
+   * touched by the editor, it emits the raw XML verbatim instead of
+   * rebuilding `<w:drawing>` from the model — preserving every attribute
+   * we don't model (deep DrawingML descriptors, mc:Fallback branches,
+   * vendor namespaces, etc.). Cleared by `fromProseDoc` when the editor
+   * has modified the image.
+   *
+   * Serialize-time invariant: when `rawXml` is set, the serializer skips
+   * model-based emission entirely and writes `rawXml` as raw XML.
+   */
+  rawXml?: string;
+  /**
+   * Opaque identifier shared by every Shape/Image extracted from the same
+   * source envelope (a `<w:drawing>` containing a `<wpg:wgp>` group, or an
+   * `<mc:AlternateContent>` whose Choice contains a group). The serializer
+   * emits `rawXml` from only the first item carrying a given envelopeKey
+   * and skips the others — they're render-only siblings of the same XML
+   * blob. Single-shape envelopes leave this unset.
+   */
+  envelopeKey?: string;
 }
 
 // ============================================================================
@@ -765,6 +787,24 @@ export interface Shape {
   textBody?: ShapeTextBody;
   /** Custom geometry points */
   customGeometry?: string;
+  /**
+   * Raw `<w:drawing>` / `<w:pict>` / `<mc:AlternateContent>` XML captured
+   * at parse time. When the serializer sees this on a Shape that hasn't
+   * been touched by the editor, it emits the raw XML verbatim — which is
+   * how we preserve every VML attribute, mc:Fallback branch, and DrawingML
+   * descriptor we don't explicitly model. Cleared by `fromProseDoc` when
+   * the editor has modified the shape so the next save serializes from
+   * the (now-divergent) model rather than emitting stale XML.
+   *
+   * Serialize-time invariant: when `rawXml` is set, the serializer skips
+   * model-based emission entirely and writes `rawXml` as raw XML.
+   */
+  rawXml?: string;
+  /**
+   * Opaque identifier shared by every Shape/Image extracted from the same
+   * source envelope. See `Image.envelopeKey` for the full contract.
+   */
+  envelopeKey?: string;
 }
 
 /**

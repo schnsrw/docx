@@ -112,3 +112,39 @@ For visual fixes, include before/after screenshots in the PR body. For round-tri
 ## Fork-only fallback
 
 If upstream rejects or stalls past a reasonable window, keep the fix in our fork and document it in `docs/04-fork-divergence.md` (will be created when first divergence happens).
+
+## Format roadmap (post-docx)
+
+Editing is **docx-only** end-to-end. Other formats land via input
+parsers + output converters that bookend the docx model — no
+divergent edit paths.
+
+```
+input layer            edit layer                output layer
+─────────────          ──────────                ─────────────
+docx (canon) ───┐                        ┌─── docx
+.odt          ─┼──► docx Document  ◄────┼─── .odt
+.md           ─┘    (the only edited    └─── .md
+.txt                 internal model)          .txt
+```
+
+Order:
+
+1. **docx fidelity to ≥ 90% pristine** (current focus — gap matrix
+   working set).
+2. **.odt input parser + output converter.** Closest neighbour to
+   docx; LibreOffice's reference docs are public.
+3. **.md input parser + output converter.** Lossy in both
+   directions; converter is a separate concern (probably a small
+   pandoc-style mapper).
+4. **.txt input parser + output converter.** Trivial; mostly here
+   for paste-without-formatting flows.
+
+`.doc` (legacy Word binary) is explicitly **out of scope** —
+poor cross-tool support, no modern editor in this space targets it,
+and a `.doc → .docx` converter exists in every office suite already.
+
+Cross-format conversion (e.g. `.docx → .md` standalone) is **not a
+goal of this repo**. The editor exposes its parsers + serializers
+as building blocks; downstream packages can compose them into
+converters if useful.

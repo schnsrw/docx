@@ -987,9 +987,19 @@ function serializeShapeContent(content: ShapeContent): string {
 }
 
 /**
+ * Per-run serialization state. Tracks envelope keys already emitted
+ * via `rawXml` so when the enricher injected multiple Shape/Image items
+ * extracted from a single source envelope (e.g. a `<wpg:wgp>` group),
+ * we emit the envelope once and suppress the rest.
+ */
+interface RunSerializeState {
+  emittedEnvelopes: Set<string>;
+}
+
+/**
  * Serialize a single run content item
  */
-function serializeRunContent(content: RunContent): string {
+function serializeRunContent(content: RunContent, state: RunSerializeState): string {
   switch (content.type) {
     case 'text':
       return serializeTextContent(content);
@@ -1011,12 +1021,44 @@ function serializeRunContent(content: RunContent): string {
     case 'noBreakHyphen':
       return serializeNoBreakHyphen(content);
     case 'drawing':
-      return serializeDrawingContent(content);
+      return serializeDrawingOrEnvelope(content.image, state, () =>
+        serializeDrawingContent(content)
+      );
     case 'shape':
-      return serializeShapeContent(content);
+      return serializeDrawingOrEnvelope(content.shape, state, () =>
+        serializeShapeContent(content)
+      );
     default:
       return '';
   }
+}
+
+/**
+ * Common envelope-aware path for the two drawing-bearing RunContent
+ * variants. `item.rawXml` is the captured source XML (`<w:drawing>` or
+ * `<w:pict>` or `<mc:AlternateContent>`); `item.envelopeKey` ties
+ * multiple Shape/Image siblings back to the same envelope so only the
+ * first emits the raw blob and the rest are suppressed.
+ */
+function serializeDrawingOrEnvelope(
+  item: { rawXml?: string; envelopeKey?: string },
+  state: RunSerializeState,
+  modelFallback: () => string
+): string {
+  const { rawXml, envelopeKey } = item;
+  if (envelopeKey && state.emittedEnvelopes.has(envelopeKey)) {
+    // Sibling of an already-emitted envelope — render-only stub, no
+    // serialization. The first sibling's rawXml carried the whole
+    // group / AlternateContent envelope.
+    return '';
+  }
+  if (rawXml) {
+    if (envelopeKey) state.emittedEnvelopes.add(envelopeKey);
+    return rawXml;
+  }
+  // No captured envelope (edited shape, or a model built from scratch
+  // by the editor) — fall back to model-driven serialization.
+  return modelFallback();
 }
 
 // ============================================================================
@@ -1039,8 +1081,9 @@ export function serializeRun(run: Run): string {
   }
 
   // Add run content
+  const state: RunSerializeState = { emittedEnvelopes: new Set() };
   for (const content of run.content) {
-    const contentXml = serializeRunContent(content);
+    const contentXml = serializeRunContent(content, state);
     if (contentXml) {
       parts.push(contentXml);
     }

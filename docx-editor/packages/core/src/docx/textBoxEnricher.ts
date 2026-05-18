@@ -48,6 +48,7 @@ import {
   getChildElements,
   getLocalName,
   getAttribute,
+  elementToXml,
   type XmlElement,
 } from './xmlParser';
 import { parseParagraph } from './paragraphParser';
@@ -76,6 +77,54 @@ interface Ctx {
   numbering: NumberingMap | null;
   rels: RelationshipMap | null;
   media: Map<string, MediaFile> | null;
+}
+
+/**
+ * Tracks the original XML envelope (a `<w:drawing>`, `<w:pict>`, or
+ * `<mc:AlternateContent>` element) that the enricher is currently
+ * expanding into Shape/Image content for rendering. The serializer
+ * uses this so a round-trip of unedited content re-emits the original
+ * XML verbatim — the cleanest way to preserve every VML attribute,
+ * mc:Fallback branch, and DrawingML descriptor we don't explicitly
+ * model.
+ *
+ * Single-shape envelopes: the lone shape carries `rawXml` and
+ * `envelopeKey`.
+ *
+ * Multi-shape envelopes (wpg:wgp groups, AlternateContent + group):
+ * the FIRST extracted child carries `rawXml`; the rest share the same
+ * `envelopeKey` but have no `rawXml`. The serializer emits the envelope
+ * once via the first item and suppresses every item with a matching,
+ * already-emitted envelopeKey.
+ */
+interface EnvelopeRef {
+  rawXml: string;
+  key: string;
+  consumed: boolean;
+}
+
+let envelopeCounter = 0;
+function makeEnvelopeRef(el: XmlElement): EnvelopeRef {
+  envelopeCounter = (envelopeCounter + 1) & 0xffffffff;
+  return {
+    rawXml: elementToXml(el),
+    key: `env-${envelopeCounter.toString(36)}`,
+    consumed: false,
+  };
+}
+
+/**
+ * Returns the envelope tag for the FIRST shape/image in an envelope and
+ * just the key for every subsequent sibling. Mutates `envRef.consumed`
+ * so the next caller gets the suppress-only form.
+ */
+function takeEnvelopeTag(envRef: EnvelopeRef): {
+  rawXml?: string;
+  envelopeKey: string;
+} {
+  if (envRef.consumed) return { envelopeKey: envRef.key };
+  envRef.consumed = true;
+  return { rawXml: envRef.rawXml, envelopeKey: envRef.key };
 }
 
 /**
@@ -115,12 +164,15 @@ function processRunElement(runXml: XmlElement, parsedRun: RunContent, ctx: Ctx):
     const elName = getLocalName(runEl.name ?? '');
 
     if (elName === 'pict') {
-      handleVmlPict(runEl, parsedRun);
+      // Single-element envelope: the pict itself is the round-trip
+      // anchor (every v:rect / v:shape / v:textbox child of a pict
+      // shares one envelope).
+      handleVmlPict(runEl, parsedRun, makeEnvelopeRef(runEl));
       continue;
     }
 
     if (elName === 'drawing') {
-      handleDrawing(runEl, parsedRun, ctx);
+      handleDrawing(runEl, parsedRun, ctx, makeEnvelopeRef(runEl));
       continue;
     }
 
@@ -129,33 +181,44 @@ function processRunElement(runXml: XmlElement, parsedRun: RunContent, ctx: Ctx):
       // a VML fallback for older clients. Prefer the Choice; fall
       // back to Fallback. Each branch can contain w:drawing / w:pict
       // elements we should still process.
+      //
+      // The round-trip envelope is the WHOLE AlternateContent, not
+      // the inner Choice/Fallback — that way we re-emit both branches
+      // on save and Word's "older clients fall back" contract stays
+      // intact.
       const children = getChildElements(runEl);
       const choice = children.find((el) => getLocalName(el.name ?? '') === 'Choice');
       const fallback = children.find((el) => getLocalName(el.name ?? '') === 'Fallback');
       const target = choice ?? fallback;
       if (!target) continue;
+      const envRef = makeEnvelopeRef(runEl);
       for (const inner of getChildElements(target)) {
         const innerName = getLocalName(inner.name ?? '');
-        if (innerName === 'drawing') handleDrawing(inner, parsedRun, ctx);
-        else if (innerName === 'pict') handleVmlPict(inner, parsedRun);
+        if (innerName === 'drawing') handleDrawing(inner, parsedRun, ctx, envRef);
+        else if (innerName === 'pict') handleVmlPict(inner, parsedRun, envRef);
       }
     }
   }
 }
 
-function handleVmlPict(pictEl: XmlElement, parsedRun: RunContent): void {
+function handleVmlPict(pictEl: XmlElement, parsedRun: RunContent, envRef: EnvelopeRef): void {
   if (isVmlTextBoxPict(pictEl)) {
     const vml = parseVmlTextBox(pictEl, parseParagraph);
-    if (vml) injectShapeFromTextBox(vml, parsedRun);
+    if (vml) injectShapeFromTextBox(vml, parsedRun, envRef);
     return;
   }
   if (isVmlDecorativeShapePict(pictEl)) {
     const dec = parseVmlDecorativeShape(pictEl);
-    if (dec) injectShapeFromTextBox(dec, parsedRun);
+    if (dec) injectShapeFromTextBox(dec, parsedRun, envRef);
   }
 }
 
-function handleDrawing(drawingEl: XmlElement, parsedRun: RunContent, ctx: Ctx): void {
+function handleDrawing(
+  drawingEl: XmlElement,
+  parsedRun: RunContent,
+  ctx: Ctx,
+  envRef: EnvelopeRef
+): void {
   // Locate the wp:inline / wp:anchor container and the a:graphicData URI
   // so we can branch on wpg:wgp groups (multi-shape) vs single shapes.
   const container = getChildElements(drawingEl).find(
@@ -176,7 +239,7 @@ function handleDrawing(drawingEl: XmlElement, parsedRun: RunContent, ctx: Ctx): 
       const anchorPosition =
         container.name === 'wp:anchor' ? parseAnchorPosition(container) : undefined;
       const anchorWrap = container.name === 'wp:anchor' ? parseAnchorWrap(container) : undefined;
-      walkGroupChildren(wgp, parsedRun, ctx, anchorPosition, anchorWrap);
+      walkGroupChildren(wgp, parsedRun, ctx, anchorPosition, anchorWrap, { x: 0, y: 0 }, envRef);
       return;
     }
   }
@@ -201,7 +264,7 @@ function handleDrawing(drawingEl: XmlElement, parsedRun: RunContent, ctx: Ctx): 
           );
         }
       }
-      injectShapeFromTextBox(textBox, parsedRun);
+      injectShapeFromTextBox(textBox, parsedRun, envRef);
     }
     return;
   }
@@ -209,7 +272,7 @@ function handleDrawing(drawingEl: XmlElement, parsedRun: RunContent, ctx: Ctx): 
   // Decorative DrawingML shape (no text frame).
   if (isDecorativeShapeDrawing(drawingEl)) {
     const dec = parseDecorativeDrawing(drawingEl);
-    if (dec) injectShapeFromTextBox(dec, parsedRun);
+    if (dec) injectShapeFromTextBox(dec, parsedRun, envRef);
   }
 }
 
@@ -225,7 +288,8 @@ function extractShapeFromWsp(
   ctx: Ctx,
   anchorPosition: ImagePosition | undefined,
   anchorWrap: ImageWrap | undefined,
-  parentOffsetEmu: { x: number; y: number } = { x: 0, y: 0 }
+  parentOffsetEmu: { x: number; y: number } = { x: 0, y: 0 },
+  envRef?: EnvelopeRef
 ): void {
   const wspChildren = getChildElements(wsp);
   const spPr = wspChildren.find((el) => el.name === 'wps:spPr');
@@ -317,10 +381,15 @@ function extractShapeFromWsp(
       ...(xform.flipV ? { flipV: true } : {}),
     };
   }
+  if (envRef) Object.assign(shape, takeEnvelopeTag(envRef));
   parsedRun.content.push({ type: 'shape', shape });
 }
 
-function injectShapeFromTextBox(textBox: TextBox, parsedRun: RunContent): void {
+function injectShapeFromTextBox(
+  textBox: TextBox,
+  parsedRun: RunContent,
+  envRef?: EnvelopeRef
+): void {
   const shape: Shape = {
     type: 'shape',
     shapeType: 'rect',
@@ -335,6 +404,7 @@ function injectShapeFromTextBox(textBox: TextBox, parsedRun: RunContent): void {
     },
   };
   if (textBox.id) shape.id = textBox.id;
+  if (envRef) Object.assign(shape, takeEnvelopeTag(envRef));
   parsedRun.content.push({ type: 'shape', shape });
 }
 
@@ -359,24 +429,33 @@ function walkGroupChildren(
   ctx: Ctx,
   anchorPosition: ImagePosition | undefined,
   anchorWrap: ImageWrap | undefined,
-  parentOffsetEmu: { x: number; y: number } = { x: 0, y: 0 }
+  parentOffsetEmu: { x: number; y: number } = { x: 0, y: 0 },
+  envRef: EnvelopeRef
 ): void {
   for (const child of getChildElements(group)) {
     const local = getLocalName(child.name ?? '');
     if (local === 'wsp') {
-      extractShapeFromWsp(child, parsedRun, ctx, anchorPosition, anchorWrap, parentOffsetEmu);
+      extractShapeFromWsp(child, parsedRun, ctx, anchorPosition, anchorWrap, parentOffsetEmu, envRef);
     } else if (local === 'pic') {
-      extractImageFromPic(child, parsedRun, ctx, anchorPosition, anchorWrap, parentOffsetEmu);
+      extractImageFromPic(child, parsedRun, ctx, anchorPosition, anchorWrap, parentOffsetEmu, envRef);
     } else if (local === 'grpSp') {
       // Nested group — read its own a:xfrm/a:off and add to the running
       // offset before recursing so deeply nested children land in
       // absolute group coordinates.
       const grpSpPr = findChild(child, 'wpg:grpSpPr');
       const innerOffset = readXfrmOff(grpSpPr);
-      walkGroupChildren(child, parsedRun, ctx, anchorPosition, anchorWrap, {
-        x: parentOffsetEmu.x + innerOffset.x,
-        y: parentOffsetEmu.y + innerOffset.y,
-      });
+      walkGroupChildren(
+        child,
+        parsedRun,
+        ctx,
+        anchorPosition,
+        anchorWrap,
+        {
+          x: parentOffsetEmu.x + innerOffset.x,
+          y: parentOffsetEmu.y + innerOffset.y,
+        },
+        envRef
+      );
     }
     // Other group children (cNvGrpSpPr, etc.) are metadata; skip.
   }
@@ -440,7 +519,8 @@ function extractImageFromPic(
   ctx: Ctx,
   anchorPosition: ImagePosition | undefined,
   anchorWrap: ImageWrap | undefined,
-  parentOffsetEmu: { x: number; y: number } = { x: 0, y: 0 }
+  parentOffsetEmu: { x: number; y: number } = { x: 0, y: 0 },
+  envRef?: EnvelopeRef
 ): void {
   const blipFill = findChild(pic, 'pic:blipFill');
   const blip = blipFill ? findChild(blipFill, 'a:blip') : undefined;
@@ -492,6 +572,7 @@ function extractImageFromPic(
       ...(xform.flipV ? { flipV: true } : {}),
     };
   }
+  if (envRef) Object.assign(image, takeEnvelopeTag(envRef));
 
   parsedRun.content.push({ type: 'drawing', image });
 }
