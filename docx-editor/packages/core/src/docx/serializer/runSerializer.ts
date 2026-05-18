@@ -1025,9 +1025,7 @@ function serializeRunContent(content: RunContent, state: RunSerializeState): str
         serializeDrawingContent(content)
       );
     case 'shape':
-      return serializeDrawingOrEnvelope(content.shape, state, () =>
-        serializeShapeContent(content)
-      );
+      return serializeDrawingOrEnvelope(content.shape, state, () => serializeShapeContent(content));
     default:
       return '';
   }

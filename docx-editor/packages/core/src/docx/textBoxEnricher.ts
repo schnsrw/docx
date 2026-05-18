@@ -435,9 +435,25 @@ function walkGroupChildren(
   for (const child of getChildElements(group)) {
     const local = getLocalName(child.name ?? '');
     if (local === 'wsp') {
-      extractShapeFromWsp(child, parsedRun, ctx, anchorPosition, anchorWrap, parentOffsetEmu, envRef);
+      extractShapeFromWsp(
+        child,
+        parsedRun,
+        ctx,
+        anchorPosition,
+        anchorWrap,
+        parentOffsetEmu,
+        envRef
+      );
     } else if (local === 'pic') {
-      extractImageFromPic(child, parsedRun, ctx, anchorPosition, anchorWrap, parentOffsetEmu, envRef);
+      extractImageFromPic(
+        child,
+        parsedRun,
+        ctx,
+        anchorPosition,
+        anchorWrap,
+        parentOffsetEmu,
+        envRef
+      );
     } else if (local === 'grpSp') {
       // Nested group — read its own a:xfrm/a:off and add to the running
       // offset before recursing so deeply nested children land in

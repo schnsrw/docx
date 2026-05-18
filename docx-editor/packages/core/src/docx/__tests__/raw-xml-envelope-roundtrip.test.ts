@@ -36,8 +36,7 @@ describe('rawXml envelope preservation', () => {
   test('Image.rawXml is emitted verbatim, model serializer is bypassed', () => {
     const image: Image = {
       ...IMAGE_BASE,
-      rawXml:
-        '<w:drawing><wp:inline><CUSTOM_MARKER/></wp:inline></w:drawing>',
+      rawXml: '<w:drawing><wp:inline><CUSTOM_MARKER/></wp:inline></w:drawing>',
     };
     const xml = serializeRun({
       type: 'run',

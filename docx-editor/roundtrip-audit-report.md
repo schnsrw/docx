@@ -13,55 +13,15 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 
 | Tag | Total dropped | Fixtures affected |
 |-----|---------------|-------------------|
-| `w:txbxContent` | 24 | 4 |
-| `v:fill` | 21 | 3 |
-| `w:pict` | 19 | 3 |
-| `v:rect` | 18 | 3 |
-| `w10:wrap` | 18 | 2 |
-| `wps:txbx` | 16 | 3 |
-| `v:f` | 12 | 1 |
-| `v:shape` | 11 | 2 |
-| `v:textbox` | 8 | 2 |
-| `v:group` | 6 | 2 |
-| `w:rFonts` | 6 | 1 |
 | `w:fldChar` | 6 | 1 |
 | `w:rPr` | 6 | 1 |
-| `a:spLocks` | 5 | 1 |
-| `a:miter` | 5 | 1 |
-| `a:headEnd` | 5 | 1 |
-| `a:tailEnd` | 5 | 1 |
-| `w:color` | 5 | 1 |
 | `w:pBdr` | 5 | 1 |
 | `w:spacing` | 5 | 1 |
 | `w:ind` | 5 | 1 |
-| `wpg:cNvGrpSpPr` | 4 | 2 |
-| `wpg:grpSpPr` | 4 | 2 |
-| `a:hlinkClick` | 4 | 1 |
-| `w:hyperlink` | 4 | 1 |
-| `a:noAutofit` | 4 | 1 |
 | `w:start` | 4 | 2 |
 | `w:end` | 4 | 2 |
 | `w:pgNumType` | 4 | 4 |
 | `w:rStyle` | 4 | 1 |
-| `mc:AlternateContent` | 3 | 2 |
-| `mc:Choice` | 3 | 2 |
-| `wpg:wgp` | 3 | 2 |
-| `a:chOff` | 3 | 1 |
-| `a:chExt` | 3 | 1 |
-| `a:lumMod` | 3 | 1 |
-| `wps:style` | 3 | 1 |
-| `a:lnRef` | 3 | 1 |
-| `a:fillRef` | 3 | 1 |
-| `a:effectRef` | 3 | 1 |
-| `a:fontRef` | 3 | 1 |
-| `mc:Fallback` | 3 | 2 |
-| `v:stroke` | 3 | 1 |
-| `v:path` | 3 | 2 |
-| `a:spAutoFit` | 3 | 1 |
-| `v:shapetype` | 2 | 1 |
-| `v:imagedata` | 2 | 1 |
-| `a:shade` | 2 | 1 |
-| `a:prstTxWarp` | 2 | 1 |
 | `w:formProt` | 2 | 2 |
 | `w:textDirection` | 2 | 2 |
 | `wp14:sizeRelH` | 2 | 1 |
@@ -69,10 +29,12 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | `wp14:sizeRelV` | 2 | 1 |
 | `wp14:pctHeight` | 2 | 1 |
 | `w:highlight` | 2 | 1 |
-| `wpg:grpSp` | 1 | 1 |
-| `wpg:cNvPr` | 1 | 1 |
-| `wps:cNvCnPr` | 1 | 1 |
-| `v:formulas` | 1 | 1 |
+| `w:bookmarkEnd` | 1 | 1 |
+| `w:bdr` | 1 | 1 |
+| `w:delInstrText` | 1 | 1 |
+| `w:instrText` | 1 | 1 |
+| `w:footnotePr` | 1 | 1 |
+| `w:endnotePr` | 1 | 1 |
 
 ## Per-fixture detail
 
@@ -89,37 +51,7 @@ No round-trip drops.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `v:f` | 12 | 0 |
-| `w:txbxContent` | 10 | 0 |
-| `v:shape` | 7 | 0 |
-| `w:rFonts` | 6 | 0 |
-| `a:spLocks` | 5 | 0 |
-| `a:miter` | 5 | 0 |
-| `a:headEnd` | 5 | 0 |
-| `a:tailEnd` | 5 | 0 |
-| `wps:txbx` | 5 | 0 |
-| `v:textbox` | 5 | 0 |
-| `a:hlinkClick` | 4 | 0 |
-| `w:hyperlink` | 4 | 0 |
-| `a:noAutofit` | 4 | 0 |
-| `v:fill` | 4 | 0 |
-| `wpg:cNvGrpSpPr` | 3 | 0 |
-| `wpg:grpSpPr` | 3 | 0 |
-| `a:chOff` | 3 | 0 |
-| `a:chExt` | 3 | 0 |
-| `a:lumMod` | 3 | 0 |
-| `wps:style` | 3 | 0 |
-| `a:lnRef` | 3 | 0 |
-| `a:fillRef` | 3 | 0 |
-| `a:effectRef` | 3 | 0 |
-| `a:fontRef` | 3 | 0 |
-| `v:group` | 3 | 0 |
-| `v:stroke` | 3 | 0 |
-| `a:spAutoFit` | 3 | 0 |
-| `mc:AlternateContent` | 2 | 0 |
-| `mc:Choice` | 2 | 0 |
-| `wpg:wgp` | 2 | 0 |
-| _…15 more_ | | |
+| `w:bookmarkEnd` | 1 | 0 |
 
 ### table-indent
 
@@ -150,13 +82,7 @@ No round-trip drops.
 
 ### vml-rect
 
-
-| Tag | In | Out |
-|-----|----|-----|
-| `w:pict` | 1 | 0 |
-| `v:rect` | 1 | 0 |
-| `v:fill` | 1 | 0 |
-| `w10:wrap` | 1 | 0 |
+No round-trip drops.
 
 ### with-tables
 
@@ -265,12 +191,7 @@ No round-trip drops.
 
 ### textbox-test
 
-
-| Tag | In | Out |
-|-----|----|-----|
-| `wps:txbx` | 9 | 0 |
-| `w:txbxContent` | 9 | 0 |
-| `w:color` | 5 | 0 |
+No round-trip drops.
 
 ### titlePg-header-footer
 
@@ -303,15 +224,6 @@ No round-trip drops.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `w10:wrap` | 17 | 0 |
-| `w:pict` | 16 | 0 |
-| `v:fill` | 16 | 0 |
-| `v:rect` | 15 | 0 |
-| `v:shape` | 4 | 0 |
-| `v:group` | 3 | 0 |
-| `v:textbox` | 3 | 0 |
-| `w:txbxContent` | 3 | 0 |
-| `v:path` | 1 | 0 |
 | `w:pgNumType` | 1 | 0 |
 
 ### Form025U
@@ -325,17 +237,7 @@ No round-trip drops.
 
 ### wpg-group
 
-
-| Tag | In | Out |
-|-----|----|-----|
-| `wps:txbx` | 2 | 0 |
-| `w:txbxContent` | 2 | 0 |
-| `mc:AlternateContent` | 1 | 0 |
-| `mc:Choice` | 1 | 0 |
-| `wpg:wgp` | 1 | 0 |
-| `wpg:cNvGrpSpPr` | 1 | 0 |
-| `wpg:grpSpPr` | 1 | 0 |
-| `mc:Fallback` | 1 | 0 |
+No round-trip drops.
 
 ### example-with-image
 
