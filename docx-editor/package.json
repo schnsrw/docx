@@ -3,7 +3,8 @@
   "version": "0.0.21",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/vite"
   ],
   "type": "module",
   "scripts": {
