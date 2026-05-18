@@ -53,11 +53,11 @@ This shifts the durability story entirely to the WOPI host. We become a pure rea
 
 ## Open questions
 
-- Write our own y-websocket-protocol implementation in Go, or bridge to a Hocuspocus-equivalent?
-- WOPI integration target — start with our own mock WOPI for testing, or integrate against a real host (Nextcloud, etc.) first?
-- Cross-node fanout if/when we scale past one backend node — Redis pubsub or stick with single-node-per-doc routing?
+- ~~Write our own y-websocket-protocol implementation in Go, or bridge to a Hocuspocus-equivalent?~~ **Resolved in [`docs/05-backend-design.md`](05-backend-design.md): build our own.** Surface area is small (~120 lines of binary protocol), removes a Node-sidecar hop, and the stateless invariant fights Hocuspocus' default storage extensions anyway.
+- ~~WOPI integration target — start with our own mock WOPI for testing, or integrate against a real host (Nextcloud, etc.) first?~~ **Resolved in [`docs/05-backend-design.md`](05-backend-design.md): local mock WOPI first.** Decouples protocol bring-up from host-specific debugging.
+- ~~Cross-node fanout if/when we scale past one backend node — Redis pubsub or stick with single-node-per-doc routing?~~ **Resolved in [`docs/05-backend-design.md`](05-backend-design.md): sticky-routing by docId for v0; revisit Redis pubsub only when a hot room can't fit one process.**
 - Bundle size and TTFI on the editor — benchmark after first integration test.
-- Text-box fidelity gap in the editor: scope a fix, write a Playwright test, open a PR upstream.
+- ~~Text-box fidelity gap in the editor: scope a fix, write a Playwright test, open a PR upstream.~~ **Done; tracked at scale across the per-tag round-trip audit (`docx-editor/scripts/roundtrip-audit.mjs`) + 16+ commits in [`docs/03-gap-matrix.md`](03-gap-matrix.md). 19/39 fixtures now round-trip with zero element drops.**
 
 ## What this is not
 
@@ -77,4 +77,12 @@ This shifts the durability story entirely to the WOPI host. We become a pure rea
 
 ## Status
 
-Pivot completed 2026-05-16. AGPL code purged from the fork. Statelessness committed (no DB). Bun toolchain not yet installed locally. No backend code written.
+Pivot completed 2026-05-16. AGPL code purged from the fork. Statelessness committed (no DB).
+
+Since pivot:
+- 30+ editor-fidelity commits landed on `schnsrw/docx` (round-trip audit + visual gap fixes; details in [`docs/03-gap-matrix.md`](03-gap-matrix.md)).
+- CI + GitHub Pages deploy pipeline live at [doc.schnsrw.live](https://doc.schnsrw.live/).
+- Casual Editor branding: outer README, logo + favicon SVGs.
+- Backend design committed in [`docs/05-backend-design.md`](05-backend-design.md). M1 (two-browser local round-trip) is the next concrete coding milestone.
+
+No backend code written *yet*. Bun toolchain runs inside `docker-compose up editor` — host-side Bun not required.
