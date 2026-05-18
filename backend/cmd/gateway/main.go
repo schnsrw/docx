@@ -2,30 +2,39 @@
 // y-websocket gateway.
 //
 // Listens on `:8080` by default (override with GATEWAY_ADDR env)
-// and accepts WebSocket connections at `/doc/{docId}`. Each room
-// holds an in-memory Y.Doc that's seeded from WOPI on first
-// connect and snapshotted back to WOPI on last disconnect. See
-// docs/05-backend-design.md for the wire-level lifecycle.
+// and exposes:
 //
-// This is the M1 scaffold: the server boots, accepts connections,
-// and routes by docId. The actual y-websocket protocol handling
-// + room manager + WOPI integration land in follow-up commits.
+//	POST /api/docs                — upload a .docx, mint a docId,
+//	                                return { docId, shareUrl }.
+//	GET  /api/docs/{docId}/download — stream the latest snapshot.
+//	GET  /doc/{docId}             — WebSocket; client joins the
+//	                                live co-edit session.
+//	GET  /health                  — liveness probe.
+//
+// See docs/05-backend-design.md for the wire-level lifecycle.
 package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/coder/websocket"
 
+	"github.com/schnsrw/docx/backend/internal/host"
+	"github.com/schnsrw/docx/backend/internal/host/inline"
 	"github.com/schnsrw/docx/backend/internal/room"
 	"github.com/schnsrw/docx/backend/internal/yws"
 )
@@ -65,17 +74,198 @@ func docIDFromPath(path string) string {
 	return rest
 }
 
+// docIDFromDownloadPath extracts `{docId}` from
+// `/api/docs/{docId}/download`. Returns the empty string for
+// any other shape.
+func docIDFromDownloadPath(path string) string {
+	const prefix = "/api/docs/"
+	const suffix = "/download"
+	if !strings.HasPrefix(path, prefix) || !strings.HasSuffix(path, suffix) {
+		return ""
+	}
+	return path[len(prefix) : len(path)-len(suffix)]
+}
+
+// maxUploadBytes bounds the .docx upload size. The browser's
+// File Open path accepts files up to this size; anything larger
+// is rejected before allocating server-side buffers. 100 MB
+// matches sheet's MAX_UPLOAD_MB default.
+const maxUploadBytes = 100 * 1024 * 1024
+
+// uploadResponse is the JSON returned from POST /api/docs.
+type uploadResponse struct {
+	DocID    string `json:"docId"`
+	ShareURL string `json:"shareUrl"`
+	WSPath   string `json:"wsPath"`
+}
+
+// writeJSONError sends a small structured error response. The
+// shape matches what the React client expects:
+//
+//	{ "error": "<machine-friendly code>", "message": "..." }
+func writeJSONError(w http.ResponseWriter, status int, code, msg string) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(map[string]string{"error": code, "message": msg})
+}
+
+// uploadHandler accepts a multipart .docx upload, hands the
+// bytes to the inline store, and returns the freshly-minted
+// docId + the share URL.
+func uploadHandler(store *inline.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			writeJSONError(w, http.StatusMethodNotAllowed, "method", "POST required")
+			return
+		}
+		r.Body = http.MaxBytesReader(w, r.Body, maxUploadBytes)
+
+		// Two accepted shapes:
+		//   - multipart/form-data with `file` field (the browser
+		//     <input type="file"> path).
+		//   - raw body with Content-Type: application/octet-stream
+		//     or application/vnd.openxmlformats-officedocument.
+		//     Filename is taken from X-File-Name when present.
+		var (
+			contents []byte
+			fileName string
+			err      error
+		)
+		ct := r.Header.Get("Content-Type")
+		if strings.HasPrefix(ct, "multipart/form-data") {
+			if err := r.ParseMultipartForm(maxUploadBytes); err != nil {
+				writeJSONError(w, http.StatusBadRequest, "upload", "multipart parse failed: "+err.Error())
+				return
+			}
+			file, header, ferr := r.FormFile("file")
+			if ferr != nil {
+				writeJSONError(w, http.StatusBadRequest, "upload", "missing `file` form field")
+				return
+			}
+			defer file.Close()
+			contents, err = io.ReadAll(file)
+			if err != nil {
+				writeJSONError(w, http.StatusBadRequest, "upload", "read failed: "+err.Error())
+				return
+			}
+			fileName = header.Filename
+		} else {
+			contents, err = io.ReadAll(r.Body)
+			if err != nil {
+				writeJSONError(w, http.StatusBadRequest, "upload", "read failed: "+err.Error())
+				return
+			}
+			fileName = r.Header.Get("X-File-Name")
+		}
+
+		if len(contents) == 0 {
+			writeJSONError(w, http.StatusBadRequest, "empty", "no upload body")
+			return
+		}
+		if fileName == "" {
+			fileName = "Untitled.docx"
+		}
+		// Sanitize filename: keep base name only, prevent any
+		// host-relative path injection in Content-Disposition.
+		fileName = filepath.Base(fileName)
+
+		docID, err := store.Store(fileName, contents)
+		if err != nil {
+			writeJSONError(w, http.StatusInternalServerError, "store", err.Error())
+			return
+		}
+
+		log.Printf("upload doc=%s file=%q size=%d", docID, fileName, len(contents))
+
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		_ = json.NewEncoder(w).Encode(uploadResponse{
+			DocID:    docID,
+			ShareURL: "/r/" + docID,
+			WSPath:   "/doc/" + docID,
+		})
+	}
+}
+
+// downloadHandler streams the latest snapshot of a doc out as
+// a .docx response. Content-Disposition advertises the original
+// filename so the browser's Save dialog defaults to it.
+func downloadHandler(store *inline.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			writeJSONError(w, http.StatusMethodNotAllowed, "method", "GET required")
+			return
+		}
+		docID := docIDFromDownloadPath(r.URL.Path)
+		if docID == "" {
+			writeJSONError(w, http.StatusBadRequest, "path", "expected /api/docs/{docId}/download")
+			return
+		}
+
+		contents, info, err := store.Fetch(r.Context(), docID, "")
+		if err != nil {
+			if errors.Is(err, host.ErrNotFound) {
+				writeJSONError(w, http.StatusNotFound, "not_found", "no such doc")
+				return
+			}
+			writeJSONError(w, http.StatusInternalServerError, "fetch", err.Error())
+			return
+		}
+
+		fileName := info.FileName
+		if fileName == "" {
+			fileName = docID + ".docx"
+		}
+		w.Header().Set(
+			"Content-Type",
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		)
+		w.Header().Set(
+			"Content-Disposition",
+			fmt.Sprintf(`attachment; filename*=UTF-8''%s`, url.PathEscape(fileName)),
+		)
+		w.Header().Set("Content-Length", strconv.Itoa(len(contents)))
+		if r.Method == http.MethodHead {
+			return
+		}
+		_, _ = w.Write(contents)
+	}
+}
+
 // wsHandler upgrades to a WebSocket, registers the client with
 // the room manager, and runs a reader+writer pair until the
 // connection drops. Inbound binary frames are fanned to peers
 // via Room.Broadcast — the gateway is a pure relay for the
 // y-websocket protocol (see docs/05 §"Why our own protocol
 // implementation").
-func wsHandler(rooms *room.Manager) http.HandlerFunc {
+//
+// `integration` is the host backend that owns the doc bytes. The
+// gateway only consults it to refuse pre-flight (does the docId
+// exist?) — actual Y.Doc seed/snapshot are handled at the
+// editor/client layer in v0 (the first joiner uploads its own
+// snapshot via Yjs; subsequent joiners get it through the
+// pass-through broker).
+func wsHandler(rooms *room.Manager, integration host.Integration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		docID := docIDFromPath(r.URL.Path)
 		if docID == "" {
 			http.Error(w, "missing docId", http.StatusBadRequest)
+			return
+		}
+
+		// Pre-flight: does the host know about this docId?
+		// Refusing here gives the client a clean 404 instead of
+		// a successful WS connect that then sees only empty
+		// frames forever.
+		if _, _, err := integration.Fetch(r.Context(), docID, ""); err != nil {
+			if errors.Is(err, host.ErrNotFound) {
+				http.Error(w, "no such doc", http.StatusNotFound)
+				return
+			}
+			if errors.Is(err, host.ErrForbidden) {
+				http.Error(w, "forbidden", http.StatusForbidden)
+				return
+			}
+			http.Error(w, "host integration error", http.StatusBadGateway)
 			return
 		}
 
@@ -183,17 +373,44 @@ func runWriter(ctx context.Context, conn *websocket.Conn, client *room.Client, d
 	}
 }
 
+// withCORS allows the React demo (served from a different port
+// during local dev) to call the upload/download endpoints + open
+// the WS without a same-origin restriction. M1 ships permissive;
+// production should tighten Access-Control-Allow-Origin to a
+// known frontend host.
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			origin = "*"
+		}
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Vary", "Origin")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-File-Name")
+		w.Header().Set("Access-Control-Max-Age", "300")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	rooms := room.NewManager()
+	store := inline.New()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", healthHandler)
-	mux.HandleFunc("/doc/", wsHandler(rooms))
+	mux.HandleFunc("/api/docs", uploadHandler(store))
+	mux.HandleFunc("/api/docs/", downloadHandler(store))
+	mux.HandleFunc("/doc/", wsHandler(rooms, store))
 
 	addr := listenAddr()
 	srv := &http.Server{
 		Addr:              addr,
-		Handler:           mux,
+		Handler:           withCORS(mux),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 

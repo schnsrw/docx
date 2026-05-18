@@ -18,18 +18,33 @@ import (
 
 	"github.com/coder/websocket"
 
+	"github.com/schnsrw/docx/backend/internal/host/inline"
 	"github.com/schnsrw/docx/backend/internal/room"
 )
 
-func startTestGateway(t *testing.T) (*httptest.Server, *room.Manager) {
+func startTestGateway(t *testing.T) (*httptest.Server, *room.Manager, *inline.Store) {
 	t.Helper()
 	rooms := room.NewManager()
+	store := inline.New()
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", healthHandler)
-	mux.HandleFunc("/doc/", wsHandler(rooms))
-	srv := httptest.NewServer(mux)
+	mux.HandleFunc("/api/docs", uploadHandler(store))
+	mux.HandleFunc("/api/docs/", downloadHandler(store))
+	mux.HandleFunc("/doc/", wsHandler(rooms, store))
+	srv := httptest.NewServer(withCORS(mux))
 	t.Cleanup(srv.Close)
-	return srv, rooms
+	return srv, rooms, store
+}
+
+// seedDoc stores a placeholder doc and returns its docID, so the
+// WS handler's host-integration pre-flight succeeds.
+func seedDoc(t *testing.T, store *inline.Store, name string) string {
+	t.Helper()
+	id, err := store.Store(name, []byte("seed"))
+	if err != nil {
+		t.Fatalf("seedDoc: %v", err)
+	}
+	return id
 }
 
 // dialDoc opens a WS connection to /doc/{docID} against the
@@ -48,7 +63,7 @@ func dialDoc(t *testing.T, srv *httptest.Server, docID string) *websocket.Conn {
 }
 
 func TestHealthEndpoint(t *testing.T) {
-	srv, _ := startTestGateway(t)
+	srv, _, _ := startTestGateway(t)
 	resp, err := http.Get(srv.URL + "/health")
 	if err != nil {
 		t.Fatalf("GET /health: %v", err)
@@ -60,7 +75,7 @@ func TestHealthEndpoint(t *testing.T) {
 }
 
 func TestMissingDocIDReturns400(t *testing.T) {
-	srv, _ := startTestGateway(t)
+	srv, _, _ := startTestGateway(t)
 	resp, err := http.Get(srv.URL + "/doc/")
 	if err != nil {
 		t.Fatalf("GET /doc/: %v", err)
@@ -71,23 +86,38 @@ func TestMissingDocIDReturns400(t *testing.T) {
 	}
 }
 
-func TestBroadcastBetweenTwoClientsInSameRoom(t *testing.T) {
-	srv, rooms := startTestGateway(t)
+func TestUnknownDocIDReturns404(t *testing.T) {
+	srv, _, _ := startTestGateway(t)
+	// HTTP-level GET (not a WS upgrade) — the pre-flight runs
+	// before websocket.Accept so we still get the 404.
+	resp, err := http.Get(srv.URL + "/doc/never-uploaded")
+	if err != nil {
+		t.Fatalf("GET /doc/never-uploaded: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("/doc/<unknown> = %d; want 404", resp.StatusCode)
+	}
+}
 
-	clientA := dialDoc(t, srv, "test-doc")
-	clientB := dialDoc(t, srv, "test-doc")
+func TestBroadcastBetweenTwoClientsInSameRoom(t *testing.T) {
+	srv, rooms, store := startTestGateway(t)
+	docID := seedDoc(t, store, "test.docx")
+
+	clientA := dialDoc(t, srv, docID)
+	clientB := dialDoc(t, srv, docID)
 
 	// Give the server a moment to register both clients with the
 	// room manager.
 	deadline := time.Now().Add(2 * time.Second)
 	for time.Now().Before(deadline) {
-		if rooms.Lookup("test-doc") != nil && rooms.Lookup("test-doc").Clients() == 2 {
+		if rooms.Lookup(docID) != nil && rooms.Lookup(docID).Clients() == 2 {
 			break
 		}
 		time.Sleep(20 * time.Millisecond)
 	}
-	if r := rooms.Lookup("test-doc"); r == nil || r.Clients() != 2 {
-		t.Fatalf("expected 2 clients in room test-doc; got %v", r)
+	if r := rooms.Lookup(docID); r == nil || r.Clients() != 2 {
+		t.Fatalf("expected 2 clients in room %s; got %v", docID, r)
 	}
 
 	frame := []byte{2, 0xde, 0xad, 0xbe, 0xef} // MessageUpdate + payload
@@ -124,11 +154,13 @@ func TestBroadcastBetweenTwoClientsInSameRoom(t *testing.T) {
 }
 
 func TestNoCrossRoomLeak(t *testing.T) {
-	srv, _ := startTestGateway(t)
-	// Client A is in "doc-X", client B is in "doc-Y" — their
-	// frames must not cross.
-	a := dialDoc(t, srv, "doc-X")
-	b := dialDoc(t, srv, "doc-Y")
+	srv, _, store := startTestGateway(t)
+	docX := seedDoc(t, store, "x.docx")
+	docY := seedDoc(t, store, "y.docx")
+	// Client A is in docX, client B is in docY — their frames
+	// must not cross.
+	a := dialDoc(t, srv, docX)
+	b := dialDoc(t, srv, docY)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -139,15 +171,16 @@ func TestNoCrossRoomLeak(t *testing.T) {
 	echoCtx, echoCancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
 	defer echoCancel()
 	if _, _, err := b.Read(echoCtx); err == nil {
-		t.Fatalf("client in doc-Y received a frame from doc-X")
+		t.Fatalf("client in docY received a frame from docX")
 	}
 }
 
 func TestThreeClientFanOut(t *testing.T) {
-	srv, _ := startTestGateway(t)
-	a := dialDoc(t, srv, "fanout-doc")
-	b := dialDoc(t, srv, "fanout-doc")
-	c := dialDoc(t, srv, "fanout-doc")
+	srv, _, store := startTestGateway(t)
+	docID := seedDoc(t, store, "fanout.docx")
+	a := dialDoc(t, srv, docID)
+	b := dialDoc(t, srv, docID)
+	c := dialDoc(t, srv, docID)
 
 	// Wait for all three registrations.
 	time.Sleep(100 * time.Millisecond)
