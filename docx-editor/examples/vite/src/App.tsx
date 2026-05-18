@@ -4,6 +4,9 @@ import {
   type DocxEditorRef,
   createEmptyDocument,
 } from '@eigenpal/docx-js-editor';
+import { useCollab } from './collab/useCollab';
+import { StatusBadge } from './collab/StatusBadge';
+import { ShareDialog } from './collab/Share';
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
@@ -107,6 +110,64 @@ export function App() {
     const n = Number(raw);
     return Number.isFinite(n) ? n : undefined;
   }, []);
+
+  // Collab mode: detected from `?room=<docId>&backend=<wsUrl>`. The
+  // GitHub Pages build leaves these blank and stays single-user;
+  // the Docker-Hub image's frontend defaults `backend` to its own
+  // WS path via `?room=…` alone. Falls back to ws://localhost:8080
+  // for local dev.
+  const collabParams = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    const room = params.get('room');
+    if (!room) return null;
+    let backend = params.get('backend');
+    if (!backend) {
+      // Same-origin default — production: the Docker image
+      // bundles the gateway and the static editor under one host,
+      // so the share URL doesn't need to carry the WS URL
+      // explicitly.
+      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      backend = `${proto}//${window.location.host}`;
+    }
+    return { room, backend };
+  }, []);
+
+  // Backend HTTP base — used for the upload (POST /api/docs) in the
+  // Share dialog. Convert the ws:// URL back into http:// since the
+  // share-link query string carries the WS URL.
+  const backendHttp = useMemo(() => {
+    const fromQS = new URLSearchParams(window.location.search).get('backend');
+    if (fromQS) return fromQS.replace(/^wss:/, 'https:').replace(/^ws:/, 'http:');
+    // Single-user mode default: look for VITE_BACKEND env, then
+    // fall back to localhost.
+    const env = (import.meta as { env?: Record<string, string> }).env?.VITE_BACKEND;
+    if (env) return env;
+    return 'http://localhost:8080';
+  }, []);
+
+  // Local-user identity for awareness. M2 will prompt for a name +
+  // colour; M1 ships an anonymous fallback so co-edit works
+  // immediately. Stored in sessionStorage so the same browser tab
+  // keeps a stable colour across reloads.
+  const localUser = useMemo(() => {
+    const stored = sessionStorage.getItem('collab-user');
+    if (stored) {
+      try {
+        return JSON.parse(stored) as { name: string; color: string };
+      } catch {
+        /* fall through */
+      }
+    }
+    const palette = ['#2563eb', '#16a34a', '#d97706', '#dc2626', '#9333ea', '#0891b2'];
+    const user = {
+      name: `Editor ${Math.floor(Math.random() * 1000)}`,
+      color: palette[Math.floor(Math.random() * palette.length)] ?? '#2563eb',
+    };
+    sessionStorage.setItem('collab-user', JSON.stringify(user));
+    return user;
+  }, []);
+
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Under `?e2e=1`, expose the editor ref on window so Playwright can
   // call addComment/getComments/findInDocument programmatically. Off by
@@ -222,11 +283,40 @@ export function App() {
         <button style={styles.button} onClick={handleSave}>
           Save
         </button>
+        <button
+          style={{ ...styles.button, background: '#2563eb', color: '#fff', border: 'none' }}
+          onClick={() => setShareOpen(true)}
+        >
+          Share
+        </button>
         {status && <span style={styles.status}>{status}</span>}
       </div>
     ),
     [handleFileSelect, handleNewDocument, handleSave, status]
   );
+
+  // Collab mode is a hard fork: the editor binds to a Y.Doc fed by
+  // the WS provider, and the in-app open/save/new flow is hidden
+  // (everyone shares one source of truth — the gateway). Rendered
+  // by a child component so useCollab is always called when its
+  // mounting condition is true.
+  if (collabParams) {
+    return (
+      <CollabApp
+        editorRef={editorRef}
+        room={collabParams.room}
+        backend={collabParams.backend}
+        author={randomAuthor}
+        zoom={autoZoom}
+        isMobile={isMobile}
+        commentIdBase={commentIdBase}
+        disableFindReplaceShortcuts={disableFindReplaceShortcuts}
+        user={localUser}
+        onError={handleError}
+        onFontsLoaded={handleFontsLoaded}
+      />
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -249,6 +339,93 @@ export function App() {
           renderTitleBarRight={renderTitleBarRight}
         />
       </main>
+      <ShareDialog
+        open={shareOpen}
+        documentBuffer={documentBuffer}
+        fileName={fileName}
+        backendHttp={backendHttp}
+        backendWs={backendHttp.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:')}
+        onClose={() => setShareOpen(false)}
+      />
+    </div>
+  );
+}
+
+/**
+ * CollabApp — the read/write-shared edition. Renders the same
+ * <DocxEditor> but feeds it a Y.Doc-backed ProseMirror state via
+ * `externalPlugins` + `externalContent`. The first joiner's
+ * upload (via /api/docs) seeds the doc; subsequent joiners get
+ * it through the WS broker. Title-bar UI is trimmed — open/new
+ * make no sense when everyone shares one source.
+ */
+interface CollabAppProps {
+  editorRef: React.RefObject<DocxEditorRef | null>;
+  room: string;
+  backend: string;
+  author: { name: string; color: string };
+  zoom: number;
+  isMobile: boolean;
+  commentIdBase: number | undefined;
+  disableFindReplaceShortcuts: boolean;
+  user: { name: string; color: string };
+  onError: (err: Error) => void;
+  onFontsLoaded: () => void;
+}
+
+function CollabApp({
+  editorRef,
+  room,
+  backend,
+  author,
+  zoom,
+  isMobile,
+  commentIdBase,
+  disableFindReplaceShortcuts,
+  user,
+  onError,
+  onFontsLoaded,
+}: CollabAppProps) {
+  const { plugins, status, peers } = useCollab({ room, backend, user });
+
+  const renderTitleBarRight = useCallback(
+    () => (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={styles.status}>Room: {room.slice(0, 8)}…</span>
+        <button
+          style={styles.button}
+          onClick={() => {
+            void navigator.clipboard.writeText(window.location.href);
+          }}
+        >
+          Copy invite link
+        </button>
+      </div>
+    ),
+    [room]
+  );
+
+  return (
+    <div style={styles.container}>
+      <main style={styles.main}>
+        <DocxEditor
+          ref={editorRef}
+          externalContent={true}
+          externalPlugins={plugins}
+          author={author}
+          onError={onError}
+          onFontsLoaded={onFontsLoaded}
+          showToolbar={true}
+          showRuler={!isMobile}
+          showZoomControl={true}
+          initialZoom={zoom}
+          disableFindReplaceShortcuts={disableFindReplaceShortcuts}
+          commentIdBase={commentIdBase}
+          documentName={`Shared session ${room.slice(0, 8)}`}
+          renderTitleBarRight={renderTitleBarRight}
+        />
+      </main>
+      <StatusBadge status={status} peers={peers} />
     </div>
   );
 }
