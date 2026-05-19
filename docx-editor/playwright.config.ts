@@ -19,8 +19,12 @@ export default defineConfig({
   ],
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // Use 4 workers locally for faster execution, 1 in CI for stability
-  workers: process.env.CI ? 1 : 4,
+  // 846-test suite × ~3s/test serially ≈ 42 minutes, which had us
+  // cancelling CI runs before they finished. Bumping to 4 workers brings
+  // the wall-clock to ~10 min on the standard GitHub runner (2 vCPU,
+  // 7 GB) and the existing retry=2 absorbs the small flake-rate uptick
+  // from parallel execution. Local stays at 4 too — symmetric.
+  workers: 4,
   // Default timeout of 30s per test (can override with --timeout flag)
   timeout: 30000,
   // Expect timeout for assertions
