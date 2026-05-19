@@ -576,10 +576,16 @@ export class EditorPage {
     // Click on font size picker display button to open dropdown
     const fontSizePicker = this.toolbar.locator('[data-testid="font-size-display"]');
     await fontSizePicker.click();
-    // Wait for dropdown to open and select the size with exact text match
-    await this.page.getByRole('option', { name: size.toString(), exact: true }).click();
+    // FontSizePicker's listbox sometimes flickers in/out as the size picker
+    // gets focus. Wait for an option to settle before clicking — otherwise
+    // playwright snaps a still-mid-transition element and the click lands
+    // after the dropdown has already detached.
+    const option = this.page.getByRole('option', { name: size.toString(), exact: true });
+    await option.waitFor({ state: 'visible', timeout: 5000 });
+    await option.click();
     // Refocus editor after selecting from dropdown
     await this.focus();
+    await this.page.waitForTimeout(50);
   }
 
   /**
