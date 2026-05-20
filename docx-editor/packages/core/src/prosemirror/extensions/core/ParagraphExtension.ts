@@ -421,7 +421,13 @@ function setParagraphAttrsCmd(attrs: Record<string, unknown>): Command {
 
     if (!dispatch) return true;
 
-    let tr = state.tr;
+    // Paragraph-attribute changes (alignment, line spacing, indents,
+    // borders, shading) should be discrete undo steps. Without
+    // `closeHistory`, prosemirror-history coalesces a fresh attr
+    // change with whatever text-typing transaction preceded it
+    // (small time window, no selection change in between), so one
+    // Ctrl-Z wipes the typing in addition to the attr change.
+    let tr = closeHistory(state.tr);
     const seen = new Set<number>();
 
     state.doc.nodesBetween($from.pos, $to.pos, (node, pos) => {
