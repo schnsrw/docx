@@ -11,8 +11,16 @@
 
 import { test, expect } from '@playwright/test';
 
-// Helper to get the modifier key for the current platform
-const getModifier = () => (process.platform === 'darwin' ? 'Meta' : 'Control');
+// Helper to get the modifier key.
+//
+// Playwright runs against headless chromium, which reports
+// `navigator.platform = 'Linux x86_64'` regardless of the host OS the
+// test is invoked from. The editor's keyboard handler uses that to pick
+// between `e.ctrlKey` (non-Mac) and `e.metaKey` (Mac), so the shortcut
+// only fires on `Control` in CI. Hard-coding Control is correct for
+// every CI runner; macOS-host devs running tests locally also see the
+// chromium env claim Linux, so the same answer holds.
+const getModifier = () => 'Control';
 
 test.describe('Hyperlinks', () => {
   test.beforeEach(async ({ page }) => {
@@ -20,12 +28,21 @@ test.describe('Hyperlinks', () => {
     // Wait for editor to be ready
     await page.waitForSelector('[data-testid="docx-editor"]');
     await page.waitForTimeout(500);
+    // Start from an empty document — the auto-loaded demo doc has
+    // hundreds of links/paragraphs, and a select-all in the tests
+    // below would otherwise hit every <a> on the page instead of
+    // just the text the test typed.
+    await page.locator('button:has-text("New")').click();
+    await page.waitForTimeout(300);
   });
 
   test('should open hyperlink dialog with Cmd+K', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type some text
@@ -33,7 +50,7 @@ test.describe('Hyperlinks', () => {
     await page.waitForTimeout(100);
 
     // Select the text using triple-click (more reliable than Ctrl+A)
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Open hyperlink dialog with Cmd/Ctrl+K
@@ -52,8 +69,11 @@ test.describe('Hyperlinks', () => {
 
   test('should open hyperlink dialog via toolbar button', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type some text
@@ -61,7 +81,7 @@ test.describe('Hyperlinks', () => {
     await page.waitForTimeout(100);
 
     // Select the text using triple-click
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Click the link button in toolbar
@@ -75,8 +95,11 @@ test.describe('Hyperlinks', () => {
 
   test('should insert hyperlink with URL', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type some text
@@ -84,7 +107,7 @@ test.describe('Hyperlinks', () => {
     await page.waitForTimeout(100);
 
     // Select the text using triple-click
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Open hyperlink dialog via toolbar button
@@ -114,8 +137,11 @@ test.describe('Hyperlinks', () => {
 
   test('should require URL to submit', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type some text
@@ -123,7 +149,7 @@ test.describe('Hyperlinks', () => {
     await page.waitForTimeout(100);
 
     // Select the text using triple-click
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Open hyperlink dialog via toolbar button
@@ -145,14 +171,17 @@ test.describe('Hyperlinks', () => {
 
   test('should close dialog on Cancel', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type and select text
     await page.keyboard.type('Click here', { delay: 50 });
     await page.waitForTimeout(100);
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Open hyperlink dialog via toolbar button
@@ -173,14 +202,17 @@ test.describe('Hyperlinks', () => {
 
   test('should close dialog on Escape', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type and select text
     await page.keyboard.type('Click here', { delay: 50 });
     await page.waitForTimeout(100);
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Open hyperlink dialog via toolbar button
@@ -205,8 +237,11 @@ test.describe('Hyperlinks', () => {
 
   test('should auto-add https:// if protocol missing', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type some text
@@ -214,7 +249,7 @@ test.describe('Hyperlinks', () => {
     await page.waitForTimeout(100);
 
     // Select the text using triple-click
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Open hyperlink dialog via toolbar button
@@ -240,8 +275,11 @@ test.describe('Hyperlinks', () => {
 
   test('should support mailto: links', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type some text
@@ -249,7 +287,7 @@ test.describe('Hyperlinks', () => {
     await page.waitForTimeout(100);
 
     // Select the text using triple-click
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Open hyperlink dialog via toolbar button
@@ -275,8 +313,11 @@ test.describe('Hyperlinks', () => {
 
   test('should open links in new tab', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type some text
@@ -284,7 +325,7 @@ test.describe('Hyperlinks', () => {
     await page.waitForTimeout(100);
 
     // Select the text using triple-click
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Open hyperlink dialog via toolbar button
@@ -311,8 +352,11 @@ test.describe('Hyperlinks', () => {
 
   test('should insert hyperlink with tooltip', async ({ page }) => {
     // Click in editor to focus
-    const editor = page.locator('.prosemirror-editor-content');
-    await editor.click();
+    // Hidden ProseMirror is at left: -9999px — clicks on it fail.
+    // Focus via the contenteditable directly; keyboard input still
+    // routes through PM correctly.
+    const editor = page.locator('.ProseMirror');
+    await editor.focus();
     await page.waitForTimeout(200);
 
     // Type some text
@@ -320,7 +364,7 @@ test.describe('Hyperlinks', () => {
     await page.waitForTimeout(100);
 
     // Select the text using triple-click
-    await editor.click({ clickCount: 3 });
+    await page.keyboard.press(getModifier() + '+a');
     await page.waitForTimeout(100);
 
     // Open hyperlink dialog via toolbar button
