@@ -50,6 +50,7 @@ export interface SelectionRange {
  */
 export class EditorPage {
   readonly page: Page;
+  private currentTableCell: CellRef | null = null;
 
   // Main locators
   readonly editor: Locator;
@@ -172,7 +173,10 @@ export class EditorPage {
    * Type text at the current cursor position
    */
   async typeText(text: string): Promise<void> {
-    if (text.length > 1000) {
+    // Long payloads are faster and more stable via insertText; per-character
+    // keyboard.type can monopolize a worker long enough to starve parallel
+    // scenarios and cause unrelated navigation flakes.
+    if (text.length > 200) {
       await this.page.keyboard.insertText(text);
       return;
     }
@@ -974,6 +978,7 @@ export class EditorPage {
       return;
     }
     await this.undoButton.click();
+    await this.page.waitForTimeout(100);
   }
 
   /**
@@ -982,6 +987,7 @@ export class EditorPage {
   async undoShortcut(): Promise<void> {
     const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
     await this.page.keyboard.press(`${modifier}+z`);
+    await this.page.waitForTimeout(100);
   }
 
   /**
@@ -992,6 +998,7 @@ export class EditorPage {
       return;
     }
     await this.redoButton.click();
+    await this.page.waitForTimeout(100);
   }
 
   /**
@@ -1000,6 +1007,7 @@ export class EditorPage {
   async redoShortcut(): Promise<void> {
     const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
     await this.page.keyboard.press(`${modifier}+y`);
+    await this.page.waitForTimeout(100);
   }
 
   /**
@@ -1054,63 +1062,46 @@ export class EditorPage {
     // Wait for table to be inserted (use generic table selector since prosemirror-tables
     // column resizing plugin may override the table DOM and not include our docx-table class)
     await this.page.waitForSelector('.ProseMirror table', { state: 'visible', timeout: 5000 });
+    this.currentTableCell = null;
   }
 
   /**
    * Click on a specific table cell
    */
   async clickTableCell(tableIndex: number, row: number, col: number): Promise<void> {
-    const pmCell = this.page
-      .locator('.ProseMirror table')
-      .nth(tableIndex)
-      .locator('tr')
-      .nth(row)
-      .locator('td, th')
-      .nth(col);
-
-    if ((await pmCell.count()) > 0) {
-      await pmCell.scrollIntoViewIfNeeded().catch(() => {});
-      await pmCell.click({ force: true });
-      await this.page.waitForTimeout(50);
-      return;
-    }
-
     const table = this.page.locator('.paged-editor__pages .layout-table').nth(tableIndex);
-    const cell = table.locator('.layout-table-row').nth(row).locator('.layout-table-cell').nth(col);
-    const box = await cell.boundingBox();
-    if (!box) {
-      throw new Error(`Could not resolve visual bounds for table cell (${row}, ${col})`);
+    const dimensions = await this.getTableDimensions(tableIndex);
+    const targetIndex = row * dimensions.cols + col;
+
+    let currentIndex = -1;
+    if (this.currentTableCell && this.currentTableCell.tableIndex === tableIndex) {
+      currentIndex = this.currentTableCell.row * dimensions.cols + this.currentTableCell.col;
     }
-    await this.page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-    await this.page.waitForTimeout(50);
+
+    if (currentIndex < 0 || currentIndex > targetIndex) {
+      const firstCell = table.locator('.layout-table-row').first().locator('.layout-table-cell').first();
+      await firstCell.scrollIntoViewIfNeeded();
+      await firstCell.click({ force: true });
+      await this.page.locator('.ProseMirror').focus();
+      await this.page.waitForTimeout(50);
+      currentIndex = 0;
+    }
+
+    for (let i = currentIndex; i < targetIndex; i += 1) {
+      await this.pressTab();
+    }
+
+    this.currentTableCell = { tableIndex, row, col };
   }
 
   /**
    * Right-click on a specific visual table cell to open the text context menu
    */
   async rightClickTableCell(tableIndex: number, row: number, col: number): Promise<void> {
-    const pmCell = this.page
-      .locator('.ProseMirror table')
-      .nth(tableIndex)
-      .locator('tr')
-      .nth(row)
-      .locator('td, th')
-      .nth(col);
-
-    if ((await pmCell.count()) > 0) {
-      await pmCell.scrollIntoViewIfNeeded().catch(() => {});
-      await pmCell.click({ button: 'right', force: true });
-      await this.page.waitForSelector('[role="menu"]', { state: 'visible', timeout: 5000 });
-      return;
-    }
-
     const table = this.page.locator('.paged-editor__pages .layout-table').nth(tableIndex);
     const cell = table.locator('.layout-table-row').nth(row).locator('.layout-table-cell').nth(col);
-    const box = await cell.boundingBox();
-    if (!box) {
-      throw new Error(`Could not resolve visual bounds for table cell (${row}, ${col})`);
-    }
-    await this.page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: 'right' });
+    await cell.scrollIntoViewIfNeeded();
+    await cell.click({ button: 'right', force: true });
     await this.page.waitForSelector('[role="menu"]', { state: 'visible', timeout: 5000 });
   }
 
@@ -1305,6 +1296,7 @@ export class EditorPage {
     await this.page.locator('button:has-text("New")').click();
     // Wait for document to be replaced with empty state
     await this.page.waitForTimeout(500);
+    this.currentTableCell = null;
   }
 
   // ============================================================================
@@ -1333,8 +1325,13 @@ export class EditorPage {
    * Perform find operation
    */
   async find(searchText: string): Promise<void> {
-    await this.page.locator('[data-testid="find-input"]').fill(searchText);
-    await this.page.locator('[data-testid="find-input"]').press('Enter');
+    const findInput = this.page.locator('[data-testid="find-input"]');
+    await findInput.click();
+    await findInput.press(process.platform === 'darwin' ? 'Meta+a' : 'Control+a');
+    await findInput.type(searchText, { delay: 20 });
+    await this.page.waitForTimeout(100);
+    await findInput.press('Enter');
+    await this.page.waitForTimeout(200);
   }
 
   /**
@@ -1342,6 +1339,7 @@ export class EditorPage {
    */
   async findNext(): Promise<void> {
     await this.page.locator('[aria-label="Find next"]').click();
+    await this.page.waitForTimeout(150);
   }
 
   /**
@@ -1349,30 +1347,44 @@ export class EditorPage {
    */
   async findPrevious(): Promise<void> {
     await this.page.locator('[aria-label="Find previous"]').click();
+    await this.page.waitForTimeout(150);
   }
 
   /**
    * Replace current match
    */
   async replace(replaceText: string): Promise<void> {
+    const replaceButton = this.findReplaceDialog.getByRole('button', { name: /^Replace$/ });
     await this.page.locator('#replace-text').fill(replaceText);
-    await this.findReplaceDialog.getByRole('button', { name: /^Replace$/ }).click();
+    for (let i = 0; i < 20; i += 1) {
+      if (!(await replaceButton.isDisabled())) break;
+      await this.page.waitForTimeout(100);
+    }
+    await replaceButton.click();
+    await this.page.waitForTimeout(150);
   }
 
   /**
    * Replace all matches
    */
   async replaceAll(searchText: string, replaceText: string): Promise<void> {
+    const replaceAllButton = this.findReplaceDialog.getByRole('button', { name: /^Replace All$/ });
     await this.page.locator('[data-testid="find-input"]').fill(searchText);
+    await this.page.locator('[data-testid="find-input"]').press('Enter');
     await this.page.locator('#replace-text').fill(replaceText);
-    await this.findReplaceDialog.getByRole('button', { name: /^Replace All$/ }).click();
+    for (let i = 0; i < 20; i += 1) {
+      if (!(await replaceAllButton.isDisabled())) break;
+      await this.page.waitForTimeout(100);
+    }
+    await replaceAllButton.click();
+    await this.page.waitForTimeout(150);
   }
 
   /**
    * Close find/replace dialog
    */
   async closeFindReplace(): Promise<void> {
-    await this.page.keyboard.press('Escape');
+    await this.findReplaceDialog.getByRole('button', { name: /close/i }).click();
     await this.findReplaceDialog.waitFor({ state: 'hidden' });
   }
 
