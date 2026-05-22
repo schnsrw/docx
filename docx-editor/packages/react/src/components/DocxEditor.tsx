@@ -269,6 +269,9 @@ export interface DocxEditorProps {
   document?: Document | null;
   /** Callback when document is saved */
   onSave?: (buffer: ArrayBuffer) => void;
+  /** Callback invoked when the user picks File → New. Host should
+   *  replace the loaded document with a blank one. */
+  onNew?: () => void;
   /** Author name used for comments and track changes */
   author?: string;
   /** Callback when document changes */
@@ -1300,6 +1303,7 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     documentBuffer,
     document: initialDocument,
     onSave,
+    onNew,
     author = 'User',
     onChange,
     onSelectionChange,
@@ -2293,6 +2297,31 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
               hyperlinkDialog.openInsert(selectedText);
             }
           }
+        } else if (e.key.toLowerCase() === 's') {
+          // Mod+S: Save (download .docx)
+          e.preventDefault();
+          shortcutActionsRef.current.save?.();
+        } else if (e.key.toLowerCase() === 'p') {
+          // Mod+P: Print
+          e.preventDefault();
+          shortcutActionsRef.current.print?.();
+        } else if (e.key.toLowerCase() === 'n') {
+          // Mod+N: New document. Only honor if the host opted in via onNew.
+          if (shortcutActionsRef.current.new) {
+            e.preventDefault();
+            shortcutActionsRef.current.new();
+          }
+        } else if (e.key.toLowerCase() === 'o') {
+          // Mod+O: Open file picker
+          e.preventDefault();
+          shortcutActionsRef.current.open?.();
+        } else if (e.key === '\\') {
+          // Mod+\\: Clear formatting (Google Docs convention)
+          const view = pagedEditorRef.current?.getView();
+          if (view) {
+            e.preventDefault();
+            clearFormatting(view.state, view.dispatch);
+          }
         }
       }
     };
@@ -2302,6 +2331,17 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [disableFindReplaceShortcuts, findReplace, hyperlinkDialog, tableSelection]);
+
+  // Ref holds the latest file-op handlers so the global keydown listener
+  // (registered once above) can call them without depending on their
+  // identity (they're defined later in the function — referencing them
+  // directly trips TS's temporal-dead-zone check).
+  const shortcutActionsRef = useRef<{
+    save?: () => void;
+    print?: () => void;
+    new?: () => void;
+    open?: () => void;
+  }>({});
 
   // Handle table insert from toolbar
   const handleInsertTable = useCallback(
@@ -3923,6 +3963,17 @@ body { background: white; }
     docxInputRef.current?.click();
   }, []);
 
+  // Keep the global-keydown handler in sync with the latest file-op
+  // callbacks without recreating the listener.
+  useEffect(() => {
+    shortcutActionsRef.current = {
+      save: handleDownloadDocument,
+      print: handleDirectPrint,
+      new: onNew,
+      open: handleOpenDocument,
+    };
+  }, [handleDownloadDocument, handleDirectPrint, onNew, handleOpenDocument]);
+
   const handleDocxFileChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -5172,6 +5223,7 @@ body { background: white; }
                       onPrint={handleDirectPrint}
                       onOpen={handleOpenDocument}
                       onSave={handleDownloadDocument}
+                      onNew={onNew}
                       showZoomControl={showZoomControl}
                       zoom={state.zoom}
                       onZoomChange={handleZoomChange}

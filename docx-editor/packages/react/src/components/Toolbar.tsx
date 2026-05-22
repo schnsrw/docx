@@ -185,6 +185,8 @@ export interface ToolbarProps {
   onOpen?: () => void;
   /** Callback to save/download the current DOCX (File → Save) */
   onSave?: () => void;
+  /** Callback to start a fresh blank document (File → New) */
+  onNew?: () => void;
   /** Whether to show zoom control (default: true) */
   showZoomControl?: boolean;
   /** Current zoom level (1.0 = 100%) */

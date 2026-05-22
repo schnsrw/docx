@@ -115,6 +115,7 @@ export function MenuBar() {
     onFormat,
     onPrint,
     showPrintButton = true,
+    onNew,
     onOpen,
     onSave,
     onPageSetup,
@@ -163,7 +164,8 @@ export function MenuBar() {
 
   const hasPrintOrPageSetup = (showPrintButton && onPrint) || onPageSetup;
   const hasExport = onExportPdf || onExportOdt || onExportMd || onExportTxt;
-  const hasFileMenu = hasPrintOrPageSetup || onOpen || onSave || onFileProperties || hasExport;
+  const hasFileMenu =
+    hasPrintOrPageSetup || onNew || onOpen || onSave || onFileProperties || hasExport;
 
   return (
     <div className="flex items-center" role="menubar" aria-label={t('titleBar.menuBarAriaLabel')}>
@@ -173,6 +175,16 @@ export function MenuBar() {
           label={t('toolbar.file')}
           disabled={disabled}
           items={[
+            ...(onNew
+              ? [
+                  {
+                    icon: 'note_add',
+                    label: 'New',
+                    shortcut: '⌘N',
+                    onClick: onNew,
+                  } as MenuEntry,
+                ]
+              : []),
             ...(onOpen
               ? [
                   {

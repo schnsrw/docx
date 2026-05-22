@@ -321,24 +321,12 @@ export function App() {
     console.log('Fonts loaded');
   }, []);
 
+  // Top-right area: just Share (Google Docs pattern). Open / Save / New
+  // live in the File menu and are driven by <DocxEditor>'s internal
+  // handlers; we no longer duplicate them as standalone buttons.
   const renderTitleBarRight = useCallback(
     () => (
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <label style={styles.fileInputLabel} onMouseDown={(e) => e.stopPropagation()}>
-          <input
-            type="file"
-            accept=".docx"
-            onChange={handleFileSelect}
-            style={{ display: 'none' }}
-          />
-          Open DOCX
-        </label>
-        <button style={styles.newButton} onClick={handleNewDocument}>
-          New
-        </button>
-        <button style={styles.button} onClick={handleSave}>
-          Save
-        </button>
         {collabEnabled && (
           <button
             style={{ ...styles.button, background: '#2563eb', color: '#fff', border: 'none' }}
@@ -350,7 +338,7 @@ export function App() {
         {status && <span style={styles.status}>{status}</span>}
       </div>
     ),
-    [handleFileSelect, handleNewDocument, handleSave, status, collabEnabled]
+    [status, collabEnabled]
   );
 
   // Collab mode is a hard fork: the editor binds to a Y.Doc fed by
@@ -395,6 +383,7 @@ export function App() {
           commentIdBase={commentIdBase}
           documentName={fileName}
           onDocumentNameChange={setFileName}
+          onNew={handleNewDocument}
           renderTitleBarRight={renderTitleBarRight}
         />
       </main>
