@@ -120,6 +120,11 @@ export function MenuBar() {
     onPageSetup,
     onFileProperties,
     onExportPdf,
+    onExportOdt,
+    onExportMd,
+    onExportTxt,
+    onReportBug,
+    onShowAbout,
     onInsertImage,
     onInsertTable,
     showTableInsert = true,
@@ -148,7 +153,8 @@ export function MenuBar() {
   );
 
   const hasPrintOrPageSetup = (showPrintButton && onPrint) || onPageSetup;
-  const hasFileMenu = hasPrintOrPageSetup || onOpen || onSave || onFileProperties || onExportPdf;
+  const hasExport = onExportPdf || onExportOdt || onExportMd || onExportTxt;
+  const hasFileMenu = hasPrintOrPageSetup || onOpen || onSave || onFileProperties || hasExport;
 
   return (
     <div className="flex items-center" role="menubar" aria-label={t('titleBar.menuBarAriaLabel')}>
@@ -178,7 +184,7 @@ export function MenuBar() {
                   } as MenuEntry,
                 ]
               : []),
-            ...((onOpen || onSave) && (hasPrintOrPageSetup || onFileProperties || onExportPdf)
+            ...((onOpen || onSave) && (hasPrintOrPageSetup || onFileProperties || hasExport)
               ? [{ type: 'separator' as const } as MenuEntry]
               : []),
             ...(showPrintButton && onPrint
@@ -197,6 +203,33 @@ export function MenuBar() {
                     icon: 'file_download',
                     label: 'Export as PDF',
                     onClick: onExportPdf,
+                  } as MenuEntry,
+                ]
+              : []),
+            ...(onExportOdt
+              ? [
+                  {
+                    icon: 'file_download',
+                    label: 'Export as ODT',
+                    onClick: onExportOdt,
+                  } as MenuEntry,
+                ]
+              : []),
+            ...(onExportMd
+              ? [
+                  {
+                    icon: 'file_download',
+                    label: 'Export as Markdown',
+                    onClick: onExportMd,
+                  } as MenuEntry,
+                ]
+              : []),
+            ...(onExportTxt
+              ? [
+                  {
+                    icon: 'file_download',
+                    label: 'Export as Plain Text',
+                    onClick: onExportTxt,
                   } as MenuEntry,
                 ]
               : []),
@@ -288,9 +321,20 @@ export function MenuBar() {
         disabled={disabled}
         items={[
           {
+            icon: 'bug_report',
             label: t('toolbar.reportIssue'),
-            onClick: () => openReportIssue(),
+            onClick: () => (onReportBug ? onReportBug() : openReportIssue()),
           } as MenuEntry,
+          ...(onShowAbout
+            ? [
+                { type: 'separator' as const } as MenuEntry,
+                {
+                  icon: 'info',
+                  label: 'About Casual Editor',
+                  onClick: onShowAbout,
+                } as MenuEntry,
+              ]
+            : []),
         ]}
       />
     </div>
