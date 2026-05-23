@@ -22,7 +22,7 @@ const MODIFIER = process.platform === 'darwin' ? 'Meta' : 'Control';
  * Load the large doc fixture and wait for pages to render.
  */
 async function loadLargeDoc(page: Page): Promise<void> {
-  const fileInput = page.locator('input[type="file"][accept=".docx"]');
+  const fileInput = page.locator('input[type="file"][accept*=".docx"]');
   await fileInput.setInputFiles(LARGE_DOC_PATH);
   await page.waitForSelector('[data-page-number]', { timeout: 90_000 });
   await page.waitForTimeout(2000); // let layout settle

@@ -836,7 +836,7 @@ export class EditorPage {
    * Toggle bullet list
    */
   async toggleBulletList(): Promise<void> {
-    await this.toolbar.locator('[aria-label="Bullet List"]').click();
+    await this.toolbar.locator('[aria-label^="Bullet List"]').click();
     await this.refocusEditor();
   }
 
@@ -851,7 +851,7 @@ export class EditorPage {
    * Toggle numbered list
    */
   async toggleNumberedList(): Promise<void> {
-    await this.toolbar.locator('[aria-label="Numbered List"]').click();
+    await this.toolbar.locator('[aria-label^="Numbered List"]').click();
     await this.refocusEditor();
   }
 
@@ -866,14 +866,14 @@ export class EditorPage {
    * Indent paragraph/list item
    */
   async indent(): Promise<void> {
-    await this.toolbar.locator('[aria-label="Increase Indent"]').click();
+    await this.toolbar.locator('[aria-label^="Increase Indent"]').click();
   }
 
   /**
    * Outdent paragraph/list item
    */
   async outdent(): Promise<void> {
-    const button = this.toolbar.locator('[aria-label="Decrease Indent"]');
+    const button = this.toolbar.locator('[aria-label^="Decrease Indent"]');
     if (await button.isDisabled()) {
       await this.pressShiftTab();
       await this.page.waitForTimeout(100);

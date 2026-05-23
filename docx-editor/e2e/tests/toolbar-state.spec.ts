@@ -707,7 +707,7 @@ test.describe('List Detection at Cursor', () => {
 
     await page.waitForTimeout(100);
 
-    const bulletButton = page.locator('[aria-label="Bullet List"]');
+    const bulletButton = page.locator('[aria-label^="Bullet List"]');
     const isActive = await bulletButton.evaluate((el) => {
       return el.getAttribute('aria-pressed') === 'true' || el.classList.contains('active');
     });
@@ -744,7 +744,7 @@ test.describe('List Detection at Cursor', () => {
 
     await page.waitForTimeout(100);
 
-    const numberedButton = page.locator('[aria-label="Numbered List"]');
+    const numberedButton = page.locator('[aria-label^="Numbered List"]');
     const isActive = await numberedButton.evaluate((el) => {
       return el.getAttribute('aria-pressed') === 'true' || el.classList.contains('active');
     });
@@ -782,8 +782,8 @@ test.describe('List Detection at Cursor', () => {
 
     await page.waitForTimeout(100);
 
-    const bulletButton = page.locator('[aria-label="Bullet List"]');
-    const numberedButton = page.locator('[aria-label="Numbered List"]');
+    const bulletButton = page.locator('[aria-label^="Bullet List"]');
+    const numberedButton = page.locator('[aria-label^="Numbered List"]');
 
     const bulletActive = await bulletButton.evaluate((el) => {
       return el.getAttribute('aria-pressed') === 'true' || el.classList.contains('active');
