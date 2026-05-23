@@ -13,13 +13,9 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 
 | Tag | Total dropped | Fixtures affected |
 |-----|---------------|-------------------|
-| `w:fldChar` | 6 | 1 |
-| `w:rStyle` | 4 | 1 |
 | `w:highlight` | 2 | 1 |
 | `w:bookmarkEnd` | 1 | 1 |
 | `w:bdr` | 1 | 1 |
-| `w:delInstrText` | 1 | 1 |
-| `w:instrText` | 1 | 1 |
 
 ## Per-fixture detail
 
@@ -125,12 +121,7 @@ No round-trip drops.
 ### issue-319-sections
 
 
-| Tag | In | Out |
-|-----|----|-----|
-| `w:fldChar` | 6 | 0 |
-| `w:rStyle` | 4 | 0 |
-| `w:delInstrText` | 1 | 0 |
-| `w:instrText` | 1 | 0 |
+No tags vanished on round-trip.
 
 ### generic-render-regression
 

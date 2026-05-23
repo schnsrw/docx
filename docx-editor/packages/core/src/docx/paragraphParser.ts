@@ -843,7 +843,7 @@ function paragraphStartsWithRenderedPageBreak(node: XmlElement): boolean {
   return false;
 }
 
-type TrackedChangeParseContext = 'default' | 'deletion';
+type TrackedChangeParseContext = 'default' | 'deletion' | 'insertion';
 
 function replaceLocalName(name: string | undefined, localName: string): string {
   if (!name) {
@@ -1101,6 +1101,16 @@ function parseParagraphContents(
           trackedContext === 'deletion' ? normalizeDeletionContentElement(child) : child;
         const run = parseRun(runElement, styles, theme, rels, media);
 
+        // Inside <w:del> or <w:ins>, keep runs raw — including fldChar /
+        // instrText ones. Coalescing them into ComplexField would lose
+        // them at the surrounding Insertion / Deletion's Run|Hyperlink
+        // filter; the run serializer already rewrites delText /
+        // delInstrText inside del.
+        if (trackedContext === 'deletion' || trackedContext === 'insertion') {
+          contents.push(run);
+          break;
+        }
+
         // Look for field characters
         let hasFieldBegin = false;
         let hasFieldSeparate = false;
@@ -1256,7 +1266,15 @@ function parseParagraphContents(
       case 'ins': {
         // Track change: insertion — parse content and wrap
         const insInfo = parseTrackedChangeInfo(child);
-        const insContent = parseParagraphContents(child, styles, theme, null, rels, media);
+        const insContent = parseParagraphContents(
+          child,
+          styles,
+          theme,
+          null,
+          rels,
+          media,
+          'insertion'
+        );
         const insertion: Insertion = {
           type: 'insertion',
           info: insInfo,

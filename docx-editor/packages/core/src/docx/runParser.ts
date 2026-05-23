@@ -622,6 +622,14 @@ function parseRunContents(
         contents.push(parseTextContent(child));
         break;
 
+      case 'delText':
+        // Tracked-deletion text — the same TextContent shape; the
+        // paragraph serializer rewrites <w:t> → <w:delText> when this
+        // run sits inside <w:del>/<w:moveFrom>. Without this case the
+        // text vanished from any run inside a deletion block.
+        contents.push(parseTextContent(child));
+        break;
+
       case 'tab':
         // Tab character
         contents.push(parseTabContent());
@@ -654,6 +662,15 @@ function parseRunContents(
 
       case 'instrText':
         // Field instruction text
+        contents.push(parseInstrText(child));
+        break;
+
+      case 'delInstrText':
+        // Tracked-deletion field instruction — same shape as instrText;
+        // the paragraph serializer rewrites it back to <w:delInstrText>
+        // when this run sits inside <w:del>/<w:moveFrom>. Without this
+        // case the instruction string vanished, leaving an incomplete
+        // field skeleton on round-trip.
         contents.push(parseInstrText(child));
         break;
 
