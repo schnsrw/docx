@@ -210,7 +210,9 @@ function serializeCellMargins(margins: CellMargins | undefined, elementName: str
   }
 
   if (margins.left) {
-    parts.push(serializeMeasurement(margins.left, 'left'));
+    // Re-emit the logical-side name (w:start) when that's what the
+    // source used; otherwise the older physical name (w:left).
+    parts.push(serializeMeasurement(margins.left, margins.useLogicalSides ? 'start' : 'left'));
   }
 
   if (margins.bottom) {
@@ -218,7 +220,7 @@ function serializeCellMargins(margins: CellMargins | undefined, elementName: str
   }
 
   if (margins.right) {
-    parts.push(serializeMeasurement(margins.right, 'right'));
+    parts.push(serializeMeasurement(margins.right, margins.useLogicalSides ? 'end' : 'right'));
   }
 
   if (parts.length === 0) return '';

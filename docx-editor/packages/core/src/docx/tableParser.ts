@@ -229,15 +229,26 @@ export function parseCellMargins(marginsElement: XmlElement | null): CellMargins
   const bottom = parseWidth(findChild(marginsElement, 'w', 'bottom'));
   if (bottom) margins.bottom = bottom;
 
-  const left = parseWidth(
-    findChild(marginsElement, 'w', 'left') ?? findChild(marginsElement, 'w', 'start')
-  );
+  // The schema accepts both w:left/w:right (physical, older) and
+  // w:start/w:end (logical, newer). Word uses the logical form for
+  // RTL-aware documents. Record which form the source used so the
+  // serializer can re-emit the same form (audit drops both names
+  // otherwise — the model would silently coerce to left/right).
+  const leftEl = findChild(marginsElement, 'w', 'left');
+  const startEl = findChild(marginsElement, 'w', 'start');
+  const left = parseWidth(leftEl ?? startEl);
   if (left) margins.left = left;
 
-  const right = parseWidth(
-    findChild(marginsElement, 'w', 'right') ?? findChild(marginsElement, 'w', 'end')
-  );
+  const rightEl = findChild(marginsElement, 'w', 'right');
+  const endEl = findChild(marginsElement, 'w', 'end');
+  const right = parseWidth(rightEl ?? endEl);
   if (right) margins.right = right;
+
+  // Use the logical (start/end) form on serialize when the source
+  // didn't use the physical (left/right) one.
+  if ((!leftEl && startEl) || (!rightEl && endEl)) {
+    margins.useLogicalSides = true;
+  }
 
   if (Object.keys(margins).length === 0) return undefined;
 

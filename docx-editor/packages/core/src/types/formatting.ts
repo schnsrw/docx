@@ -450,6 +450,15 @@ export interface CellMargins {
   bottom?: TableMeasurement;
   left?: TableMeasurement;
   right?: TableMeasurement;
+  /**
+   * Source emitted the logical-side names (w:start / w:end) instead of
+   * the older physical-side names (w:left / w:right). The parser stores
+   * left/right regardless (the two are semantically identical in
+   * LTR documents) and sets this flag so the serializer can re-emit
+   * the same form. Default (undefined / false) keeps the physical
+   * names, matching Word's default output.
+   */
+  useLogicalSides?: boolean;
 }
 
 /**

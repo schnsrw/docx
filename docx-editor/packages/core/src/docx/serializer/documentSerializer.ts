@@ -577,6 +577,16 @@ export function serializeSectionProperties(props: SectionProperties | undefined)
     parts.push('<w:bidi/>');
   }
 
+  // Form protection (w:formProt) — ECMA-376 §17.6.7
+  if (props.formProtection !== undefined) {
+    parts.push(`<w:formProt w:val="${props.formProtection ? 'true' : 'false'}"/>`);
+  }
+
+  // Text direction (w:textDirection) — ECMA-376 §17.6.20
+  if (props.textDirection) {
+    parts.push(`<w:textDirection w:val="${props.textDirection}"/>`);
+  }
+
   // Title page (different first page header/footer)
   if (props.titlePg) {
     parts.push('<w:titlePg/>');

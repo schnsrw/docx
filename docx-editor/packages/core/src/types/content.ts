@@ -1542,6 +1542,21 @@ export interface SectionProperties {
   /** Endnote properties for this section */
   endnotePr?: EndnoteProperties;
 
+  // Form protection / text direction
+  /**
+   * Form protection (w:formProt). When true the section is form-protected
+   * and only form fields are editable. Word saves an explicit `w:val="false"`
+   * inline even when the default is unprotected — round-trip the flag so
+   * that re-emits stay byte-stable.
+   */
+  formProtection?: boolean;
+  /**
+   * Section text direction (w:textDirection). Values from ECMA-376
+   * §17.18.93 — e.g. `lrTb` (default), `tbRl`, `btLr`. Independent of
+   * the paragraph-level RTL flag.
+   */
+  textDirection?: string;
+
   // Page numbering
   /** Page numbering settings (w:pgNumType) — ECMA-376 §17.6.12 */
   pageNumberType?: {

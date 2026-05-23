@@ -405,6 +405,23 @@ export function parseSectionProperties(
   }
 
   // ============================================================================
+  // FORM PROTECTION (w:formProt) — ECMA-376 §17.6.7
+  // ============================================================================
+  const formProt = findChild(sectPr, 'w', 'formProt');
+  if (formProt) {
+    props.formProtection = parseBooleanElement(formProt);
+  }
+
+  // ============================================================================
+  // TEXT DIRECTION (w:textDirection) — ECMA-376 §17.6.20
+  // ============================================================================
+  const textDirection = findChild(sectPr, 'w', 'textDirection');
+  if (textDirection) {
+    const val = getAttribute(textDirection, 'w', 'val');
+    if (val) props.textDirection = val;
+  }
+
+  // ============================================================================
   // HEADER REFERENCES (w:headerReference)
   // ============================================================================
   const headerRefs = findChildren(sectPr, 'w', 'headerReference');

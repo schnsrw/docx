@@ -42,7 +42,7 @@ function parsePPr(inner: string): ParagraphFormatting | undefined {
   );
   const pPr = findPPr(root);
   if (!pPr) throw new Error('no pPr');
-  return parseParagraphProperties(pPr);
+  return parseParagraphProperties(pPr, null);
 }
 
 function emit(formatting: ParagraphFormatting): string {

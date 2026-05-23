@@ -14,11 +14,7 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | Tag | Total dropped | Fixtures affected |
 |-----|---------------|-------------------|
 | `w:fldChar` | 6 | 1 |
-| `w:start` | 4 | 2 |
-| `w:end` | 4 | 2 |
 | `w:rStyle` | 4 | 1 |
-| `w:formProt` | 2 | 2 |
-| `w:textDirection` | 2 | 2 |
 | `w:highlight` | 2 | 1 |
 | `w:bookmarkEnd` | 1 | 1 |
 | `w:bdr` | 1 | 1 |
@@ -57,12 +53,7 @@ No round-trip drops.
 ### docx-editor-numbering
 
 
-| Tag | In | Out |
-|-----|----|-----|
-| `w:start` | 2 | 0 |
-| `w:end` | 2 | 0 |
-| `w:formProt` | 1 | 0 |
-| `w:textDirection` | 1 | 0 |
+No tags vanished on round-trip.
 
 ### drawingml-shape
 
@@ -158,12 +149,7 @@ No tags vanished on round-trip.
 ### issue-387-font-theme-override
 
 
-| Tag | In | Out |
-|-----|----|-----|
-| `w:start` | 2 | 0 |
-| `w:end` | 2 | 0 |
-| `w:formProt` | 1 | 0 |
-| `w:textDirection` | 1 | 0 |
+No tags vanished on round-trip.
 
 ### template-with-hf-rule
 
