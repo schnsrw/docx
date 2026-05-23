@@ -209,6 +209,13 @@ export interface TextFormatting {
   noProof?: boolean;
   /** Hidden when the document is viewed in a web layout (`<w:webHidden>`). */
   webHidden?: boolean;
+
+  /**
+   * Run border (`<w:bdr>`, ECMA-376 §17.3.2.4) — a box drawn around the run's
+   * text. Round-tripped verbatim so Word's "box around text" character
+   * formatting survives a save cycle.
+   */
+  border?: BorderSpec;
 }
 
 // ============================================================================

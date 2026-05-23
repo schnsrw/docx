@@ -109,7 +109,7 @@ function buildNamespaceDeclarations(): string {
 /**
  * Serialize a border element
  */
-function serializeBorder(border: BorderSpec | undefined, elementName: string): string {
+export function serializeBorder(border: BorderSpec | undefined, elementName: string): string {
   if (!border || border.style === 'none' || border.style === 'nil') {
     return '';
   }

@@ -294,7 +294,7 @@ function parseShadingProperties(shd: XmlElement | null): ShadingProperties | und
 /**
  * Parse border specification (w:top, w:bottom, w:left, w:right, etc.)
  */
-function parseBorderSpec(border: XmlElement | null): BorderSpec | undefined {
+export function parseBorderSpec(border: XmlElement | null): BorderSpec | undefined {
   if (!border) return undefined;
 
   const style = getAttribute(border, 'w', 'val');

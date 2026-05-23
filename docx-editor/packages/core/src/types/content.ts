@@ -905,6 +905,12 @@ export interface Table {
   columnWidths?: number[];
   /** Table rows */
   rows: TableRow[];
+  /**
+   * Bookmark markers that appear as direct children of `<w:tbl>` (after all
+   * `<w:tr>` rows). Preserved verbatim for round-trip; emitted before the
+   * closing `</w:tbl>` so range positions stay anchored to the same table.
+   */
+  trailingBookmarks?: (BookmarkStart | BookmarkEnd)[];
 }
 
 // ============================================================================

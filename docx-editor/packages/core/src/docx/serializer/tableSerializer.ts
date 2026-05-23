@@ -879,6 +879,22 @@ export function serializeTable(table: Table): string {
     parts.push(serializeTableRow(row));
   }
 
+  // Trailing bookmark markers captured as direct children of <w:tbl>
+  // (after the last <w:tr>) at parse time.
+  if (table.trailingBookmarks) {
+    for (const marker of table.trailingBookmarks) {
+      if (marker.type === 'bookmarkStart') {
+        const colFirst = marker.colFirst !== undefined ? ` w:colFirst="${marker.colFirst}"` : '';
+        const colLast = marker.colLast !== undefined ? ` w:colLast="${marker.colLast}"` : '';
+        parts.push(
+          `<w:bookmarkStart w:id="${marker.id}" w:name="${marker.name}"${colFirst}${colLast}/>`
+        );
+      } else {
+        parts.push(`<w:bookmarkEnd w:id="${marker.id}"/>`);
+      }
+    }
+  }
+
   return `<w:tbl>${parts.join('')}</w:tbl>`;
 }
 

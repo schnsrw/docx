@@ -36,6 +36,7 @@ import type {
   RunPropertyChange,
 } from '../../types/document';
 import { serializeParagraph } from './paragraphSerializer';
+import { serializeBorder } from './documentSerializer';
 import { escapeXml, intAttr } from './xmlUtils';
 
 // ============================================================================
@@ -80,6 +81,7 @@ const VALID_HIGHLIGHT_COLORS = new Set([
   'green',
   'lightGray',
   'magenta',
+  'none',
   'red',
   'white',
   'yellow',
@@ -324,12 +326,19 @@ export function serializeTextFormatting(formatting: TextFormatting | undefined):
     parts.push(`<w:szCs w:val="${intAttr(formatting.fontSizeCs)}"/>`);
   }
 
-  // Highlight — emit valid OOXML named colors via w:highlight,
-  // fall back to w:shd for custom hex colors
-  if (formatting.highlight && formatting.highlight !== 'none') {
+  // Run border (<w:bdr>) — box around the run's text (§17.3.2.4)
+  if (formatting.border) {
+    const bdrXml = serializeBorder(formatting.border, 'bdr');
+    if (bdrXml) parts.push(bdrXml);
+  }
+
+  // Highlight — emit valid OOXML named colors via w:highlight (including
+  // the explicit "none" override, ECMA-376 §17.18.40), fall back to w:shd
+  // for custom hex colors.
+  if (formatting.highlight) {
     if (VALID_HIGHLIGHT_COLORS.has(formatting.highlight)) {
       parts.push(`<w:highlight w:val="${formatting.highlight}"/>`);
-    } else if (!formatting.shading) {
+    } else if (formatting.highlight !== 'none' && !formatting.shading) {
       // Custom color not in OOXML predefined set — use w:shd as fallback.
       // Only emit if value looks like a valid hex color.
       const hex = formatting.highlight.replace(/^#/, '');

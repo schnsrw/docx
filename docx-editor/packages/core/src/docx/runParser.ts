@@ -54,6 +54,7 @@ import {
 } from './xmlParser';
 import { resolveThemeFontRef } from './themeParser';
 import { parseImage } from './imageParser';
+import { parseBorderSpec } from './paragraphParser';
 
 /**
  * Parse color value from attributes
@@ -226,6 +227,13 @@ export function parseRunProperties(
       getAttribute(color, 'w', 'themeTint'),
       getAttribute(color, 'w', 'themeShade')
     );
+  }
+
+  // Run border (w:bdr) — box around the run's text (§17.3.2.4)
+  const bdr = findChild(rPr, 'w', 'bdr');
+  if (bdr) {
+    const border = parseBorderSpec(bdr);
+    if (border) formatting.border = border;
   }
 
   // Highlight color (w:highlight)

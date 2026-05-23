@@ -13,9 +13,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 
 | Tag | Total dropped | Fixtures affected |
 |-----|---------------|-------------------|
-| `w:highlight` | 2 | 1 |
-| `w:bookmarkEnd` | 1 | 1 |
-| `w:bdr` | 1 | 1 |
 
 ## Per-fixture detail
 
@@ -30,9 +27,7 @@ No round-trip drops.
 ### medical-incident-form
 
 
-| Tag | In | Out |
-|-----|----|-----|
-| `w:bookmarkEnd` | 1 | 0 |
+No tags vanished on round-trip.
 
 ### table-indent
 
@@ -78,9 +73,7 @@ No round-trip drops.
 ### demo
 
 
-| Tag | In | Out |
-|-----|----|-----|
-| `w:bdr` | 1 | 0 |
+No tags vanished on round-trip.
 
 ### theme-color-auto
 
@@ -152,10 +145,7 @@ No round-trip drops.
 
 ### titlePg-header-footer
 
-
-| Tag | In | Out |
-|-----|----|-----|
-| `w:highlight` | 2 | 0 |
+No round-trip drops.
 
 ### generic-header-footer-horizontal-regression
 

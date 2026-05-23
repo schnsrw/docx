@@ -45,14 +45,18 @@ import type {
   ColorValue,
   RelationshipMap,
   MediaFile,
+  BookmarkStart,
+  BookmarkEnd,
 } from '../types/document';
 import type { StyleMap } from './styleParser';
 import type { NumberingMap } from './numberingParser';
 import { parseParagraph } from './paragraphParser';
+import { parseBookmarkStart, parseBookmarkEnd } from './bookmarkParser';
 import {
   findChild,
   findChildren,
   getAttribute,
+  getLocalName,
   parseNumericAttribute,
   parseBooleanElement,
   type XmlElement,
@@ -1153,6 +1157,21 @@ export function parseTable(
   for (const rowElement of rows) {
     const row = parseTableRow(rowElement, styles, theme, numbering, rels, media, options);
     table.rows.push(row);
+  }
+
+  // Capture bookmark markers that sit as direct children of <w:tbl>, after
+  // the last <w:tr>. Word sometimes anchors range-closers here (e.g. when a
+  // bookmark starts inside a cell and ends at the table boundary). They
+  // round-trip via Table.trailingBookmarks.
+  const trailingBookmarks: (BookmarkStart | BookmarkEnd)[] = [];
+  for (const child of tblElement.elements ?? []) {
+    if (child.type !== 'element' || !child.name) continue;
+    const local = getLocalName(child.name);
+    if (local === 'bookmarkStart') trailingBookmarks.push(parseBookmarkStart(child));
+    else if (local === 'bookmarkEnd') trailingBookmarks.push(parseBookmarkEnd(child));
+  }
+  if (trailingBookmarks.length) {
+    table.trailingBookmarks = trailingBookmarks;
   }
 
   inferImplicitSingleCellRowSpans(table);
