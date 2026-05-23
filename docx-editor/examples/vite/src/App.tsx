@@ -11,6 +11,25 @@ import { ShareDialog } from './collab/Share';
 import { LoadingPanel } from './collab/LoadingPanel';
 import { ErrorPanel } from './collab/ErrorPanel';
 import { DisconnectedBanner } from './collab/DisconnectedBanner';
+import { Home } from './Home';
+import { loadTemplate } from './templates/loader';
+import type { TemplateEntry } from './templates/manifest';
+
+/**
+ * Initial view: home (Google-Docs-style template gallery) unless the
+ * URL signals we should land straight in the editor:
+ * - `?e2e=1` — 200+ Playwright specs assume direct editor mount.
+ * - `?skipHome=1` — escape hatch for embedders / quick links.
+ * (Collab `?room=…` is handled separately — CollabApp returns early
+ * before this view branch.)
+ */
+function getInitialView(): 'home' | 'editor' {
+  if (typeof window === 'undefined') return 'home';
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('e2e') === '1') return 'editor';
+  if (params.get('skipHome') === '1') return 'editor';
+  return 'home';
+}
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
@@ -98,6 +117,7 @@ export function App() {
   );
   const editorRef = useRef<DocxEditorRef>(null);
   const suppressSeedDocumentRef = useRef(false);
+  const [view, setView] = useState<'home' | 'editor'>(getInitialView);
   const [currentDocument, setCurrentDocument] = useState<DocxDocument | null>(null);
   const [documentBuffer, setDocumentBuffer] = useState<ArrayBuffer | null>(null);
   const [fileName, setFileName] = useState<string>('docx-editor-demo.docx');
@@ -255,12 +275,24 @@ export function App() {
 
   const { zoom: autoZoom, isMobile } = useResponsiveLayout();
 
+  // Auto-seed a blank doc only when we land straight in the editor
+  // (e.g. ?e2e=1 / ?skipHome=1). Home view lets the user pick a
+  // template instead — no need for a placeholder doc.
   useEffect(() => {
     if (suppressSeedDocumentRef.current) return;
+    if (view !== 'editor') return;
     setCurrentDocument(createEmptyDocument());
     setFileName('Untitled.docx');
+    // Initial-mount only; subsequent transitions to editor go through
+    // handleSelectTemplate / handleOpenFile which set the doc themselves.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // File → New still creates a blank doc in place — preserves muscle
+  // memory + lets the existing 200+ Playwright specs keep calling
+  // `editor.newDocument()` to reset between cases. The template
+  // gallery is the *initial* entry; users get back to it by
+  // navigating to /.
   const handleNewDocument = useCallback(() => {
     suppressSeedDocumentRef.current = true;
     setCurrentDocument(createEmptyDocument());
@@ -269,22 +301,47 @@ export function App() {
     setStatus('');
   }, []);
 
-  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleSelectTemplate = useCallback(async (entry: TemplateEntry) => {
+    try {
+      if (entry.source.kind === 'docx') setStatus('Loading template…');
+      const loaded = await loadTemplate(entry);
+      suppressSeedDocumentRef.current = true;
+      if (loaded.kind === 'document') {
+        setDocumentBuffer(null);
+        setCurrentDocument(loaded.document);
+      } else {
+        setCurrentDocument(null);
+        setDocumentBuffer(loaded.buffer);
+      }
+      setFileName(loaded.fileName);
+      setStatus('');
+      setView('editor');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setStatus(`Failed to load template: ${message}`);
+    }
+  }, []);
 
+  const handleOpenFromHome = useCallback(async (file: File) => {
     try {
       suppressSeedDocumentRef.current = true;
-      setStatus('Loading...');
+      setStatus('Loading…');
       const buffer = await file.arrayBuffer();
       setCurrentDocument(null);
       setDocumentBuffer(buffer);
       setFileName(file.name);
       setStatus('');
+      setView('editor');
     } catch {
       setStatus('Error loading file');
     }
   }, []);
+
+  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    await handleOpenFromHome(file);
+  }, [handleOpenFromHome]);
 
   const handleSave = useCallback(async () => {
     if (!editorRef.current) return;
@@ -363,6 +420,10 @@ export function App() {
         onFontsLoaded={handleFontsLoaded}
       />
     );
+  }
+
+  if (view === 'home') {
+    return <Home onSelectTemplate={handleSelectTemplate} onOpenFile={handleOpenFromHome} />;
   }
 
   return (
