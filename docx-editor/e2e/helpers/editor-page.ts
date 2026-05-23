@@ -133,8 +133,10 @@ export class EditorPage {
       ? filePath
       : path.join(__dirname, '..', filePath);
 
-    // Find the DOCX file input specifically (not the image file input)
-    const fileInput = this.page.locator('input[type="file"][accept=".docx"]');
+    // Find the DOCX file input specifically (not the image file input).
+    // The accept list now also covers .odt/.md/.txt, so use substring match
+    // instead of equals.
+    const fileInput = this.page.locator('input[type="file"][accept*=".docx"]');
     await fileInput.setInputFiles(absolutePath);
 
     // Wait for document to load
@@ -1341,17 +1343,21 @@ export class EditorPage {
   async saveDocument(): Promise<void> {
     // Wait for any pending changes
     await this.page.waitForTimeout(200);
-    // Click save button
-    await this.page.getByRole('button', { name: 'Save' }).click();
+    // Same story as newDocument(): Save moved inside the File dropdown.
+    await this.page.getByRole('button', { name: 'File' }).click();
+    await this.page.getByRole('button', { name: /^Save\b/ }).click();
     // Wait for download or save confirmation
     await this.page.waitForTimeout(500);
   }
 
   /**
-   * Click New button to create a new document
+   * Click File → New to create a new document
    */
   async newDocument(): Promise<void> {
-    await this.page.locator('button:has-text("New")').click();
+    // The menu-bar redesign (0da2a75) put "New" inside the File dropdown,
+    // so open File first and then click the item by accessible name.
+    await this.page.getByRole('button', { name: 'File' }).click();
+    await this.page.getByRole('button', { name: /^New\b/ }).click();
     // Wait for the new (empty) ProseMirror to be attached and reporting an
     // empty doc via the e2e editor ref. The previous 500ms fixed wait raced
     // with bootstrap on cold CI runs — a subsequent typeText() then landed
