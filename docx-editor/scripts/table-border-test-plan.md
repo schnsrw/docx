@@ -17,13 +17,16 @@ last body row?"
 
 | # | Fixture | Table | Style | Word Online | Word Desktop | Google Docs | LibreOffice |
 |---|---|---|---|---|---|---|---|
-| A1 | `docx-editor-numbering.docx` | first | `VeriCasaHeader` | _open?_ | _open?_ | _open?_ | **No** |
-| A2 | `docx-editor-numbering.docx` | second | `VeriCasaHeader` | _open?_ | _open?_ | _open?_ | **No** |
-| A3 | `issue-387-font-theme-override.docx` | first | `VeriCasaHeader` | _open?_ | _open?_ | _open?_ | **No** |
-| A4 | `issue-387-font-theme-override.docx` | second | `VeriCasaHeader` | _open?_ | _open?_ | _open?_ | **No** |
+| A1 | `docx-editor-numbering.docx` | first | `VeriCasaHeader` | **Yes** † | _open?_ | _open?_ | **No** |
+| A2 | `docx-editor-numbering.docx` | second | `VeriCasaHeader` | _presumed Yes_ ‡ | _open?_ | _open?_ | **No** |
+| A3 | `issue-387-font-theme-override.docx` | first | `VeriCasaHeader` | _presumed Yes_ ‡ | _open?_ | _open?_ | **No** |
+| A4 | `issue-387-font-theme-override.docx` | second | `VeriCasaHeader` | _presumed Yes_ ‡ | _open?_ | _open?_ | **No** |
 | B1 | `demo.docx` | Table 5 (Calendar3) | `Calendar3` | _open?_ | _open?_ | _open?_ | **No** |
 | C1 | `table-indent.docx` | first | (none, 1-row, empty `tcBorders`) | _open?_ | _open?_ | _open?_ | **No** |
 | D1 | `header-with-textbox.docx` | first | (inline `bottom="nil"`) | _open?_ | _open?_ | _open?_ | **No** |
+
+† Observed directly by the issue reporter in #395.
+‡ Same style (`VeriCasaHeader`) and same OOXML shape as A1 — almost certainly behaves the same in Word Online, but worth confirming since presumption isn't ground truth.
 
 Rows A1–A4 are the #395 candidates. Rows B1, C1, D1 are controls
 that test the boundary — they're "suspect" by the classifier but
@@ -37,8 +40,14 @@ falls within 20pt below the named table's last body row (and isn't
 the next table's top border). Result: LibreOffice draws **no**
 closing line in any of the seven cases — i.e. it agrees with our
 renderer and the strict ECMA-376 reading. That's the boring,
-spec-faithful outcome. The interesting variance, if any, lives in
-Word / Word Online / Google Docs.
+spec-faithful outcome.
+
+The Word Online "Yes" for A1 comes from the issue reporter's direct
+observation in #395, not from re-running here. A2–A4 are marked
+"presumed Yes" because they share the `VeriCasaHeader` style and the
+exact OOXML shape (firstRow declares top + bottom, no `tblBorders`,
+no `lastRow`, `tblLook lastRow=0`); reconfirming would be a
+formality but isn't free, so it's still listed as open.
 
 ## What each fixture's OOXML actually says
 
