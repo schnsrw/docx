@@ -39,6 +39,7 @@ import {
 } from './Toolbar';
 import type { FontOption } from './ui/FontPicker';
 import { EditorToolbar } from './EditorToolbar';
+import { StatusBar } from './StatusBar';
 import { pointsToHalfPoints } from './ui/FontSizePicker';
 import {
   DocumentOutline,
@@ -315,6 +316,8 @@ export interface DocxEditorProps {
   theme?: Theme | null;
   /** Whether to show toolbar (default: true) */
   showToolbar?: boolean;
+  /** Whether to show the bottom status bar (default: true) */
+  showStatusBar?: boolean;
   /** Whether to show zoom control (default: true) */
   showZoomControl?: boolean;
   /** Whether to show page margin guides/boundaries (default: false) */
@@ -1312,6 +1315,7 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     onFontsLoaded: onFontsLoadedCallback,
     theme,
     showToolbar = true,
+    showStatusBar = true,
     showZoomControl = true,
     showMarginGuides: _showMarginGuides = false,
     marginGuideColor: _marginGuideColor,
@@ -1691,6 +1695,47 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
   // Keep history.state accessible in stable callbacks without stale closures
   const historyStateRef = useRef(history.state);
   historyStateRef.current = history.state;
+
+  // Word + character counts for the status bar. Derived from the
+  // Document model by walking paragraphs / runs / hyperlinks and joining
+  // text fragments. Throttled by history.state identity (only recomputes
+  // when the doc actually changes).
+  const { wordCount, charCount } = useMemo(() => {
+    const doc = history.state?.package?.document;
+    if (!doc) return { wordCount: undefined, charCount: undefined };
+    const parts: string[] = [];
+    const visit = (nodes: readonly unknown[] | undefined): void => {
+      if (!nodes) return;
+      for (const node of nodes) {
+        if (!node || typeof node !== 'object') continue;
+        const n = node as {
+          type?: string;
+          content?: readonly unknown[];
+          text?: string;
+          rows?: readonly { cells?: readonly { content?: readonly unknown[] }[] }[];
+        };
+        if (n.type === 'text' && typeof n.text === 'string') {
+          parts.push(n.text);
+        } else if (n.type === 'run' || n.type === 'hyperlink' || n.type === 'paragraph') {
+          visit(n.content);
+        } else if (n.type === 'table' && n.rows) {
+          for (const row of n.rows) {
+            for (const cell of row.cells ?? []) {
+              visit(cell.content);
+            }
+          }
+        } else if (n.content) {
+          visit(n.content);
+        }
+      }
+    };
+    visit((doc as { body?: { content?: readonly unknown[] } }).body?.content);
+    const text = parts.join('');
+    const words = text.trim().length === 0 ? 0 : text.trim().split(/\s+/).length;
+    // "characters (no spaces)" matches Word's convention.
+    const chars = text.replace(/\s/g, '').length;
+    return { wordCount: words, charCount: chars };
+  }, [history.state]);
   // Track current border color/width for border presets (like Google Docs)
   const borderSpecRef = useRef({ style: 'single', size: 4, color: { rgb: '000000' } });
   // Cache style resolver to avoid recreating on every selection change
@@ -5751,6 +5796,17 @@ body { background: white; }
                   {/* end editor flex wrapper */}
                 </div>
                 {/* end scroll container */}
+
+                {showStatusBar && !readOnlyProp && (
+                  <StatusBar
+                    currentPage={scrollPageInfo.currentPage}
+                    totalPages={scrollPageInfo.totalPages}
+                    wordCount={wordCount}
+                    charCount={charCount}
+                    zoom={state.zoom}
+                    onZoomChange={handleZoomChange}
+                  />
+                )}
 
                 {/* Floating page indicator next to the scrollbar */}
                 {scrollPageInfo.totalPages > 1 && (
