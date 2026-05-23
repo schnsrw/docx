@@ -17,16 +17,18 @@ last body row?"
 
 | # | Fixture | Table | Style | Word Online | Word Desktop | Google Docs | LibreOffice |
 |---|---|---|---|---|---|---|---|
-| A1 | `docx-editor-numbering.docx` | first | `VeriCasaHeader` | **Yes** † | _open?_ | _open?_ | **No** |
-| A2 | `docx-editor-numbering.docx` | second | `VeriCasaHeader` | _presumed Yes_ ‡ | _open?_ | _open?_ | **No** |
-| A3 | `issue-387-font-theme-override.docx` | first | `VeriCasaHeader` | _presumed Yes_ ‡ | _open?_ | _open?_ | **No** |
-| A4 | `issue-387-font-theme-override.docx` | second | `VeriCasaHeader` | _presumed Yes_ ‡ | _open?_ | _open?_ | **No** |
-| B1 | `demo.docx` | Table 5 (Calendar3) | `Calendar3` | _open?_ | _open?_ | _open?_ | **No** |
-| C1 | `table-indent.docx` | first | (none, 1-row, empty `tcBorders`) | _open?_ | _open?_ | _open?_ | **No** |
-| D1 | `header-with-textbox.docx` | first | (inline `bottom="nil"`) | _open?_ | _open?_ | _open?_ | **No** |
+| A1 | `docx-editor-numbering.docx` | first | `VeriCasaHeader` | **Yes** † | _no machine_ | **No** § | **No** |
+| A2 | `docx-editor-numbering.docx` | second | `VeriCasaHeader` | _presumed Yes_ ‡ | _no machine_ | **No** § | **No** |
+| A3 | `issue-387-font-theme-override.docx` | first | `VeriCasaHeader` | _presumed Yes_ ‡ | _no machine_ | **No** § | **No** |
+| A4 | `issue-387-font-theme-override.docx` | second | `VeriCasaHeader` | _presumed Yes_ ‡ | _no machine_ | **No** § | **No** |
+| B1 | `demo.docx` | Table 5 (Calendar3) | `Calendar3` | _not tested_ | _no machine_ | **No** ¶ | **No** |
+| C1 | `table-indent.docx` | first | (none, 1-row, empty `tcBorders`) | _not tested_ | _no machine_ | **No** § | **No** |
+| D1 | `header-with-textbox.docx` | first | (inline `bottom="nil"`) | _not tested_ | _no machine_ | **No** § | **No** |
 
 † Observed directly by the issue reporter in #395.
 ‡ Same style (`VeriCasaHeader`) and same OOXML shape as A1 — almost certainly behaves the same in Word Online, but worth confirming since presumption isn't ground truth.
+§ Google Docs result is from a hand-check on 2026-05-24: A1, A2, B1 observed directly; A3, A4, C1, D1 marked from the reviewer's "none of them have a bottom border" sweep across the fixtures.
+¶ Calendar3 confirmed directly as part of the demo.docx sweep.
 
 Rows A1–A4 are the #395 candidates. Rows B1, C1, D1 are controls
 that test the boundary — they're "suspect" by the classifier but
@@ -144,6 +146,27 @@ table's outer bottom. Should render borderless everywhere.
 - **If A1–A4 do NOT close anywhere except in the issue author's
   observation**: re-verify the issue; may have been a Word setting
   or zoom artifact.
+
+## Outcome (2026-05-24)
+
+Branch picked: **Word-only opt-in heuristic.**
+
+- Word Online draws a closing line under VeriCasaHeader tables (A1
+  directly observed; A2–A4 presumed by structural identity).
+- Google Docs and LibreOffice both draw no closing line for any of
+  the seven cases — the borderless controls (B1 / C1 / D1) confirm
+  neither renderer over-draws on tables that are legitimately
+  open-bottomed.
+- Word Desktop wasn't reachable from this machine; given Word
+  Online's behavior it's the obvious assumption that Desktop
+  matches, but that's still an assumption.
+
+Implication: implement a Word-compat heuristic, gated by an opt-in
+flag (off by default), with the rule from the second decision-tree
+bullet ("firstRow declares a bottom border, no `tblBorders`, no
+`lastRow`-typed style ⇒ apply firstRow's bottom border below the
+last row"). Default-off preserves the spec-faithful rendering for
+the many docs that intentionally have open-bottomed tables.
 
 ## How to validate quickly
 
