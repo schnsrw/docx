@@ -8,6 +8,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import { MaterialSymbol } from './MaterialSymbol';
+import { useMenuBar } from './MenuBarContext';
 
 export interface MenuItem {
   icon?: string;
@@ -35,6 +36,12 @@ interface MenuDropdownProps {
   label: string;
   items: MenuEntry[];
   disabled?: boolean;
+  /**
+   * Stable id for this menu within a MenuBarProvider. When omitted, the
+   * label is used. Needed so adjacent menus can hover-to-switch and so
+   * ArrowLeft/Right keyboard nav can move between them.
+   */
+  id?: string;
 }
 
 const triggerStyle: CSSProperties = {
@@ -106,8 +113,23 @@ const submenuPanelStyle: CSSProperties = {
   zIndex: 1001,
 };
 
-export function MenuDropdown({ label, items, disabled }: MenuDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function MenuDropdown({ label, items, disabled, id }: MenuDropdownProps) {
+  // When inside a <MenuBarProvider>, isOpen is driven by the shared
+  // openId so adjacent menus can hover-to-switch and one click swaps
+  // between them. Outside a provider, this falls back to a local
+  // boolean and the component keeps its old isolated behavior.
+  const bar = useMenuBar();
+  const menuId = id ?? label;
+  const [localOpen, setLocalOpen] = useState(false);
+  const isOpen = bar ? bar.openId === menuId : localOpen;
+  const setIsOpen = useCallback(
+    (next: boolean) => {
+      if (bar) bar.setOpenId(next ? menuId : null);
+      else setLocalOpen(next);
+    },
+    [bar, menuId]
+  );
+
   const [hoveredSubmenu, setHoveredSubmenu] = useState<string | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -116,10 +138,18 @@ export function MenuDropdown({ label, items, disabled }: MenuDropdownProps) {
     left: 0,
   });
 
+  // Register this trigger with the menu bar so it can move keyboard
+  // focus between menus (ArrowLeft / ArrowRight on a trigger).
+  useEffect(() => {
+    if (!bar) return;
+    bar.registerTrigger(menuId, triggerRef.current);
+    return () => bar.registerTrigger(menuId, null);
+  }, [bar, menuId]);
+
   const closeMenu = useCallback(() => {
     setIsOpen(false);
     setHoveredSubmenu(null);
-  }, []);
+  }, [setIsOpen]);
 
   // Calculate position when opening
   useEffect(() => {
@@ -204,14 +234,36 @@ export function MenuDropdown({ label, items, disabled }: MenuDropdownProps) {
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    // position: relative scopes the dropdown's absolutely-positioned
+    // children. The trigger sits at z-index above the open-menu backdrop
+    // so clicks on adjacent triggers go directly through to them
+    // (Word / Google Docs: one click swaps between menus, not two).
+    <div style={{ position: 'relative', zIndex: isOpen ? 10000 : 1 }}>
       <button
         ref={triggerRef}
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
+        onMouseEnter={() => {
+          if (disabled || !bar) return;
+          bar.hoverTrigger(menuId);
+        }}
+        onKeyDown={(e) => {
+          if (!bar) return;
+          if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            bar.moveFocus(menuId, 1);
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            bar.moveFocus(menuId, -1);
+          }
+        }}
         onMouseDown={(e) => e.preventDefault()}
         disabled={disabled}
-        style={isOpen ? triggerOpenStyle : triggerStyle}
+        style={{
+          ...(isOpen ? triggerOpenStyle : triggerStyle),
+          position: 'relative',
+          zIndex: 10001,
+        }}
       >
         {label}
         <MaterialSymbol name="arrow_drop_down" size={16} />

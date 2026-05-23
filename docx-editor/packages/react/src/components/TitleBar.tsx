@@ -12,6 +12,7 @@ import React, { useCallback, Children, isValidElement } from 'react';
 import type { ReactNode } from 'react';
 import { MenuDropdown } from './ui/MenuDropdown';
 import type { MenuEntry } from './ui/MenuDropdown';
+import { MenuBarProvider } from './ui/MenuBarContext';
 import { MaterialSymbol } from './ui/Icons';
 import { TableGridInline } from './ui/TableGridInline';
 import { useEditorToolbar } from './EditorToolbarContext';
@@ -262,392 +263,396 @@ export function MenuBar() {
     hasPrintOrPageSetup || onNew || onOpen || onSave || onFileProperties || hasExport;
 
   return (
-    <div className="flex items-center" role="menubar" aria-label={t('titleBar.menuBarAriaLabel')}>
-      {/* File Menu */}
-      {hasFileMenu && (
+    <MenuBarProvider>
+      <div className="flex items-center" role="menubar" aria-label={t('titleBar.menuBarAriaLabel')}>
+        {/* File Menu */}
+        {hasFileMenu && (
+          <MenuDropdown
+            label={t('toolbar.file')}
+            disabled={disabled}
+            items={[
+              ...(onNew
+                ? [
+                    {
+                      icon: 'note_add',
+                      label: 'New',
+                      shortcut: '⌘N',
+                      onClick: onNew,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onOpen
+                ? [
+                    {
+                      icon: 'file_upload',
+                      label: t('toolbar.open'),
+                      shortcut: t('toolbar.openShortcut'),
+                      onClick: onOpen,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onSave
+                ? [
+                    {
+                      icon: 'file_download',
+                      label: t('toolbar.save'),
+                      shortcut: t('toolbar.saveShortcut'),
+                      onClick: onSave,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...((onOpen || onSave) && (hasPrintOrPageSetup || onFileProperties || hasExport)
+                ? [{ type: 'separator' as const } as MenuEntry]
+                : []),
+              ...(showPrintButton && onPrint
+                ? [
+                    {
+                      icon: 'print',
+                      label: t('toolbar.print'),
+                      shortcut: t('toolbar.printShortcut'),
+                      onClick: onPrint,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onExportPdf
+                ? [
+                    {
+                      icon: 'file_download',
+                      label: 'Export as PDF',
+                      onClick: onExportPdf,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onExportOdt
+                ? [
+                    {
+                      icon: 'file_download',
+                      label: 'Export as ODT',
+                      onClick: onExportOdt,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onExportMd
+                ? [
+                    {
+                      icon: 'file_download',
+                      label: 'Export as Markdown',
+                      onClick: onExportMd,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onExportTxt
+                ? [
+                    {
+                      icon: 'file_download',
+                      label: 'Export as Plain Text',
+                      onClick: onExportTxt,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onPageSetup
+                ? [
+                    {
+                      icon: 'settings',
+                      label: t('toolbar.pageSetup'),
+                      onClick: onPageSetup,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onFileProperties
+                ? [
+                    {
+                      icon: 'tune',
+                      label: 'Properties',
+                      onClick: onFileProperties,
+                    } as MenuEntry,
+                  ]
+                : []),
+            ]}
+          />
+        )}
+
+        {/* Edit Menu */}
         <MenuDropdown
-          label={t('toolbar.file')}
+          label="Edit"
           disabled={disabled}
           items={[
-            ...(onNew
+            {
+              icon: 'undo',
+              label: 'Undo',
+              shortcut: '⌘Z',
+              onClick: onUndo ?? (() => {}),
+              disabled: !canUndo,
+            } as MenuEntry,
+            {
+              icon: 'redo',
+              label: 'Redo',
+              shortcut: '⌘Y',
+              onClick: onRedo ?? (() => {}),
+              disabled: !canRedo,
+            } as MenuEntry,
+            { type: 'separator' as const } as MenuEntry,
+            // Clipboard ops — execCommand only works while the editor has focus,
+            // so refocus first. Modern browsers block JS-initiated paste; the
+            // shortcut label educates users to fall back to ⌘V.
+            {
+              icon: 'content_cut',
+              label: 'Cut',
+              shortcut: '⌘X',
+              onClick: () => {
+                onRefocusEditor?.();
+                document.execCommand('cut');
+              },
+            } as MenuEntry,
+            {
+              icon: 'content_copy',
+              label: 'Copy',
+              shortcut: '⌘C',
+              onClick: () => {
+                onRefocusEditor?.();
+                document.execCommand('copy');
+              },
+            } as MenuEntry,
+            {
+              icon: 'content_paste',
+              label: 'Paste',
+              shortcut: '⌘V',
+              onClick: () => {
+                onRefocusEditor?.();
+                document.execCommand('paste');
+              },
+            } as MenuEntry,
+            {
+              icon: 'content_paste_go',
+              label: 'Paste without formatting',
+              shortcut: '⌘⇧V',
+              onClick: async () => {
+                onRefocusEditor?.();
+                try {
+                  const text = await navigator.clipboard.readText();
+                  if (text) document.execCommand('insertText', false, text);
+                } catch {
+                  // Browser blocked the read; user can fall back to ⌘⇧V.
+                }
+              },
+            } as MenuEntry,
+            { type: 'separator' as const } as MenuEntry,
+            ...(onOpenFind
               ? [
                   {
-                    icon: 'note_add',
-                    label: 'New',
-                    shortcut: '⌘N',
-                    onClick: onNew,
+                    icon: 'search',
+                    label: 'Find',
+                    shortcut: '⌘F',
+                    onClick: onOpenFind,
                   } as MenuEntry,
                 ]
               : []),
-            ...(onOpen
+            ...(onOpenFindReplace
               ? [
                   {
-                    icon: 'file_upload',
-                    label: t('toolbar.open'),
-                    shortcut: t('toolbar.openShortcut'),
-                    onClick: onOpen,
+                    icon: 'find_replace',
+                    label: 'Find and Replace',
+                    shortcut: '⌘H',
+                    onClick: onOpenFindReplace,
                   } as MenuEntry,
                 ]
               : []),
-            ...(onSave
-              ? [
-                  {
-                    icon: 'file_download',
-                    label: t('toolbar.save'),
-                    shortcut: t('toolbar.saveShortcut'),
-                    onClick: onSave,
-                  } as MenuEntry,
-                ]
-              : []),
-            ...((onOpen || onSave) && (hasPrintOrPageSetup || onFileProperties || hasExport)
+            ...(onOpenFind || onOpenFindReplace
               ? [{ type: 'separator' as const } as MenuEntry]
               : []),
-            ...(showPrintButton && onPrint
+            {
+              icon: 'select_all',
+              label: 'Select All',
+              shortcut: '⌘A',
+              onClick: () => handleFormat('selectAll'),
+            } as MenuEntry,
+            ...(onToggleSpellCheck
               ? [
+                  { type: 'separator' as const } as MenuEntry,
                   {
-                    icon: 'print',
-                    label: t('toolbar.print'),
-                    shortcut: t('toolbar.printShortcut'),
-                    onClick: onPrint,
-                  } as MenuEntry,
-                ]
-              : []),
-            ...(onExportPdf
-              ? [
-                  {
-                    icon: 'file_download',
-                    label: 'Export as PDF',
-                    onClick: onExportPdf,
-                  } as MenuEntry,
-                ]
-              : []),
-            ...(onExportOdt
-              ? [
-                  {
-                    icon: 'file_download',
-                    label: 'Export as ODT',
-                    onClick: onExportOdt,
-                  } as MenuEntry,
-                ]
-              : []),
-            ...(onExportMd
-              ? [
-                  {
-                    icon: 'file_download',
-                    label: 'Export as Markdown',
-                    onClick: onExportMd,
-                  } as MenuEntry,
-                ]
-              : []),
-            ...(onExportTxt
-              ? [
-                  {
-                    icon: 'file_download',
-                    label: 'Export as Plain Text',
-                    onClick: onExportTxt,
-                  } as MenuEntry,
-                ]
-              : []),
-            ...(onPageSetup
-              ? [
-                  {
-                    icon: 'settings',
-                    label: t('toolbar.pageSetup'),
-                    onClick: onPageSetup,
-                  } as MenuEntry,
-                ]
-              : []),
-            ...(onFileProperties
-              ? [
-                  {
-                    icon: 'tune',
-                    label: 'Properties',
-                    onClick: onFileProperties,
+                    icon: 'spellcheck',
+                    label: spellCheckEnabled ? '✓ Spelling' : 'Spelling',
+                    onClick: onToggleSpellCheck,
                   } as MenuEntry,
                 ]
               : []),
           ]}
         />
-      )}
 
-      {/* Edit Menu */}
-      <MenuDropdown
-        label="Edit"
-        disabled={disabled}
-        items={[
-          {
-            icon: 'undo',
-            label: 'Undo',
-            shortcut: '⌘Z',
-            onClick: onUndo ?? (() => {}),
-            disabled: !canUndo,
-          } as MenuEntry,
-          {
-            icon: 'redo',
-            label: 'Redo',
-            shortcut: '⌘Y',
-            onClick: onRedo ?? (() => {}),
-            disabled: !canRedo,
-          } as MenuEntry,
-          { type: 'separator' as const } as MenuEntry,
-          // Clipboard ops — execCommand only works while the editor has focus,
-          // so refocus first. Modern browsers block JS-initiated paste; the
-          // shortcut label educates users to fall back to ⌘V.
-          {
-            icon: 'content_cut',
-            label: 'Cut',
-            shortcut: '⌘X',
-            onClick: () => {
-              onRefocusEditor?.();
-              document.execCommand('cut');
-            },
-          } as MenuEntry,
-          {
-            icon: 'content_copy',
-            label: 'Copy',
-            shortcut: '⌘C',
-            onClick: () => {
-              onRefocusEditor?.();
-              document.execCommand('copy');
-            },
-          } as MenuEntry,
-          {
-            icon: 'content_paste',
-            label: 'Paste',
-            shortcut: '⌘V',
-            onClick: () => {
-              onRefocusEditor?.();
-              document.execCommand('paste');
-            },
-          } as MenuEntry,
-          {
-            icon: 'content_paste_go',
-            label: 'Paste without formatting',
-            shortcut: '⌘⇧V',
-            onClick: async () => {
-              onRefocusEditor?.();
-              try {
-                const text = await navigator.clipboard.readText();
-                if (text) document.execCommand('insertText', false, text);
-              } catch {
-                // Browser blocked the read; user can fall back to ⌘⇧V.
-              }
-            },
-          } as MenuEntry,
-          { type: 'separator' as const } as MenuEntry,
-          ...(onOpenFind
-            ? [
-                {
-                  icon: 'search',
-                  label: 'Find',
-                  shortcut: '⌘F',
-                  onClick: onOpenFind,
-                } as MenuEntry,
-              ]
-            : []),
-          ...(onOpenFindReplace
-            ? [
-                {
-                  icon: 'find_replace',
-                  label: 'Find and Replace',
-                  shortcut: '⌘H',
-                  onClick: onOpenFindReplace,
-                } as MenuEntry,
-              ]
-            : []),
-          ...(onOpenFind || onOpenFindReplace ? [{ type: 'separator' as const } as MenuEntry] : []),
-          {
-            icon: 'select_all',
-            label: 'Select All',
-            shortcut: '⌘A',
-            onClick: () => handleFormat('selectAll'),
-          } as MenuEntry,
-          ...(onToggleSpellCheck
-            ? [
-                { type: 'separator' as const } as MenuEntry,
-                {
-                  icon: 'spellcheck',
-                  label: spellCheckEnabled ? '✓ Spelling' : 'Spelling',
-                  onClick: onToggleSpellCheck,
-                } as MenuEntry,
-              ]
-            : []),
-        ]}
-      />
-
-      {/* Format Menu */}
-      <MenuDropdown
-        label={t('toolbar.format')}
-        disabled={disabled}
-        items={[
-          {
-            label: `${currentFormatting?.bold ? '✓ ' : ''}Bold`,
-            shortcut: '⌘B',
-            onClick: () => handleFormat('bold'),
-          } as MenuEntry,
-          {
-            label: `${currentFormatting?.italic ? '✓ ' : ''}Italic`,
-            shortcut: '⌘I',
-            onClick: () => handleFormat('italic'),
-          } as MenuEntry,
-          {
-            label: `${currentFormatting?.underline ? '✓ ' : ''}Underline`,
-            shortcut: '⌘U',
-            onClick: () => handleFormat('underline'),
-          } as MenuEntry,
-          {
-            label: `${currentFormatting?.strike ? '✓ ' : ''}Strikethrough`,
-            onClick: () => handleFormat('strikethrough'),
-          } as MenuEntry,
-          { type: 'separator' as const } as MenuEntry,
-          {
-            label: `${currentFormatting?.smallCaps ? '✓ ' : ''}Small Caps`,
-            onClick: () => handleFormat('toggleSmallCaps'),
-          } as MenuEntry,
-          {
-            label: `${currentFormatting?.allCaps ? '✓ ' : ''}All Caps`,
-            onClick: () => handleFormat('toggleAllCaps'),
-          } as MenuEntry,
-          { type: 'separator' as const } as MenuEntry,
-          {
-            icon: 'format_clear',
-            label: 'Clear formatting',
-            shortcut: '⌘\\',
-            onClick: () => handleFormat('clearFormatting'),
-          } as MenuEntry,
-          { type: 'separator' as const } as MenuEntry,
-          {
-            icon: 'format_textdirection_l_to_r',
-            label: t('toolbar.leftToRight'),
-            onClick: () => handleFormat('setLtr'),
-          } as MenuEntry,
-          {
-            icon: 'format_textdirection_r_to_l',
-            label: t('toolbar.rightToLeft'),
-            onClick: () => handleFormat('setRtl'),
-          } as MenuEntry,
-        ]}
-      />
-
-      {/* View Menu — zoom + theme. Shown if either is wired. */}
-      {(onZoomChange || onSetColorTheme) && (
+        {/* Format Menu */}
         <MenuDropdown
-          label="View"
+          label={t('toolbar.format')}
           disabled={disabled}
           items={[
-            ...(onZoomChange
+            {
+              label: `${currentFormatting?.bold ? '✓ ' : ''}Bold`,
+              shortcut: '⌘B',
+              onClick: () => handleFormat('bold'),
+            } as MenuEntry,
+            {
+              label: `${currentFormatting?.italic ? '✓ ' : ''}Italic`,
+              shortcut: '⌘I',
+              onClick: () => handleFormat('italic'),
+            } as MenuEntry,
+            {
+              label: `${currentFormatting?.underline ? '✓ ' : ''}Underline`,
+              shortcut: '⌘U',
+              onClick: () => handleFormat('underline'),
+            } as MenuEntry,
+            {
+              label: `${currentFormatting?.strike ? '✓ ' : ''}Strikethrough`,
+              onClick: () => handleFormat('strikethrough'),
+            } as MenuEntry,
+            { type: 'separator' as const } as MenuEntry,
+            {
+              label: `${currentFormatting?.smallCaps ? '✓ ' : ''}Small Caps`,
+              onClick: () => handleFormat('toggleSmallCaps'),
+            } as MenuEntry,
+            {
+              label: `${currentFormatting?.allCaps ? '✓ ' : ''}All Caps`,
+              onClick: () => handleFormat('toggleAllCaps'),
+            } as MenuEntry,
+            { type: 'separator' as const } as MenuEntry,
+            {
+              icon: 'format_clear',
+              label: 'Clear formatting',
+              shortcut: '⌘\\',
+              onClick: () => handleFormat('clearFormatting'),
+            } as MenuEntry,
+            { type: 'separator' as const } as MenuEntry,
+            {
+              icon: 'format_textdirection_l_to_r',
+              label: t('toolbar.leftToRight'),
+              onClick: () => handleFormat('setLtr'),
+            } as MenuEntry,
+            {
+              icon: 'format_textdirection_r_to_l',
+              label: t('toolbar.rightToLeft'),
+              onClick: () => handleFormat('setRtl'),
+            } as MenuEntry,
+          ]}
+        />
+
+        {/* View Menu — zoom + theme. Shown if either is wired. */}
+        {(onZoomChange || onSetColorTheme) && (
+          <MenuDropdown
+            label="View"
+            disabled={disabled}
+            items={[
+              ...(onZoomChange
+                ? [
+                    {
+                      icon: 'add',
+                      label: 'Zoom in',
+                      shortcut: '⌘=',
+                      onClick: () => onZoomChange(Math.min((zoom ?? 1) * 1.1, 4)),
+                    } as MenuEntry,
+                    {
+                      icon: 'remove',
+                      label: 'Zoom out',
+                      shortcut: '⌘−',
+                      onClick: () => onZoomChange(Math.max((zoom ?? 1) / 1.1, 0.25)),
+                    } as MenuEntry,
+                    {
+                      icon: 'restart_alt',
+                      label: 'Reset zoom (100%)',
+                      shortcut: '⌘0',
+                      onClick: () => onZoomChange(1),
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onZoomChange && onSetColorTheme
+                ? [{ type: 'separator' as const } as MenuEntry]
+                : []),
+              ...(onSetColorTheme
+                ? [
+                    {
+                      icon: 'contrast',
+                      label: `${colorTheme === 'auto' || !colorTheme ? '✓ ' : ''}Theme: match system`,
+                      onClick: () => onSetColorTheme('auto'),
+                    } as MenuEntry,
+                    {
+                      icon: 'light_mode',
+                      label: `${colorTheme === 'light' ? '✓ ' : ''}Theme: light`,
+                      onClick: () => onSetColorTheme('light'),
+                    } as MenuEntry,
+                    {
+                      icon: 'dark_mode',
+                      label: `${colorTheme === 'dark' ? '✓ ' : ''}Theme: dark`,
+                      onClick: () => onSetColorTheme('dark'),
+                    } as MenuEntry,
+                  ]
+                : []),
+            ]}
+          />
+        )}
+
+        {/* Insert Menu */}
+        <MenuDropdown
+          label={t('toolbar.insert')}
+          disabled={disabled}
+          items={[
+            ...(onInsertImage
+              ? [{ icon: 'image', label: t('toolbar.image'), onClick: onInsertImage } as MenuEntry]
+              : []),
+            ...(showTableInsert && onInsertTable
               ? [
                   {
-                    icon: 'add',
-                    label: 'Zoom in',
-                    shortcut: '⌘=',
-                    onClick: () => onZoomChange(Math.min((zoom ?? 1) * 1.1, 4)),
-                  } as MenuEntry,
-                  {
-                    icon: 'remove',
-                    label: 'Zoom out',
-                    shortcut: '⌘−',
-                    onClick: () => onZoomChange(Math.max((zoom ?? 1) / 1.1, 0.25)),
-                  } as MenuEntry,
-                  {
-                    icon: 'restart_alt',
-                    label: 'Reset zoom (100%)',
-                    shortcut: '⌘0',
-                    onClick: () => onZoomChange(1),
+                    icon: 'grid_on',
+                    label: t('toolbar.table'),
+                    submenuContent: (closeMenu: () => void) => (
+                      <TableGridInline
+                        onInsert={(rows: number, cols: number) => {
+                          handleTableInsert(rows, cols);
+                          closeMenu();
+                        }}
+                      />
+                    ),
                   } as MenuEntry,
                 ]
               : []),
-            ...(onZoomChange && onSetColorTheme
+            ...(onInsertImage || (showTableInsert && onInsertTable)
               ? [{ type: 'separator' as const } as MenuEntry]
               : []),
-            ...(onSetColorTheme
+            {
+              icon: 'page_break',
+              label: t('toolbar.pageBreak'),
+              onClick: onInsertPageBreak,
+              disabled: !onInsertPageBreak,
+            },
+            {
+              icon: 'format_list_numbered',
+              label: t('toolbar.tableOfContents'),
+              onClick: onInsertTOC,
+              disabled: !onInsertTOC,
+            },
+          ]}
+        />
+
+        {/* Help Menu */}
+        <MenuDropdown
+          label={t('toolbar.help')}
+          disabled={disabled}
+          items={[
+            {
+              icon: 'bug_report',
+              label: t('toolbar.reportIssue'),
+              onClick: () => (onReportBug ? onReportBug() : openReportIssue()),
+            } as MenuEntry,
+            ...(onShowAbout
               ? [
+                  { type: 'separator' as const } as MenuEntry,
                   {
-                    icon: 'contrast',
-                    label: `${colorTheme === 'auto' || !colorTheme ? '✓ ' : ''}Theme: match system`,
-                    onClick: () => onSetColorTheme('auto'),
-                  } as MenuEntry,
-                  {
-                    icon: 'light_mode',
-                    label: `${colorTheme === 'light' ? '✓ ' : ''}Theme: light`,
-                    onClick: () => onSetColorTheme('light'),
-                  } as MenuEntry,
-                  {
-                    icon: 'dark_mode',
-                    label: `${colorTheme === 'dark' ? '✓ ' : ''}Theme: dark`,
-                    onClick: () => onSetColorTheme('dark'),
+                    icon: 'info',
+                    label: 'About Casual Editor',
+                    onClick: onShowAbout,
                   } as MenuEntry,
                 ]
               : []),
           ]}
         />
-      )}
-
-      {/* Insert Menu */}
-      <MenuDropdown
-        label={t('toolbar.insert')}
-        disabled={disabled}
-        items={[
-          ...(onInsertImage
-            ? [{ icon: 'image', label: t('toolbar.image'), onClick: onInsertImage } as MenuEntry]
-            : []),
-          ...(showTableInsert && onInsertTable
-            ? [
-                {
-                  icon: 'grid_on',
-                  label: t('toolbar.table'),
-                  submenuContent: (closeMenu: () => void) => (
-                    <TableGridInline
-                      onInsert={(rows: number, cols: number) => {
-                        handleTableInsert(rows, cols);
-                        closeMenu();
-                      }}
-                    />
-                  ),
-                } as MenuEntry,
-              ]
-            : []),
-          ...(onInsertImage || (showTableInsert && onInsertTable)
-            ? [{ type: 'separator' as const } as MenuEntry]
-            : []),
-          {
-            icon: 'page_break',
-            label: t('toolbar.pageBreak'),
-            onClick: onInsertPageBreak,
-            disabled: !onInsertPageBreak,
-          },
-          {
-            icon: 'format_list_numbered',
-            label: t('toolbar.tableOfContents'),
-            onClick: onInsertTOC,
-            disabled: !onInsertTOC,
-          },
-        ]}
-      />
-
-      {/* Help Menu */}
-      <MenuDropdown
-        label={t('toolbar.help')}
-        disabled={disabled}
-        items={[
-          {
-            icon: 'bug_report',
-            label: t('toolbar.reportIssue'),
-            onClick: () => (onReportBug ? onReportBug() : openReportIssue()),
-          } as MenuEntry,
-          ...(onShowAbout
-            ? [
-                { type: 'separator' as const } as MenuEntry,
-                {
-                  icon: 'info',
-                  label: 'About Casual Editor',
-                  onClick: onShowAbout,
-                } as MenuEntry,
-              ]
-            : []),
-        ]}
-      />
-    </div>
+      </div>
+    </MenuBarProvider>
   );
 }
 
