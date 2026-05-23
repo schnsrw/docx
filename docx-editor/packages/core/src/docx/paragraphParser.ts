@@ -462,6 +462,11 @@ export function parseParagraphProperties(
   // === Spacing ===
   const spacing = findChild(pPr, 'w', 'spacing');
   if (spacing) {
+    // Empty <w:spacing/> overrides the inherited style chain. Record
+    // the marker so the serializer re-emits the self-closing form.
+    if (isEmptyXmlElement(spacing)) {
+      formatting.presentEmpty = { ...(formatting.presentEmpty ?? {}), spacing: true };
+    }
     const before = parseNumericAttribute(spacing, 'w', 'before');
     if (before !== undefined) formatting.spaceBefore = before;
 
@@ -498,6 +503,9 @@ export function parseParagraphProperties(
   // === Indentation ===
   const ind = findChild(pPr, 'w', 'ind');
   if (ind) {
+    if (isEmptyXmlElement(ind)) {
+      formatting.presentEmpty = { ...(formatting.presentEmpty ?? {}), ind: true };
+    }
     const left = parseNumericAttribute(ind, 'w', 'left');
     if (left !== undefined) formatting.indentLeft = left;
 
@@ -529,6 +537,9 @@ export function parseParagraphProperties(
   // === Borders ===
   const pBdr = findChild(pPr, 'w', 'pBdr');
   if (pBdr) {
+    if (isEmptyXmlElement(pBdr)) {
+      formatting.presentEmpty = { ...(formatting.presentEmpty ?? {}), pBdr: true };
+    }
     const borders: ParagraphFormatting['borders'] = {};
 
     const top = parseBorderSpec(findChild(pBdr, 'w', 'top'));
@@ -682,10 +693,25 @@ export function parseParagraphProperties(
   // === Default Run Properties ===
   const rPr = findChild(pPr, 'w', 'rPr');
   if (rPr) {
+    if (isEmptyXmlElement(rPr)) {
+      formatting.presentEmpty = { ...(formatting.presentEmpty ?? {}), rPr: true };
+    }
     formatting.runProperties = parseRunProperties(rPr, theme, styles);
   }
 
   return Object.keys(formatting).length > 0 ? formatting : undefined;
+}
+
+/**
+ * True when an XML element has neither attributes nor child elements
+ * — i.e. it was emitted in the source XML as `<w:foo/>`. Used by
+ * paragraph property parsing to preserve semantically-meaningful
+ * empty self-closing forms across round-trip.
+ */
+function isEmptyXmlElement(el: XmlElement): boolean {
+  const hasAttrs = el.attributes != null && Object.keys(el.attributes).length > 0;
+  const hasChildren = Array.isArray(el.elements) && el.elements.length > 0;
+  return !hasAttrs && !hasChildren;
 }
 
 // ============================================================================

@@ -265,6 +265,24 @@ export type ParagraphAlignment =
 export type SpacingExplicit = { before?: boolean; after?: boolean };
 
 export interface ParagraphFormatting {
+  /**
+   * Records which empty self-closing property elements were present on
+   * the source paragraph's pPr (e.g. `<w:pBdr/>`, `<w:spacing/>`,
+   * `<w:ind/>`, `<w:rPr/>` with no children or attributes). These are
+   * semantically meaningful — they explicitly override the inherited
+   * style chain — so they must round-trip back to the same self-closing
+   * form even though the populated property fields are absent. The
+   * parser sets the flag when it encounters an empty element; the
+   * serializer emits the self-closing form when the flag is set and
+   * the corresponding populated fields are absent.
+   */
+  presentEmpty?: {
+    pBdr?: boolean;
+    spacing?: boolean;
+    ind?: boolean;
+    rPr?: boolean;
+  };
+
   // Alignment
   /** Paragraph alignment (w:jc) */
   alignment?: ParagraphAlignment;

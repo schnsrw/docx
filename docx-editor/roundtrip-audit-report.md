@@ -14,10 +14,6 @@ consolidation collapsing rPr/r/t neighbors) is excluded.
 | Tag | Total dropped | Fixtures affected |
 |-----|---------------|-------------------|
 | `w:fldChar` | 6 | 1 |
-| `w:rPr` | 6 | 1 |
-| `w:pBdr` | 5 | 1 |
-| `w:spacing` | 5 | 1 |
-| `w:ind` | 5 | 1 |
 | `w:start` | 4 | 2 |
 | `w:end` | 4 | 2 |
 | `w:rStyle` | 4 | 1 |
@@ -182,10 +178,6 @@ No round-trip drops.
 
 | Tag | In | Out |
 |-----|----|-----|
-| `w:rPr` | 6 | 0 |
-| `w:pBdr` | 5 | 0 |
-| `w:spacing` | 5 | 0 |
-| `w:ind` | 5 | 0 |
 | `w:highlight` | 2 | 0 |
 
 ### generic-header-footer-horizontal-regression
