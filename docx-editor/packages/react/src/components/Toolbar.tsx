@@ -364,7 +364,7 @@ export function ToolbarGroup({ label, children, className }: ToolbarGroupProps) 
   return (
     <div
       className={cn(
-        'flex items-center gap-px px-1.5 border-r border-slate-200/50 last:border-r-0 first:pl-0',
+        'flex items-center gap-px px-1.5 border-r border-[color:var(--doc-border,#e0e0e0)]/50 last:border-r-0 first:pl-0',
         className
       )}
       role="group"
@@ -482,7 +482,7 @@ export function Toolbar({
     <div
       ref={toolbarRef}
       className={cn(
-        'flex items-center px-1 py-1 bg-white border-b border-slate-100 min-h-[36px] overflow-x-auto',
+        'flex items-center px-1 py-1 bg-[color:var(--doc-surface,white)] border-b border-[color:var(--doc-border-light,#dadce0)] min-h-[36px] overflow-x-auto',
         className
       )}
       style={style}

@@ -182,7 +182,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
       top: y,
       left: x,
       minWidth: menuWidth,
-      background: 'white',
+      background: 'var(--doc-surface, white)',
       border: '1px solid var(--doc-border-light, #e0e0e0)',
       borderRadius: '8px',
       boxShadow: '0 2px 10px rgba(0, 0, 0, 0.15)',

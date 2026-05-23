@@ -58,7 +58,7 @@ const dialogStyle: CSSProperties = {
 const sectionStyle: CSSProperties = {
   marginBottom: 16,
   padding: 12,
-  border: '1px solid #e0e0e0',
+  border: '1px solid var(--doc-border, #e0e0e0)',
   borderRadius: 4,
 };
 
@@ -72,7 +72,7 @@ const labelStyle: CSSProperties = {
 const selectStyle: CSSProperties = {
   width: '100%',
   padding: '4px 8px',
-  border: '1px solid #ccc',
+  border: '1px solid var(--doc-border, #ccc)',
   borderRadius: 4,
   fontSize: 13,
   marginBottom: 8,
@@ -81,7 +81,7 @@ const selectStyle: CSSProperties = {
 const inputStyle: CSSProperties = {
   width: 60,
   padding: '4px 8px',
-  border: '1px solid #ccc',
+  border: '1px solid var(--doc-border, #ccc)',
   borderRadius: 4,
   fontSize: 13,
   marginBottom: 8,
@@ -96,7 +96,7 @@ const buttonRowStyle: CSSProperties = {
 
 const buttonStyle: CSSProperties = {
   padding: '6px 16px',
-  border: '1px solid #ccc',
+  border: '1px solid var(--doc-border, #ccc)',
   borderRadius: 4,
   cursor: 'pointer',
   fontSize: 13,

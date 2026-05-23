@@ -16,7 +16,7 @@ const ACTIVE_INPUT_STYLE: React.CSSProperties = {
 
 const INACTIVE_INPUT_STYLE: React.CSSProperties = {
   width: '100%',
-  border: '1px solid #dadce0',
+  border: '1px solid var(--doc-border, #dadce0)',
   borderRadius: 20,
   outline: 'none',
   fontSize: 14,

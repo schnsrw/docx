@@ -53,7 +53,7 @@ const BASE_POPUP_STYLE: CSSProperties = {
   background: 'var(--doc-surface, white)',
   borderRadius: '8px',
   boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08)',
-  border: '1px solid #dadce0',
+  border: '1px solid var(--doc-border, #dadce0)',
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   fontSize: '14px',
 };
@@ -127,7 +127,7 @@ const EDIT_ROW_STYLE: CSSProperties = {
 const EDIT_INPUT_STYLE: CSSProperties = {
   flex: 1,
   padding: '6px 8px',
-  border: '1px solid #dadce0',
+  border: '1px solid var(--doc-border, #dadce0)',
   borderRadius: '4px',
   fontSize: '14px',
   outline: 'none',

@@ -4120,7 +4120,7 @@ const PagedEditorComponent = forwardRef<PagedEditorRef, PagedEditorProps>(
                 width: 20,
                 height: 20,
                 borderRadius: '4px',
-                border: '1px solid #dadce0',
+                border: '1px solid var(--doc-border, #dadce0)',
                 backgroundColor: '#f8f9fa',
                 color: '#5f6368',
                 display: 'flex',

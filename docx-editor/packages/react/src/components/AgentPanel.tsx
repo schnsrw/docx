@@ -189,7 +189,7 @@ export function AgentPanel({
         margin: closed ? '8px 0 8px 0' : '8px 8px 8px 12px',
         display: 'flex',
         flexDirection: 'column',
-        background: '#ffffff',
+        background: 'var(--doc-surface, white)',
         border: closed ? '1px solid transparent' : '1px solid #e3e3e3',
         borderRadius: 16,
         boxShadow: closed
@@ -239,7 +239,7 @@ export function AgentPanel({
           gap: 10,
           padding: '14px 16px 10px',
           flex: '0 0 auto',
-          background: '#ffffff',
+          background: 'var(--doc-surface, white)',
         }}
       >
         <span style={{ display: 'inline-flex', alignItems: 'center', color: '#0b57d0' }}>

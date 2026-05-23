@@ -165,7 +165,7 @@ const S_HEX_INPUT: CSSProperties = {
   width: '70px',
   height: '24px',
   padding: '2px 6px',
-  border: '1px solid #ccc',
+  border: '1px solid var(--doc-border, #ccc)',
   borderRadius: '3px',
   fontSize: '12px',
 };
@@ -173,7 +173,7 @@ const S_HEX_INPUT: CSSProperties = {
 const S_APPLY_BTN: CSSProperties = {
   height: '24px',
   padding: '0 10px',
-  border: '1px solid #ccc',
+  border: '1px solid var(--doc-border, #ccc)',
   borderRadius: '3px',
   backgroundColor: '#f5f5f5',
   fontSize: '12px',
@@ -657,7 +657,7 @@ export function ColorPicker({
                     display: 'inline-block',
                     width: '16px',
                     height: '16px',
-                    border: '1px solid #ccc',
+                    border: '1px solid var(--doc-border, #ccc)',
                     borderRadius: '2px',
                     position: 'relative',
                     backgroundColor: 'var(--doc-surface, white)',

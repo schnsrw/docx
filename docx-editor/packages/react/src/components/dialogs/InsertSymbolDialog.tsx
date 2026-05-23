@@ -67,7 +67,7 @@ const DIALOG_OVERLAY_STYLE: CSSProperties = {
 };
 
 const DIALOG_CONTENT_STYLE: CSSProperties = {
-  backgroundColor: 'white',
+  backgroundColor: 'var(--doc-surface, white)',
   borderRadius: '8px',
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
   minWidth: '450px',
@@ -131,7 +131,7 @@ const CATEGORY_TAB_STYLE: CSSProperties = {
   padding: '6px 12px',
   border: '1px solid var(--doc-border-input)',
   borderRadius: '4px',
-  backgroundColor: 'white',
+  backgroundColor: 'var(--doc-surface, white)',
   cursor: 'pointer',
   fontSize: '12px',
   transition: 'all 0.15s',
@@ -160,7 +160,7 @@ const SYMBOL_BUTTON_STYLE: CSSProperties = {
   justifyContent: 'center',
   border: '1px solid var(--doc-border)',
   borderRadius: '4px',
-  backgroundColor: 'white',
+  backgroundColor: 'var(--doc-surface, white)',
   cursor: 'pointer',
   fontSize: '18px',
   transition: 'all 0.15s',
@@ -183,7 +183,7 @@ const PREVIEW_SYMBOL_STYLE: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: 'white',
+  backgroundColor: 'var(--doc-surface, white)',
   borderRadius: '4px',
   border: '1px solid var(--doc-border)',
 };

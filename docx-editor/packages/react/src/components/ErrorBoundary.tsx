@@ -492,7 +492,7 @@ function DefaultErrorFallback({
     padding: '40px',
     textAlign: 'center',
     minHeight: '200px',
-    background: 'white',
+    background: 'var(--doc-surface, white)',
     borderRadius: '8px',
     border: '1px solid var(--doc-border)',
     margin: '20px',
@@ -602,7 +602,7 @@ export function ParseErrorDisplay({
     justifyContent: 'center',
     padding: '40px',
     textAlign: 'center',
-    background: 'white',
+    background: 'var(--doc-surface, white)',
     borderRadius: '8px',
     border: '1px solid var(--doc-border-light)',
   };

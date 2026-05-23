@@ -22,7 +22,7 @@ function SelectTrigger({
     <SelectPrimitive.Trigger
       className={cn(
         'flex h-8 items-center justify-between gap-1 rounded px-2 py-1',
-        'text-sm text-slate-700 bg-transparent',
+        'text-sm text-[color:var(--doc-text-on-surface,#1f2937)] bg-transparent',
         'hover:bg-slate-100/80 focus:outline-none focus:bg-slate-100/80',
         'disabled:cursor-not-allowed disabled:opacity-50',
         'transition-colors duration-150',
@@ -57,7 +57,7 @@ function SelectContent({
         <SelectPrimitive.Content
           className={cn(
             'relative z-50 max-h-72 min-w-[8rem] overflow-hidden',
-            'rounded-lg border border-slate-200 bg-white shadow-lg',
+            'rounded-lg border border-[color:var(--doc-border,#e0e0e0)] bg-[color:var(--doc-surface,white)] shadow-lg',
             'data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
             'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
@@ -111,7 +111,7 @@ function SelectItem({
     <SelectPrimitive.Item
       className={cn(
         'relative flex w-full cursor-pointer select-none items-center',
-        'rounded px-2 py-1.5 text-sm text-slate-700 outline-none',
+        'rounded px-2 py-1.5 text-sm text-[color:var(--doc-text-on-surface,#1f2937)] outline-none',
         'hover:bg-slate-100 focus:bg-slate-100',
         'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         className

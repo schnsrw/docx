@@ -111,6 +111,30 @@
 .ep-root[data-theme='dark'],
 [data-theme='dark'] .ep-root,
 [data-theme='dark'] {
+  /* Native form controls (selects, scrollbars) follow this. */
+  color-scheme: dark;
+  /* shadcn vars — used by ui/Button.tsx and any consumer of
+     bg-background / bg-card / bg-popover / bg-muted / text-foreground. */
+  --background: 220 6% 19%; /* #2d2f31 in HSL */
+  --foreground: 220 14% 91%; /* #e8eaed */
+  --card: 220 6% 19%;
+  --card-foreground: 220 14% 91%;
+  --popover: 220 6% 19%;
+  --popover-foreground: 220 14% 91%;
+  --primary: 217 89% 61%; /* keep accent blue close-ish for contrast */
+  --primary-foreground: 220 14% 91%;
+  --secondary: 220 5% 25%;
+  --secondary-foreground: 220 14% 91%;
+  --muted: 220 5% 25%;
+  --muted-foreground: 220 7% 63%;
+  --accent: 220 5% 25%;
+  --accent-foreground: 220 14% 91%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 220 14% 91%;
+  --border: 220 5% 25%;
+  --input: 220 5% 25%;
+  --ring: 217 89% 61%;
+  /* doc vars */
   --doc-bg: #1f1f1f;
   --doc-text: #e8eaed;
   --doc-text-muted: #9aa0a6;
@@ -138,6 +162,27 @@
   .ep-root[data-theme='auto'],
   [data-theme='auto'] .ep-root,
   [data-theme='auto'] {
+    color-scheme: dark;
+    /* shadcn vars (mirror the dark overrides above) */
+    --background: 220 6% 19%;
+    --foreground: 220 14% 91%;
+    --card: 220 6% 19%;
+    --card-foreground: 220 14% 91%;
+    --popover: 220 6% 19%;
+    --popover-foreground: 220 14% 91%;
+    --primary: 217 89% 61%;
+    --primary-foreground: 220 14% 91%;
+    --secondary: 220 5% 25%;
+    --secondary-foreground: 220 14% 91%;
+    --muted: 220 5% 25%;
+    --muted-foreground: 220 7% 63%;
+    --accent: 220 5% 25%;
+    --accent-foreground: 220 14% 91%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 220 14% 91%;
+    --border: 220 5% 25%;
+    --input: 220 5% 25%;
+    --ring: 217 89% 61%;
     --doc-bg: #1f1f1f;
     --doc-text: #e8eaed;
     --doc-text-muted: #9aa0a6;
@@ -527,7 +572,7 @@
 
 /* Outline heading hover */
 .docx-outline-heading-btn:hover {
-  background-color: #f1f3f4;
+  background-color: var(--doc-bg-hover, #f1f3f4);
 }
 
 /* ============================================================================
@@ -683,7 +728,7 @@
 
 /* Hyperlink popup icon button hover */
 .ep-hyperlink-popup__icon-btn:hover {
-  background: #f1f3f4;
+  background: var(--doc-bg-hover, #f1f3f4);
 }
 
 /* =============================================================================

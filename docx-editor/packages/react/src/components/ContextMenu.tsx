@@ -297,7 +297,7 @@ const CustomPromptDialog: React.FC<CustomPromptDialogProps> = ({
         left: 0,
         right: 0,
         padding: '8px',
-        background: 'white',
+        background: 'var(--doc-surface, white)',
         borderTop: '1px solid var(--doc-border)',
       }}
     >
@@ -329,7 +329,7 @@ const CustomPromptDialog: React.FC<CustomPromptDialogProps> = ({
               padding: '6px 12px',
               border: '1px solid var(--doc-border-light)',
               borderRadius: '4px',
-              background: 'white',
+              background: 'var(--doc-surface, white)',
               cursor: 'pointer',
               fontSize: '12px',
             }}
@@ -465,7 +465,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       top: y,
       left: x,
       minWidth: menuWidth,
-      background: 'white',
+      background: 'var(--doc-surface, white)',
       border: '1px solid var(--doc-border-light)',
       borderRadius: '8px',
       boxShadow: '0 2px 10px rgba(0, 0, 0, 0.15)',

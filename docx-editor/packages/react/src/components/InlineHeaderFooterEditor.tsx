@@ -108,7 +108,7 @@ const dropdownStyle: CSSProperties = {
   position: 'absolute',
   right: 0,
   top: '100%',
-  background: 'white',
+  background: 'var(--doc-surface, white)',
   border: '1px solid #dadce0',
   borderRadius: 4,
   boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
