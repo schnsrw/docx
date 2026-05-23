@@ -287,7 +287,7 @@ export function FontSizePicker({
           ref={dropdownRef}
           style={{
             ...fixedDropdownStyle,
-            backgroundColor: 'white',
+            backgroundColor: 'var(--doc-surface, white)',
             border: '1px solid #e2e8f0',
             borderRadius: 6,
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',

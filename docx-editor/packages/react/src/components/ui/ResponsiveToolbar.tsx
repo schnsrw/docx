@@ -302,7 +302,7 @@ const OverflowMenu: React.FC<OverflowMenuProps> = ({ items, isOpen, onClose, anc
         top: '100%',
         right: 0,
         marginTop: '4px',
-        backgroundColor: 'white',
+        backgroundColor: 'var(--doc-surface, white)',
         border: '1px solid var(--doc-border)',
         borderRadius: '8px',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',

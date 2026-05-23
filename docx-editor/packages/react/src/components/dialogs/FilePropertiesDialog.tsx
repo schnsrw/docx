@@ -51,9 +51,10 @@ const overlayStyle: CSSProperties = {
 };
 
 const dialogStyle: CSSProperties = {
-  backgroundColor: 'white',
+  backgroundColor: 'var(--doc-surface, white)',
+  color: 'var(--doc-text-on-surface, #1f2937)',
   borderRadius: 8,
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+  boxShadow: 'var(--doc-shadow, 0 4px 20px rgba(0, 0, 0, 0.15))',
   minWidth: 460,
   maxWidth: 540,
   width: '100%',
@@ -96,6 +97,8 @@ const inputStyle: CSSProperties = {
   borderRadius: 4,
   fontSize: 13,
   fontFamily: 'inherit',
+  background: 'var(--doc-bg-input, white)',
+  color: 'var(--doc-text-on-surface, #1f2937)',
 };
 
 const readonlyValueStyle: CSSProperties = {
@@ -119,7 +122,8 @@ const btnStyle: CSSProperties = {
   border: '1px solid var(--doc-border, #ccc)',
   borderRadius: 4,
   cursor: 'pointer',
-  background: 'white',
+  background: 'var(--doc-surface, white)',
+  color: 'var(--doc-text-on-surface, #1f2937)',
 };
 
 const primaryBtnStyle: CSSProperties = {

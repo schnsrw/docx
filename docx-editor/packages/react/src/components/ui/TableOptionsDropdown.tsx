@@ -127,7 +127,7 @@ const MENU_ITEMS: MenuItem[] = [
 
 const baseDropdownStyles: CSSProperties = {
   position: 'fixed',
-  backgroundColor: 'white',
+  backgroundColor: 'var(--doc-surface, white)',
   border: '1px solid var(--doc-border)',
   borderRadius: 8,
   boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)',

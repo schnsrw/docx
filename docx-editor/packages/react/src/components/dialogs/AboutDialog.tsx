@@ -36,7 +36,7 @@ const overlayStyle: CSSProperties = {
 };
 
 const dialogStyle: CSSProperties = {
-  backgroundColor: 'white',
+  backgroundColor: 'var(--doc-surface, white)',
   borderRadius: 8,
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
   minWidth: 420,
@@ -72,7 +72,7 @@ const titleStyle: CSSProperties = {
   fontSize: 20,
   fontWeight: 600,
   margin: 0,
-  color: '#1f2937',
+  color: 'var(--doc-text-on-surface, #1f2937)',
 };
 
 const taglineStyle: CSSProperties = {
@@ -101,7 +101,7 @@ const dtStyle: CSSProperties = {
 
 const ddStyle: CSSProperties = {
   margin: 0,
-  color: '#1f2937',
+  color: 'var(--doc-text-on-surface, #1f2937)',
 };
 
 const copyrightStyle: CSSProperties = {

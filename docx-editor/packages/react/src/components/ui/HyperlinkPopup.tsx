@@ -50,7 +50,7 @@ export interface HyperlinkPopupProps {
 const BASE_POPUP_STYLE: CSSProperties = {
   position: 'fixed',
   zIndex: 10000,
-  background: 'white',
+  background: 'var(--doc-surface, white)',
   borderRadius: '8px',
   boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.08)',
   border: '1px solid #dadce0',

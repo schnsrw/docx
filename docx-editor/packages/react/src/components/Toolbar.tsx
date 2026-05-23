@@ -247,6 +247,10 @@ export interface ToolbarProps {
   onReportBug?: () => void;
   /** Help → About — opens the About dialog. */
   onShowAbout?: () => void;
+  /** Theme picker — host sets colorTheme. `'auto'` follows OS preference. */
+  onSetColorTheme?: (theme: 'light' | 'dark' | 'auto') => void;
+  /** Current colorTheme setting; drives the title-bar toggle's icon. */
+  colorTheme?: 'light' | 'dark' | 'auto';
   /** Table context when cursor is in a table */
   tableContext?: {
     isInTable: boolean;

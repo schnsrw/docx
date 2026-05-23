@@ -92,7 +92,7 @@ const S_BUTTON: CSSProperties = {
 
 const S_DROPDOWN: CSSProperties = {
   padding: '10px',
-  backgroundColor: '#fff',
+  backgroundColor: 'var(--doc-surface, white)',
   border: '1px solid #d0d0d0',
   borderRadius: '6px',
   boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
@@ -149,7 +149,7 @@ const S_AUTO_BUTTON: CSSProperties = {
   padding: '5px 8px',
   border: '1px solid #d0d0d0',
   borderRadius: '4px',
-  backgroundColor: '#fff',
+  backgroundColor: 'var(--doc-surface, white)',
   cursor: 'pointer',
   fontSize: '12px',
   color: '#333',
@@ -660,7 +660,7 @@ export function ColorPicker({
                     border: '1px solid #ccc',
                     borderRadius: '2px',
                     position: 'relative',
-                    backgroundColor: '#fff',
+                    backgroundColor: 'var(--doc-surface, white)',
                   }}
                 >
                   <span

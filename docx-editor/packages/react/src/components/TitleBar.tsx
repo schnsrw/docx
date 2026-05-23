@@ -12,6 +12,7 @@ import React, { useCallback, Children, isValidElement } from 'react';
 import type { ReactNode } from 'react';
 import { MenuDropdown } from './ui/MenuDropdown';
 import type { MenuEntry } from './ui/MenuDropdown';
+import { MaterialSymbol } from './ui/Icons';
 import { TableGridInline } from './ui/TableGridInline';
 import { useEditorToolbar } from './EditorToolbarContext';
 import type { FormattingAction } from './Toolbar';
@@ -73,7 +74,7 @@ export function DocumentName({ value, onChange, placeholder, editable = true }: 
 
   if (!editable) {
     return (
-      <span className="text-base font-normal text-slate-800 px-2 py-0 min-w-[100px] max-w-[300px] truncate leading-tight">
+      <span className="text-base font-normal text-[color:var(--doc-text-on-surface,#1f2937)] px-2 py-0 min-w-[100px] max-w-[300px] truncate leading-tight">
         {displayName || resolvedPlaceholder}
       </span>
     );
@@ -87,7 +88,7 @@ export function DocumentName({ value, onChange, placeholder, editable = true }: 
         onChange?.(raw.endsWith('.docx') ? raw : raw + '.docx');
       }}
       placeholder={resolvedPlaceholder}
-      className="text-base font-normal text-slate-800 bg-transparent border-0 outline-none px-2 py-0 rounded hover:bg-slate-50 focus:bg-white focus:ring-1 focus:ring-slate-300 min-w-[100px] max-w-[300px] truncate leading-tight"
+      className="text-base font-normal text-[color:var(--doc-text-on-surface,#1f2937)] bg-transparent border-0 outline-none px-2 py-0 rounded hover:bg-[color:var(--doc-bg-hover,#f1f3f4)] focus:bg-[color:var(--doc-surface,white)] focus:ring-1 focus:ring-slate-300 min-w-[100px] max-w-[300px] truncate leading-tight"
       aria-label={t('titleBar.documentNameAriaLabel')}
     />
   );
@@ -102,7 +103,47 @@ export interface TitleBarRightProps {
 }
 
 export function TitleBarRight({ children }: TitleBarRightProps) {
-  return <div className="flex items-center gap-2 ml-auto flex-shrink-0">{children}</div>;
+  return (
+    <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+      <ThemeToggleButton />
+      {children}
+    </div>
+  );
+}
+
+// ============================================================================
+// ThemeToggleButton — sun/moon/auto icon in the top-right that cycles
+// through auto → light → dark. Hidden when the host doesn't wire
+// onSetColorTheme. Renders inside TitleBarRight so it's always visible
+// in the same spot as Share / status indicators.
+// ============================================================================
+
+function ThemeToggleButton() {
+  const ctx = useEditorToolbar();
+  const { onSetColorTheme, colorTheme } = ctx;
+  if (!onSetColorTheme) return null;
+  const current = colorTheme ?? 'auto';
+  const next: 'light' | 'dark' | 'auto' =
+    current === 'auto' ? 'light' : current === 'light' ? 'dark' : 'auto';
+  const icon = current === 'dark' ? 'dark_mode' : current === 'light' ? 'light_mode' : 'contrast';
+  const title =
+    current === 'auto'
+      ? 'Theme: match system (click for light)'
+      : current === 'light'
+        ? 'Theme: light (click for dark)'
+        : 'Theme: dark (click for auto)';
+  return (
+    <button
+      type="button"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={() => onSetColorTheme(next)}
+      title={title}
+      aria-label={title}
+      className="flex items-center justify-center w-8 h-8 rounded hover:bg-[color:var(--doc-bg-hover,#f1f3f4)] text-[color:var(--doc-text-on-surface,#1f2937)]"
+    >
+      <MaterialSymbol name={icon} size={18} />
+    </button>
+  );
 }
 
 // ============================================================================
@@ -559,7 +600,7 @@ export function TitleBar({ children }: TitleBarProps) {
 
   return (
     <div
-      className="flex items-stretch bg-white pt-2 pb-1"
+      className="flex items-stretch bg-[color:var(--doc-surface,white)] text-[color:var(--doc-text-on-surface,#1f2937)] pt-2 pb-1"
       onMouseDown={handleMouseDown}
       data-testid="title-bar"
     >

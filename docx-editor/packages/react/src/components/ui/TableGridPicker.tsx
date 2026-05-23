@@ -43,7 +43,7 @@ const DEFAULT_GRID_COLUMNS = 5;
 // ============================================================================
 
 const dropdownPanelStyle: React.CSSProperties = {
-  backgroundColor: 'white',
+  backgroundColor: 'var(--doc-surface, white)',
   border: '1px solid var(--doc-border)',
   borderRadius: 6,
   boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)',
