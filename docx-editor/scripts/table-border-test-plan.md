@@ -138,16 +138,17 @@ table's outer bottom. Should render borderless everywhere.
 
 ## How to validate quickly
 
-The fixtures live in `e2e/fixtures/`. Drag-and-drop each into:
+Run `scripts/ground-truth/open-for-review.sh` — it opens the
+fixtures folder in Finder plus Word Online and Google Docs in the
+browser. Drag each fixture into both apps, look at the bottom of
+the named table, and fill in Yes/No.
 
 - Word Online: https://office.com/launch/word (sign in, "Open from this device")
-- Word Desktop: just open
+- Word Desktop: not installed on this machine (2026-05-24) —
+  needs a Windows box, a Mac with Word for Mac, or a Word Online
+  proxy. Column will stay blank until then.
 - Google Docs: https://docs.google.com/ → File → Open → Upload
 - LibreOffice: already done — see `scripts/ground-truth/`.
-
-Take a screenshot of the last row's bottom edge in each renderer
-and paste into the table above. Once filled in, run the heuristic
-implementation matching the decision tree.
 
 ### Reproducing the LibreOffice column
 
