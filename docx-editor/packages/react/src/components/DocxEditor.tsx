@@ -1843,16 +1843,27 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     const stored = window.localStorage.getItem('casual-editor:color-theme');
     return stored === 'light' || stored === 'dark' || stored === 'auto' ? stored : 'auto';
   });
+  // Apply the *initial* theme synchronously on mount so the attribute is
+  // set before the first paint (no flash).
   useEffect(() => {
     if (typeof document === 'undefined') return;
     document.documentElement.setAttribute('data-theme', colorTheme);
+    // Only on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // Update the data-theme attribute synchronously in the click handler so
+  // the CSS recalc happens immediately, without waiting for React's
+  // commit phase + useEffect. The setState below only drives the icon
+  // re-render in the title bar.
+  const handleSetColorTheme = useCallback((t: 'light' | 'dark' | 'auto') => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', t);
+    }
     try {
-      window.localStorage.setItem('casual-editor:color-theme', colorTheme);
+      window.localStorage.setItem('casual-editor:color-theme', t);
     } catch {
       // localStorage may be unavailable (private mode); harmless.
     }
-  }, [colorTheme]);
-  const handleSetColorTheme = useCallback((t: 'light' | 'dark' | 'auto') => {
     setColorTheme(t);
   }, []);
 

@@ -330,8 +330,12 @@ export function ToolbarButton({
       variant="ghost"
       size="icon-sm"
       className={cn(
-        'text-slate-500 hover:text-slate-900 hover:bg-slate-100/80',
-        active && 'bg-slate-900 text-white hover:bg-slate-800 hover:text-white',
+        // Use the editor-on-surface text color so the SVG's currentColor
+        // flips with the theme. Hover: slight background, no color change
+        // needed because the icon already matches the surface text.
+        'text-[color:var(--doc-text-on-surface-muted,#5f6368)] hover:text-[color:var(--doc-text-on-surface,#1f2937)] hover:bg-[color:var(--doc-bg-hover,#f1f3f4)]',
+        active &&
+          'bg-[color:var(--doc-text-on-surface,#1f2937)] text-[color:var(--doc-surface,white)] hover:bg-[color:var(--doc-text-on-surface,#1f2937)] hover:text-[color:var(--doc-surface,white)]',
         disabled && 'opacity-30 cursor-not-allowed',
         className
       )}
