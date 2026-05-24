@@ -758,6 +758,37 @@ function layoutTextBox(
     throw new Error(`layoutTextBox: expected textBox measure`);
   }
 
+  // Anchored text-bearing shapes (wps:wsp inside wp:anchor, wpg:wgp
+  // children) declare an absolute position via `wp:positionH/V` ->
+  // `wp:posOffset`. Drop the fragment directly onto the current page
+  // at that position WITHOUT advancing the flow cursor, so surrounding
+  // text continues to flow as if the shape weren't there. Without
+  // this branch, every anchored shape rendered at the cursor instead.
+  //
+  // `anchor.offsetH/offsetV` are content-area-relative pixels (parsed
+  // from `wp:posOffset` with `relativeFrom='margin'` as the common
+  // case). Fragment coordinates are PAGE-relative (the painter does
+  // `fragment.x - page.margins.left`), so add the column-X (= left
+  // page margin for column 0) and topMargin back in to translate.
+  if (block.anchor?.isAnchored) {
+    const state = paginator.getCurrentState();
+    const colX = paginator.getColumnX(state.columnIndex);
+    const x = block.anchor.offsetH != null ? colX + block.anchor.offsetH : colX;
+    const y = block.anchor.offsetV != null ? state.topMargin + block.anchor.offsetV : state.cursorY;
+    const fragment: TextBoxFragment = {
+      kind: 'textBox',
+      blockId: block.id,
+      x,
+      y,
+      width: measure.width,
+      height: measure.height,
+      pmStart: block.pmStart,
+      pmEnd: block.pmEnd,
+    };
+    state.page.fragments.push(fragment);
+    return;
+  }
+
   const state = paginator.ensureFits(measure.height);
 
   const fragment: TextBoxFragment = {

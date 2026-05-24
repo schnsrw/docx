@@ -1962,6 +1962,19 @@ function convertTextBox(textBox: TextBox, styleResolver: StyleResolver | null): 
     contentNodes.push(schema.node('paragraph', {}, []));
   }
 
+  // Surface anchor position so the layout-engine can place anchored
+  // shapes at their declared posOffset (matching layoutAnchoredImage)
+  // instead of falling back to the flow cursor. Stored in pixels @ 96
+  // DPI alongside width/height/margins. Without this, anchored wps:wsp
+  // shapes — both standalone and inside wpg:wgp groups — render at the
+  // current cursor instead of at their posOffset, because the PM
+  // schema (and downstream TextBoxBlock) carried no position fields.
+  // See gap-matrix → `anchored-shape-position-lost`.
+  const posH = textBox.position?.horizontal;
+  const posV = textBox.position?.vertical;
+  const posOffsetH = posH?.posOffset != null ? emuToPixels(posH.posOffset) : null;
+  const posOffsetV = posV?.posOffset != null ? emuToPixels(posV.posOffset) : null;
+
   return schema.node(
     'textBox',
     {
@@ -1977,6 +1990,12 @@ function convertTextBox(textBox: TextBox, styleResolver: StyleResolver | null): 
       marginLeft,
       marginRight,
       autoFit: textBox.autoFit,
+      posOffsetH,
+      posOffsetV,
+      posRelFromH: posH?.relativeTo ?? null,
+      posRelFromV: posV?.relativeTo ?? null,
+      posAlignH: posH?.alignment ?? null,
+      posAlignV: posV?.alignment ?? null,
     },
     contentNodes
   );

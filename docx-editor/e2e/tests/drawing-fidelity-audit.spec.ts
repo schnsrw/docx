@@ -206,38 +206,40 @@ test.describe('Drawing fidelity — inline + anchored image positions', () => {
   });
 });
 
-test.describe('Drawing fidelity — known open positioning gaps', () => {
-  // These two specs flip green when:
-  //   - layout-bridge/toFlowBlocks.convertTextBoxNode reads position
-  //     attrs into the resulting TextBoxBlock, AND
-  //   - layout-engine/index.ts:layoutTextBox uses anchor.offsetH /
-  //     offsetV instead of paginator.getColumnX/cursorY.
-  // Both depend on adding posOffset/relativeFrom attrs to the textBox
-  // PM schema (TextBoxExtension.ts) so the round-trip survives.
-  test.fixme(
-    'anchored wps:wsp shape lands at posOffset (200, 50), not at flow cursor',
-    async ({ page }) => {
-      await loadFixture(page);
-      const origin = await flowOrigin(page);
-      const drawings = await readDrawings(page);
-      const shape = drawings.find((d) => d.text.includes('SHAPE-3'));
-      const expectedX = origin!.left + 200;
-      expect(Math.abs(shape!.x - expectedX)).toBeLessThanOrEqual(TOL);
-    }
-  );
+test.describe('Drawing fidelity — anchored wps:wsp shape positions', () => {
+  // Anchored text-bearing shapes used to render at the flow cursor
+  // because:
+  //   - The textBox PM schema carried no position attrs.
+  //   - The layout-engine TextBoxBlock had no anchor field.
+  //   - `layoutTextBox` always used `paginator.getColumnX/cursorY`.
+  // Fix wired position attrs through schema → toProseDoc →
+  // TextBoxBlock → convertTextBoxNode → layoutTextBox (new anchored
+  // branch mirroring `layoutAnchoredImage`). See gap-matrix →
+  // `anchored-shape-position-lost`.
+  test('standalone wps:wsp lands at posOffset (200, 50) relative to margin', async ({ page }) => {
+    await loadFixture(page);
+    const origin = await flowOrigin(page);
+    const drawings = await readDrawings(page);
+    const shape = drawings.find((d) => d.text.includes('SHAPE-3'));
+    expect(shape, 'SHAPE-3 must render').toBeDefined();
+    const expectedX = origin!.left + 200;
+    expect(Math.abs(shape!.x - expectedX)).toBeLessThanOrEqual(TOL);
+  });
 
-  test.fixme(
-    'wpg group child B sits 120 px to the right of child A (xfrm.off honored)',
-    async ({ page }) => {
-      await loadFixture(page);
-      const drawings = await readDrawings(page);
-      const childA = drawings.find((d) => d.text === 'GA');
-      const childB = drawings.find((d) => d.text === 'GB');
-      // textBoxEnricher.ts:283 documents the current limitation; the
-      // children stack at the group's anchor instead of being placed at
-      // anchor + childOffset.
-      expect(childB!.x - childA!.x).toBeGreaterThanOrEqual(118);
-      expect(childB!.x - childA!.x).toBeLessThanOrEqual(122);
-    }
-  );
+  test('wpg group children land at parent anchor + their own xfrm.off', async ({ page }) => {
+    await loadFixture(page);
+    const drawings = await readDrawings(page);
+    const childA = drawings.find((d) => d.text === 'GA');
+    const childB = drawings.find((d) => d.text === 'GB');
+    expect(childA, 'group child A must render').toBeDefined();
+    expect(childB, 'group child B must render').toBeDefined();
+    // The fixture places child A at xfrm.off (0, 0) and child B at
+    // xfrm.off (120, 0) within a group anchored at (0, 350). After the
+    // fix, B sits 120 px to the right of A AND they share the same y
+    // (no vertical stacking). Before the fix they were both at the
+    // flow cursor stacked 40 px apart vertically.
+    expect(childB!.x - childA!.x).toBeGreaterThanOrEqual(118);
+    expect(childB!.x - childA!.x).toBeLessThanOrEqual(122);
+    expect(Math.abs(childB!.y - childA!.y)).toBeLessThanOrEqual(TOL);
+  });
 });

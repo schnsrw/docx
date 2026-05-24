@@ -1693,6 +1693,44 @@ function convertPMTextBox(node: PMNode): Paragraph {
     };
   }
 
+  // Round-trip anchor position so anchored shapes don't degrade to
+  // inline on save. Mirrors the toProseDoc.convertTextBox direction.
+  if (
+    attrs.posOffsetH != null ||
+    attrs.posOffsetV != null ||
+    attrs.posAlignH ||
+    attrs.posAlignV ||
+    attrs.posRelFromH ||
+    attrs.posRelFromV
+  ) {
+    shape.position = {
+      horizontal: {
+        relativeTo:
+          (attrs.posRelFromH as import('../../types/content').ImagePosition['horizontal']['relativeTo']) ??
+          'column',
+        ...(attrs.posOffsetH != null ? { posOffset: pixelsToEmu(attrs.posOffsetH) } : {}),
+        ...(attrs.posAlignH
+          ? {
+              alignment:
+                attrs.posAlignH as import('../../types/content').ImagePosition['horizontal']['alignment'],
+            }
+          : {}),
+      },
+      vertical: {
+        relativeTo:
+          (attrs.posRelFromV as import('../../types/content').ImagePosition['vertical']['relativeTo']) ??
+          'paragraph',
+        ...(attrs.posOffsetV != null ? { posOffset: pixelsToEmu(attrs.posOffsetV) } : {}),
+        ...(attrs.posAlignV
+          ? {
+              alignment:
+                attrs.posAlignV as import('../../types/content').ImagePosition['vertical']['alignment'],
+            }
+          : {}),
+      },
+    };
+  }
+
   // Convert outline back
   if (attrs.outlineWidth && attrs.outlineWidth > 0) {
     const cssToOoxmlOutline: Record<string, string> = {

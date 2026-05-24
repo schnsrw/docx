@@ -46,6 +46,38 @@ export interface TextBoxAttrs {
    * font metrics disagree with Word's saved ext.cy).
    */
   autoFit?: 'spAutoFit' | 'noAutofit' | 'normAutofit';
+  /**
+   * Anchor position for floating text-bearing shapes (wps:wsp inside
+   * wp:anchor + wpg:wgp children). Stored in PIXELS at 96 DPI so they
+   * sit alongside `width`/`height`/`marginTop` etc. — the parser
+   * converts EMU → px in `convertTextBox` and the layout engine reads
+   * the pixels back without further conversion. Mirrors the
+   * `ImageBlock.anchor` shape so anchored shapes ride the same code
+   * paths as anchored images.
+   *
+   * When null/undefined, the shape flows inline at the cursor (current
+   * behavior). When set, layout-engine `layoutTextBox` places the box
+   * at `(posOffsetH, posOffsetV)` relative to the column origin /
+   * page-content top — matching `layoutAnchoredImage`.
+   */
+  posOffsetH?: number;
+  posOffsetV?: number;
+  /**
+   * `wp:positionH/V`'s `relativeFrom` (e.g. "margin", "page", "column",
+   * "paragraph"). Captured for round-trip; the engine currently only
+   * treats `margin` and `column` as the column-origin reference and
+   * other values fall back to the same.
+   */
+  posRelFromH?: string;
+  posRelFromV?: string;
+  /**
+   * `wp:positionH/V`'s `<wp:align>` value when no `posOffset` is given
+   * (e.g. "center", "right"). Captured for round-trip; the renderer
+   * doesn't honor it yet — when both this and `posOffsetH/V` are null,
+   * the box falls back to inline-flow layout.
+   */
+  posAlignH?: string;
+  posAlignV?: string;
 }
 
 export const TextBoxExtension = createNodeExtension({
@@ -73,6 +105,12 @@ export const TextBoxExtension = createNodeExtension({
       cssFloat: { default: null },
       wrapType: { default: 'inline' },
       autoFit: { default: null },
+      posOffsetH: { default: null },
+      posOffsetV: { default: null },
+      posRelFromH: { default: null },
+      posRelFromV: { default: null },
+      posAlignH: { default: null },
+      posAlignV: { default: null },
     },
     parseDOM: [
       {
@@ -96,6 +134,12 @@ export const TextBoxExtension = createNodeExtension({
             cssFloat: (el.dataset.cssFloat as TextBoxAttrs['cssFloat']) || undefined,
             wrapType: el.dataset.wrapType || undefined,
             autoFit: (el.dataset.autoFit as TextBoxAttrs['autoFit']) || undefined,
+            posOffsetH: el.dataset.posOffsetH ? Number(el.dataset.posOffsetH) : undefined,
+            posOffsetV: el.dataset.posOffsetV ? Number(el.dataset.posOffsetV) : undefined,
+            posRelFromH: el.dataset.posRelFromH || undefined,
+            posRelFromV: el.dataset.posRelFromV || undefined,
+            posAlignH: el.dataset.posAlignH || undefined,
+            posAlignV: el.dataset.posAlignV || undefined,
           };
         },
       },
@@ -123,6 +167,12 @@ export const TextBoxExtension = createNodeExtension({
       if (attrs.cssFloat) domAttrs['data-css-float'] = attrs.cssFloat;
       if (attrs.wrapType) domAttrs['data-wrap-type'] = attrs.wrapType;
       if (attrs.autoFit) domAttrs['data-auto-fit'] = attrs.autoFit;
+      if (attrs.posOffsetH != null) domAttrs['data-pos-offset-h'] = String(attrs.posOffsetH);
+      if (attrs.posOffsetV != null) domAttrs['data-pos-offset-v'] = String(attrs.posOffsetV);
+      if (attrs.posRelFromH) domAttrs['data-pos-rel-from-h'] = attrs.posRelFromH;
+      if (attrs.posRelFromV) domAttrs['data-pos-rel-from-v'] = attrs.posRelFromV;
+      if (attrs.posAlignH) domAttrs['data-pos-align-h'] = attrs.posAlignH;
+      if (attrs.posAlignV) domAttrs['data-pos-align-v'] = attrs.posAlignV;
 
       // Build inline styles
       const styles: string[] = [];
