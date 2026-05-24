@@ -80,4 +80,27 @@ test.describe('Home page', () => {
     await expect(page.locator('[data-testid="template-card-recipe"]')).toBeVisible();
     await expect(page.locator('[data-testid="template-card-resume"]')).toHaveCount(0);
   });
+
+  test('title-bar logo confirms then returns to home (Google Docs pattern)', async ({
+    page,
+  }) => {
+    // Enter the editor via Blank first.
+    await page.goto('/');
+    await page.locator('[data-testid="template-card-blank"]').first().click();
+    await expect(page.locator('[data-testid="docx-editor"]')).toBeVisible({ timeout: 10_000 });
+    const homeBtn = page.locator('[data-testid="title-bar-home"]');
+    await expect(homeBtn).toBeVisible();
+
+    // Dismissing the confirm dialog should NOT navigate.
+    page.once('dialog', (d) => void d.dismiss());
+    await homeBtn.click();
+    await expect(page.locator('[data-testid="docx-editor"]')).toBeVisible();
+    await expect(page.locator('[data-testid="home-page"]')).toHaveCount(0);
+
+    // Accepting the confirm dialog returns to home.
+    page.once('dialog', (d) => void d.accept());
+    await homeBtn.click();
+    await expect(page.locator('[data-testid="home-page"]')).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('[data-testid="docx-editor"]')).toHaveCount(0);
+  });
 });

@@ -378,6 +378,75 @@ export function App() {
     console.log('Fonts loaded');
   }, []);
 
+  // Click the title-bar brand logo → confirm + return to the template
+  // gallery. Mirrors the Google Docs / Notion pattern where the home
+  // mark in the corner takes you back. Always confirms because we
+  // can't cheaply tell if the doc is unsaved-dirty without hooking
+  // every PM transaction, and a stray click that discards work is
+  // worse than one extra modal.
+  const handleGoHome = useCallback(() => {
+    const ok = window.confirm(
+      'Leave this document and return to the home page?\n\nUnsaved changes will be lost.'
+    );
+    if (!ok) return;
+    setCurrentDocument(null);
+    setDocumentBuffer(null);
+    setFileName('Untitled.docx');
+    setStatus('');
+    suppressSeedDocumentRef.current = false;
+    setView('home');
+  }, []);
+
+  // Clickable variant of the default doc-icon — same SVG shape and
+  // palette as DefaultDocIcon in TitleBar.tsx, wrapped in a button
+  // with a tooltip + hover affordance.
+  const renderLogo = useCallback(
+    () => (
+      <button
+        type="button"
+        onClick={handleGoHome}
+        title="Return to home"
+        aria-label="Return to home"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 0,
+          border: 'none',
+          background: 'transparent',
+          cursor: 'pointer',
+          borderRadius: '8px',
+          transition: 'background 0.15s, transform 0.05s',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = '#f1f5f9';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent';
+        }}
+        onMouseDown={(e) => {
+          e.currentTarget.style.transform = 'scale(0.96)';
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+        data-testid="title-bar-home"
+      >
+        <svg width="32" height="40" viewBox="0 0 32 40" fill="none" aria-hidden="true">
+          <path
+            d="M2 0C0.9 0 0 0.9 0 2V38C0 39.1 0.9 40 2 40H30C31.1 40 32 39.1 32 38V10L22 0H2Z"
+            fill="#1a73e8"
+          />
+          <path d="M22 0L32 10H24C22.9 10 22 9.1 22 8V0Z" fill="#1557b0" />
+          <rect x="7" y="18" width="18" height="2" rx="1" fill="#fff" />
+          <rect x="7" y="23" width="18" height="2" rx="1" fill="#fff" />
+          <rect x="7" y="28" width="12" height="2" rx="1" fill="#fff" />
+        </svg>
+      </button>
+    ),
+    [handleGoHome]
+  );
+
   // Top-right area: just Share (Google Docs pattern). Open / Save / New
   // live in the File menu and are driven by <DocxEditor>'s internal
   // handlers; we no longer duplicate them as standalone buttons.
@@ -445,6 +514,7 @@ export function App() {
           documentName={fileName}
           onDocumentNameChange={setFileName}
           onNew={handleNewDocument}
+          renderLogo={renderLogo}
           renderTitleBarRight={renderTitleBarRight}
         />
       </main>
