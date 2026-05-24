@@ -543,10 +543,22 @@ function renderTableCell(
   // draw the firstRow's bottom border under this cell. cell.borders?.bottom
   // === undefined excludes both `tblBorders` (would set every cell's bottom)
   // and explicit `<w:bottom w:val="nil"/>` (would set bottom to a 'nil' spec).
+  // Treat `undefined`, `width=0`, and `style='none'/'nil'` as "no explicit
+  // bottom border" — the layout-bridge synthesizes a zero/none stub when
+  // `<w:tblBorders>` has neither `bottom` nor `insideH`, so the original
+  // `=== undefined` check missed every realistic parsed table. The
+  // heuristic still skips cells with a real `<w:bottom>` of their own
+  // (any positive width with style != none/nil) per the GH #395 spec.
+  const cellBottom = cell.borders?.bottom;
+  const cellBottomIsEmpty =
+    cellBottom == null ||
+    (cellBottom.width ?? 0) === 0 ||
+    cellBottom.style === 'none' ||
+    cellBottom.style === 'nil';
   if (
     context.wordCompat &&
     borderFlags.isLastRow &&
-    cell.borders?.bottom === undefined &&
+    cellBottomIsEmpty &&
     wordCompatClosingBorder !== undefined
   ) {
     applyBorder(cellEl, 'bottom', wordCompatClosingBorder);

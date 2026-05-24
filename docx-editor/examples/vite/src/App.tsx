@@ -150,6 +150,13 @@ export function App() {
     return Number.isFinite(n) ? n : undefined;
   }, []);
 
+  // Read `?wordCompat=1` so the e2e for #395 can flip the Word-style
+  // closing-border heuristic without a separate test harness.
+  const wordCompat = useMemo(
+    () => new URLSearchParams(window.location.search).get('wordCompat') === '1',
+    []
+  );
+
   // Collab mode: detected from `?room=<docId>&backend=<wsUrl>`. The
   // GitHub Pages build leaves these blank and stays single-user;
   // the Docker-Hub image's frontend defaults `backend` to its own
@@ -525,6 +532,7 @@ export function App() {
           initialZoom={autoZoom}
           disableFindReplaceShortcuts={disableFindReplaceShortcuts}
           commentIdBase={commentIdBase}
+          wordCompat={wordCompat}
           documentName={fileName}
           onDocumentNameChange={setFileName}
           onNew={handleNewDocument}

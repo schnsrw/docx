@@ -248,6 +248,20 @@ export interface PagedEditorProps {
   pageGap?: number;
   /** Zoom level (1 = 100%). */
   zoom?: number;
+  /**
+   * Opt-in Word-style rendering quirks (#395). Off by default.
+   *
+   * Currently switches on the "firstRow-only borders close the last body
+   * row" heuristic — Word draws the firstRow's bottom border on the last
+   * cell of a table when the cell has no explicit bottom border of its
+   * own. Other editors (LibreOffice, Google Docs) skip this. Hosts that
+   * want the Word look (e.g. doc-comparison UIs) flip this on; the
+   * default off keeps the renderer faithful to the literal OOXML.
+   *
+   * Threaded straight through to `renderPages` → `RenderPageOptions` →
+   * `RenderContext.wordCompat`.
+   */
+  wordCompat?: boolean;
   /** Callback when document changes. */
   onDocumentChange?: (document: Document) => void;
   /** Callback when selection changes. */
@@ -1250,6 +1264,7 @@ const PagedEditorComponent = forwardRef<PagedEditorRef, PagedEditorProps>(
       readOnly = false,
       pageGap = DEFAULT_PAGE_GAP,
       zoom = 1,
+      wordCompat = false,
       onDocumentChange,
       onSelectionChange,
       externalPlugins = EMPTY_PLUGINS,
@@ -1792,6 +1807,7 @@ const PagedEditorComponent = forwardRef<PagedEditorRef, PagedEditorProps>(
               theme: _theme,
               footnotesByPage: footnotesByPage?.size ? footnotesByPage : undefined,
               resolvedCommentIds,
+              wordCompat,
             } as RenderPageOptions & {
               pageGap?: number;
               blockLookup?: BlockLookup;

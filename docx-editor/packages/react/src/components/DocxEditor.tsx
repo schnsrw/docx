@@ -471,6 +471,22 @@ export interface DocxEditorProps {
     /** Max drag width. Default: 600. */
     maxWidth?: number;
   };
+  /**
+   * Opt-in Word-style rendering quirks (#395). Off by default.
+   *
+   * When set, the painter emulates Word's "firstRow-only borders close
+   * the last body row" behavior — for a table where `<w:tblBorders>`
+   * declares only `firstRow` styling, Word also draws the firstRow's
+   * bottom border on the last cell of the last body row when that cell
+   * has no `<w:bottom>` of its own. Other editors (LibreOffice, Google
+   * Docs) leave the last row open in that case.
+   *
+   * Default is `false` so the renderer stays faithful to the literal
+   * OOXML — hosts that want the Word look (doc-comparison UIs, side-
+   * by-side viewers) flip this on. See gap-matrix → `table-last-row-
+   * border` and GH #395.
+   */
+  wordCompat?: boolean;
 }
 
 /**
@@ -809,7 +825,11 @@ function OutlineToggleButton({
         alignItems: 'center',
       }}
     >
-      <MaterialSymbol name="format_list_bulleted" size={20} style={{ color: 'var(--doc-text-muted)' }} />
+      <MaterialSymbol
+        name="format_list_bulleted"
+        size={20}
+        style={{ color: 'var(--doc-text-muted)' }}
+      />
     </button>
   );
 }
@@ -1364,6 +1384,7 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     renderTitleBarRight,
     i18n,
     agentPanel,
+    wordCompat = false,
   },
   ref
 ) {
@@ -5599,6 +5620,7 @@ body { background: white; }
                         hfEditMode={hfEditPosition}
                         onBodyClick={handleBodyClick}
                         zoom={state.zoom}
+                        wordCompat={wordCompat}
                         readOnly={readOnly}
                         extensionManager={extensionManager}
                         selectionFormatting={state.selectionFormatting}

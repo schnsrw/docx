@@ -70,6 +70,10 @@ No round-trip drops.
 
 No round-trip drops.
 
+### drawing-fidelity
+
+No round-trip drops.
+
 ### demo
 
 
@@ -111,6 +115,10 @@ No round-trip drops.
 
 No round-trip drops.
 
+### table-column-resize
+
+No round-trip drops.
+
 ### issue-319-sections
 
 
@@ -139,6 +147,10 @@ No tags vanished on round-trip.
 
 No round-trip drops.
 
+### table-overlap
+
+No round-trip drops.
+
 ### textbox-test
 
 No round-trip drops.
@@ -151,6 +163,10 @@ No round-trip drops.
 
 
 No tags vanished on round-trip.
+
+### word-compat-closing-border
+
+No round-trip drops.
 
 ### float-wrap-comprehensive-test
 
