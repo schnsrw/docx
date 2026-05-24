@@ -87,7 +87,7 @@ This shifts the durability story entirely to the host. We become a pure realtime
 | **M1 — Stateless Go gateway (v0 self-contained)** | ✅ shipped | `backend/cmd/gateway/main.go` — POST /api/docs, GET /api/docs/{id}/download, GET /doc/{id} (WS), GET /health. `inline` host backs the v0 flow. Room manager, broadcast, upload, static-SPA path all unit-tested. |
 | **M2 — Live Y.Doc → .docx serializer on drain** | open | Replaces the current "re-serve original upload" snapshot path with a Bun worker pool that emits a fresh .docx from the CRDT state. |
 | **M3 — WOPI integration** | open | Pluggable host interface already in place; needs the WOPI concrete impl + a real host to integrate against. |
-| **M4 — Tauri desktop binary** | open | Early scaffolding only. First binary after fidelity hits 90%. |
+| **M4 — Tauri desktop binary** | paused | Early scaffolding only. Fidelity floor (≥ 90 %) is now cleared, so M4 is technically *unblocked*, but the user has paused this milestone — do not start the desktop build until they explicitly green-light it. |
 | **M5 — Notebook mode** | planned | Second editor surface (Obsidian-flavoured, markdown-native, single-column, no pagination) sharing the same engine + Yjs collab + Go gateway as the document surface. Split the home page into Documents + Notebooks; `.md` defaults to notebook, with an "Open as document" escape hatch. Full design in [`06-notebook-mode-design.md`](06-notebook-mode-design.md). Lands after M4. |
 
 ## Status
