@@ -280,11 +280,7 @@ function createParagraphChangeTrackerPlugin(): Plugin<ParagraphChangeTrackerStat
             // and the coords could exceed `tr.before.content.size`,
             // crashing `nodesBetween`. Gate on stepIndex === 0 and an
             // explicit bounds check.
-            if (
-              stepIndex === 0 &&
-              oldEnd > oldStart &&
-              oldEnd <= tr.before.content.size
-            ) {
+            if (stepIndex === 0 && oldEnd > oldStart && oldEnd <= tr.before.content.size) {
               try {
                 const beforeWalk = collectAffectedParaIds(tr.before, oldStart, oldEnd);
                 for (const t of beforeWalk.blockTypes) {
