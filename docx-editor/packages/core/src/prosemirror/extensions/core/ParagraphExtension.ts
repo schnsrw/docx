@@ -559,7 +559,12 @@ function makeApplyStyle(schema: Schema) {
             schema.marks.fontFamily.create({
               ascii: rpr.fontFamily.ascii,
               hAnsi: rpr.fontFamily.hAnsi,
+              eastAsia: rpr.fontFamily.eastAsia,
+              cs: rpr.fontFamily.cs,
               asciiTheme: rpr.fontFamily.asciiTheme,
+              hAnsiTheme: rpr.fontFamily.hAnsiTheme,
+              eastAsiaTheme: rpr.fontFamily.eastAsiaTheme,
+              csTheme: rpr.fontFamily.csTheme,
             })
           );
         }

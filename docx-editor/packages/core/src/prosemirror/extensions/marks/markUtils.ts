@@ -347,11 +347,21 @@ export function textFormattingToMarks(formatting: TextFormatting, schema: Schema
     marks.push(schema.marks.fontSize.create({ size: formatting.fontSize }));
   }
   if (formatting.fontFamily) {
+    // OOXML carries up to four font-script categories (ascii / hAnsi /
+    // eastAsia / cs) plus the matching `*Theme` references. Previously
+    // we forwarded only ascii / hAnsi / asciiTheme — eastAsia + cs
+    // (and the eastAsia/cs themes) were dropped at the boundary, so
+    // East Asian fonts like DengXian round-tripped as Arial.
     marks.push(
       schema.marks.fontFamily.create({
         ascii: formatting.fontFamily.ascii,
         hAnsi: formatting.fontFamily.hAnsi,
+        eastAsia: formatting.fontFamily.eastAsia,
+        cs: formatting.fontFamily.cs,
         asciiTheme: formatting.fontFamily.asciiTheme,
+        hAnsiTheme: formatting.fontFamily.hAnsiTheme,
+        eastAsiaTheme: formatting.fontFamily.eastAsiaTheme,
+        csTheme: formatting.fontFamily.csTheme,
       })
     );
   }
