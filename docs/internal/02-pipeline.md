@@ -148,3 +148,30 @@ Cross-format conversion (e.g. `.docx → .md` standalone) is **not a
 goal of this repo**. The editor exposes its parsers + serializers
 as building blocks; downstream packages can compose them into
 converters if useful.
+
+## Sibling-project cadence — Casual Sheets
+
+The spreadsheet half of the product family (`schnsrw/casual-sheets`,
+local path `services/sheet/`) is **3 platform milestones ahead** of
+Document as of 2026-05-25: v0.1.0 shipped a full self-host story
+(WOPI host, JWT auth, admin panel, webhooks, 4 storage backends).
+Full state matrix in [`00-overview.md` § Sibling project — Casual
+Sheets](00-overview.md#sibling-project--casual-sheets).
+
+Practical impact on this pipeline:
+
+- **Document M3 (JWT host) does NOT start from scratch.** Port from
+  `services/sheet/` and keep the env-var names identical
+  (`CASUAL_STORAGE`, `CASUAL_JWT_SECRET`, etc.) so a self-hoster
+  can run both services with one config block. Same for the WOPI
+  endpoint shape (CheckFileInfo / GetFile / PutFile).
+- **`X-Casual-Signature: sha256=<hex>`** is the family's webhook
+  signing convention. If Document ever ships webhooks, match it.
+- **Don't fork the admin panel UI until Document actually needs an
+  admin panel.** When that day arrives, decide whether to factor a
+  shared `@schnsrw/admin-shell` package or just stand up a second
+  copy.
+- **No coupling at the runtime level.** Sheets uses Hocuspocus
+  (Node) for collab; Document uses its own Go y-websocket gateway.
+  Those don't have to converge — they serve different editors with
+  different mutation models.

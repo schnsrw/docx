@@ -74,10 +74,50 @@ This shifts the durability story entirely to the host. We become a pure realtime
 
 ## What this is not
 
-- Not a multi-format editor — `.docx` only. Spreadsheets and presentations are out of scope (Casual Sheets is a sibling project).
+- Not a multi-format editor — `.docx` only. Spreadsheets and presentations are out of scope (Casual Sheets is a sibling project — see status below).
 - Not building a CRDT from scratch — Yjs is chosen.
 - Not running OnlyOffice's Document Server.
 - **Not a storage system.** Storage = host. We orchestrate live editing only.
+
+## Sibling project — Casual Sheets
+
+`schnsrw/casual-sheets` (`services/sheet/` in the local workspace) is the spreadsheet half of the same product family. Same operator, same self-host story, deliberately parallel shape so the two services slot into one deployment.
+
+### Current state (2026-05-25 cross-project audit)
+
+| | Casual Editor (this repo) | Casual Sheets |
+|---|---|---|
+| **Released version** | unreleased (M1 backend shipped, snapshot worker pending) | **v0.1.0** — first version-bumped release |
+| **Editor base** | Fork of `eigenpal/docx-editor` (MIT) + custom layout-painter | Univer OSS 0.24.x (Apache-2.0) + custom Office-style chrome |
+| **CRDT** | Yjs + `y-prosemirror`, own Go y-websocket gateway | Yjs + Hocuspocus (Node) |
+| **Persistence** | `host.Integration` interface, `inline` impl shipped | Same interface shape; **4 backends shipped** — `memory` · `local` · `s3` (AWS/MinIO/R2/B2) · `postgres` |
+| **WOPI / JWT** | Designed in `05-backend-design.md`, not implemented | **Shipped** — CheckFileInfo / GetFile / PutFile + JWT claims (role / permissions / features / per-file lateral guard) |
+| **Admin panel** | None | Shipped — `/admin`, env-gated, 7 sections (branding · storage · networking · room limits · auth · webhooks · base path) |
+| **Webhooks** | None | 9 events, HMAC-SHA256 (`X-Casual-Signature: sha256=<hex>`), single retry |
+| **Self-host docs** | None | 11 pages live on schnsrw.live/docs/sheets/ |
+| **Fidelity** | 44/44 round-trip fixtures = 100% | xlsx + ods round-trip + 54/54 pivot-cache passthrough |
+| **Test coverage** | ~340 e2e + targeted unit suites | 357 e2e + 60 unit |
+| **Mobile** | Editor + home gallery responsive, pinch-zoom, mobile format chip | Viewer + light editor down to ~360 px; sticky bottom action bar |
+| **Live deploy** | `doc.schnsrw.live` (single-user demo) | `sheet.schnsrw.live` (single-user demo) |
+
+### Why it matters here
+
+Sheets is **3 milestones ahead** on the platform side (already where Document's M2 + M3 + admin work want to land). Patterns to lift when M2 and beyond ship here:
+
+- **`host.Integration` shape** — Sheets' four concrete backends cover the same surface Document's interface will expose; the Postgres + S3 modules can be ported with minor renames.
+- **JWT claims model** — `sub` · `file_id` · `role` · per-flag `permissions` · `features` · `password_required` · `display_name`. The lateral-access guard (URL `:id` must match `file_id` claim → 403) is the right default — Document should adopt it verbatim.
+- **Admin panel structure** — 7-section JSON config persisted at 0600, secrets redacted on read with a `***` sentinel that preserves the prior verbatim on write-back. Saves us rebuilding the UX.
+- **Webhook signing convention** — `X-Casual-Signature: sha256=<hex>`. If Document ships a webhook layer, use the same header so embedders only learn one HMAC verifier.
+
+### Cross-project order of operations
+
+1. **Document M2** (snapshot worker) — local to this repo; doesn't depend on sheets.
+2. **Document M3** (JWT host) — port from sheets, keep the same env-var names (`CASUAL_STORAGE`, `CASUAL_JWT_SECRET`, etc.) so a self-hoster can run both services with one config block.
+3. **Shared admin shell** — once both services have admin needs, decide whether to factor a `@schnsrw/admin-shell` package or run two copies. Defer until the second service actually needs it.
+4. **Document M4** (Tauri desktop) — paused per user directive.
+5. **Document M5** (Notebook mode) — design landed in `06-notebook-mode-design.md`; implementation after M4.
+
+This block is informational — concrete dependencies for any given Document milestone live in `05-backend-design.md`.
 
 ## Milestone status
 
