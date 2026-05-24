@@ -1500,22 +1500,6 @@ function convertTextBoxNode(
     }
   });
 
-  // Surface anchor offsets so the engine can place anchored textboxes
-  // at their declared posOffset. Without this, all textboxes — even
-  // anchored ones with parsed positions — fell through to
-  // `layoutTextBox`'s flow-cursor fallback. See
-  // gap-matrix → `anchored-shape-position-lost`.
-  const posOffsetH = attrs.posOffsetH as number | null | undefined;
-  const posOffsetV = attrs.posOffsetV as number | null | undefined;
-  const anchor =
-    posOffsetH != null || posOffsetV != null
-      ? {
-          isAnchored: true,
-          offsetH: posOffsetH ?? undefined,
-          offsetV: posOffsetV ?? undefined,
-        }
-      : undefined;
-
   return {
     kind: 'textBox',
     id: nextBlockId(),
@@ -1533,7 +1517,6 @@ function convertTextBoxNode(
     },
     content: contentBlocks,
     autoFit: (attrs.autoFit as TextBoxBlock['autoFit']) ?? undefined,
-    anchor,
     pmStart: startPos,
     pmEnd: startPos + node.nodeSize,
   };

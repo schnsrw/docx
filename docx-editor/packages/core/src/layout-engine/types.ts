@@ -514,19 +514,6 @@ export type TextBoxBlock = {
    * when our font metrics disagree with Word's saved ext.cy.
    */
   autoFit?: 'spAutoFit' | 'noAutofit' | 'normAutofit';
-  /**
-   * Anchor position for floating text-bearing shapes. Mirrors
-   * `ImageBlock.anchor` (offsets in pixels @ 96 DPI). When unset, the
-   * engine falls back to the flow cursor — preserves the original inline
-   * textbox behavior. When `offsetH`/`offsetV` are set, `layoutTextBox`
-   * places the box at those coordinates relative to the column origin /
-   * page-content top (same code path as `layoutAnchoredImage`).
-   */
-  anchor?: {
-    isAnchored?: boolean;
-    offsetH?: number;
-    offsetV?: number;
-  };
   pmStart?: number;
   pmEnd?: number;
 };
