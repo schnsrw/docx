@@ -39,4 +39,19 @@ test.describe('Home page', () => {
     await expect(page.locator('[data-testid="docx-editor"]')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('[data-testid="home-page"]')).toHaveCount(0);
   });
+
+  test('Resume template loads from /templates/resume.docx and renders content', async ({
+    page,
+  }) => {
+    // Pins that scripts/make-home-templates.mjs emits a valid .docx the
+    // editor can actually parse — silent corruption in the generator
+    // would still pass the typecheck + every other test.
+    await page.goto('/');
+    await page.locator('[data-testid="template-card-resume"]').click();
+    await expect(page.locator('[data-testid="docx-editor"]')).toBeVisible({ timeout: 10_000 });
+    // The Resume template's hero name is the easiest unique marker.
+    await expect(page.locator('.ProseMirror')).toContainText('Alex Morgan', {
+      timeout: 10_000,
+    });
+  });
 });

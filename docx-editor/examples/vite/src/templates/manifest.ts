@@ -2,8 +2,8 @@
  * Template registry for the Casual Editor home page.
  *
  * Add a new template by dropping a .docx into examples/vite/public/templates/
- * (or wherever `source.path` points) and flipping `kind: 'coming-soon'` to
- * `kind: 'docx'` with the matching path. See public/templates/README.md.
+ * (and an SVG thumbnail into public/templates/thumbs/) and pushing an entry
+ * here. See public/templates/README.md.
  */
 
 export type TemplateSource =
@@ -18,10 +18,10 @@ export interface TemplateEntry {
   id: string;
   name: string;
   description: string;
-  /** Material Symbols Outlined icon name (font is preloaded in index.html). */
+  /** Material Symbols Outlined glyph (used as a small badge alongside the thumbnail). */
   icon: string;
-  /** Card-preview tint (a soft pastel matching the icon mood). */
-  accent: string;
+  /** Path to the per-template SVG thumbnail in public/templates/thumbs/. */
+  thumbnail: string;
   source: TemplateSource;
   /** File name suggested when this template lands in the editor. */
   defaultFileName: string;
@@ -33,53 +33,53 @@ export const TEMPLATES: TemplateEntry[] = [
     name: 'Blank document',
     description: 'Start fresh with an empty page.',
     icon: 'description',
-    accent: '#f1f5f9',
+    thumbnail: '/templates/thumbs/blank.svg',
     source: { kind: 'synthesized' },
     defaultFileName: 'Untitled.docx',
   },
   {
     id: 'sample',
     name: 'Sample document',
-    description: 'Multi-page sample with fonts, lists, tables, and images.',
+    description: 'Headings, lists, a small table, and a formatting showcase.',
     icon: 'feed',
-    accent: '#dbeafe',
+    thumbnail: '/templates/thumbs/sample.svg',
     source: { kind: 'docx', path: '/sample.docx' },
     defaultFileName: 'Sample.docx',
   },
   {
-    id: 'form',
-    name: 'Fillable form',
-    description: 'Form with checkboxes and structured fields.',
-    icon: 'check_box',
-    accent: '#dcfce7',
-    source: { kind: 'docx', path: '/Form025U.docx' },
-    defaultFileName: 'Form.docx',
-  },
-  {
     id: 'resume',
     name: 'Resume',
-    description: 'Single-column résumé layout.',
+    description: 'Single-column résumé with experience and skills sections.',
     icon: 'badge',
-    accent: '#fef3c7',
-    source: { kind: 'coming-soon' },
+    thumbnail: '/templates/thumbs/resume.svg',
+    source: { kind: 'docx', path: '/templates/resume.docx' },
     defaultFileName: 'Resume.docx',
   },
   {
     id: 'letter',
     name: 'Letter',
-    description: 'Formal business letter with header and footer.',
+    description: 'Formal letter with sender block, salutation, and closing.',
     icon: 'mail',
-    accent: '#fce7f3',
-    source: { kind: 'coming-soon' },
+    thumbnail: '/templates/thumbs/letter.svg',
+    source: { kind: 'docx', path: '/templates/letter.docx' },
     defaultFileName: 'Letter.docx',
   },
   {
     id: 'meeting-notes',
     name: 'Meeting notes',
-    description: 'Agenda + attendees + action items template.',
+    description: 'Attendees, agenda, discussion, and action items.',
     icon: 'edit_note',
-    accent: '#ede9fe',
-    source: { kind: 'coming-soon' },
+    thumbnail: '/templates/thumbs/meeting-notes.svg',
+    source: { kind: 'docx', path: '/templates/meeting-notes.docx' },
     defaultFileName: 'Meeting notes.docx',
+  },
+  {
+    id: 'project-proposal',
+    name: 'Project proposal',
+    description: 'Executive summary, objectives, approach, and milestones.',
+    icon: 'rocket_launch',
+    thumbnail: '/templates/thumbs/project-proposal.svg',
+    source: { kind: 'docx', path: '/templates/project-proposal.docx' },
+    defaultFileName: 'Project proposal.docx',
   },
 ];

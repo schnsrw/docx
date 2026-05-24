@@ -1,22 +1,45 @@
 # Home-page templates
 
-Hand-authored `.docx` files that back the template gallery on the
-Casual Editor home page (`examples/vite/src/Home.tsx`).
+`.docx` files that back the template gallery on the Casual Editor
+home page (`examples/vite/src/Home.tsx`). All current entries are
+synthesized programmatically by `scripts/make-home-templates.mjs` —
+re-run that script if you change the content.
+
+## Files in this directory
+
+| File                          | What it is                                                       |
+| ----------------------------- | ---------------------------------------------------------------- |
+| `resume.docx`                 | Single-column résumé with experience and skills.                 |
+| `letter.docx`                 | Formal letter with sender block, salutation, body, closing.      |
+| `meeting-notes.docx`          | Agenda, discussion, action items, next-meeting block.            |
+| `project-proposal.docx`       | Executive summary, objectives, approach, milestones table.       |
+| `thumbs/<id>.svg`             | 200×140 SVG mockup shown on the home-page card.                  |
+
+The Blank and Sample cards don't have files here — Blank uses the
+in-memory `createEmptyDocument()` and Sample reads `/sample.docx`
+from the parent `public/` directory.
 
 ## Adding a new template
 
-1. Author the file in Microsoft Word (or LibreOffice / Google Docs)
-   and save as `.docx`. Real Word output produces the most fidelity
-   coverage — synthesized OOXML is rougher around section properties,
-   theme colors, and styles.
-2. Drop the file into this directory. Use a filename matching the
-   manifest entry's `source.path` (relative to this directory's URL
-   root — e.g. `/templates/resume.docx`).
-3. Open `examples/vite/src/templates/manifest.ts` and flip the
-   matching entry from `kind: 'coming-soon'` to
-   `kind: 'docx', path: '/templates/<filename>.docx'`.
-4. Reload the editor — the card un-grays and clicking it loads the
-   template.
+There are two paths:
+
+**A. Add via the generator script (recommended for simple templates):**
+
+1. Open `scripts/make-home-templates.mjs`. Define a new body via the
+   `h` / `p` / `r` / `bullet` / `numbered` / `table` helpers.
+2. Add a `writeDocx(..., NEW_BODY)` call at the bottom of the script.
+3. Add a matching SVG thumbnail to `public/templates/thumbs/`.
+4. Push an entry into `examples/vite/src/templates/manifest.ts`.
+5. Run `bun scripts/make-home-templates.mjs` to regenerate.
+
+**B. Drop in a hand-authored .docx (recommended for complex Word output):**
+
+1. Author the file in Microsoft Word and save as `.docx`. Real Word
+   output exercises styles, theme colors, and section properties in
+   ways the synthesized OOXML can't.
+2. Drop it into this directory.
+3. Add the manifest entry (`kind: 'docx', path: '/templates/<file>.docx'`).
+4. Add a matching SVG thumbnail.
 
 ## Card metadata (in `manifest.ts`)
 
@@ -28,6 +51,7 @@ Casual Editor home page (`examples/vite/src/Home.tsx`).
 | `icon`            | Material Symbols Outlined glyph name — see https://fonts.google.com/icons.              |
 | `accent`          | Soft pastel background for the icon panel.                                              |
 | `source`          | `synthesized` (in-memory), `docx` (fetched), or `coming-soon` (disabled).               |
+| `thumbnail`       | Path to the per-template SVG mockup in `public/templates/thumbs/`.                      |
 | `defaultFileName` | What the title-bar shows after the template lands in the editor.                        |
 
 ## Where the file is served from
