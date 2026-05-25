@@ -32,11 +32,6 @@ test.describe('Hyperlinks', () => {
   });
 
   test('should open hyperlink dialog with Cmd+K', async ({ page }) => {
-    test.fixme(
-      true,
-      'Chromium under Playwright does not reliably deliver Ctrl/Cmd+K to the page in this harness.'
-    );
-
     // Click in editor to focus
     // Hidden ProseMirror is at left: -9999px — clicks on it fail.
     // Focus via the contenteditable directly; keyboard input still

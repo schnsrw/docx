@@ -409,9 +409,11 @@ test.describe('Demo.docx - Images', () => {
   test('renders images', async ({ page }) => {
     // The demo document contains several images. Poll the count rather
     // than reading once — image decoding lags the initial paint.
-    await expect.poll(async () => page.locator('.ProseMirror img').count(), {
-      timeout: 5000,
-    }).toBeGreaterThan(0);
+    await expect
+      .poll(async () => page.locator('.ProseMirror img').count(), {
+        timeout: 5000,
+      })
+      .toBeGreaterThan(0);
   });
 
   test('images have src attribute', async ({ page }) => {
@@ -592,17 +594,11 @@ test.describe('Demo.docx - Round-trip Save', () => {
     await expect(page.locator('.ProseMirror')).toContainText('Edited by test');
   });
 
-  test('saved document preserves formatting', async ({ page }) => {
-    test.fixme(
-      true,
-      'This is a duplicate save/edit smoke without a real reload assertion and is flaky under shared local-server load.'
-    );
-
-    // Verify basic text editing works (save/re-load infrastructure not yet available)
-    await editor.focus();
-    await editor.typeText('Edited by test');
-    await expect(page.locator('.ProseMirror')).toContainText('Edited by test');
-  });
+  // The 'saved document preserves formatting' test that lived here was
+  // a duplicate save/edit smoke without a real reload assertion — the
+  // body was identical to the preceding test and offered no additional
+  // coverage. Removed instead of un-fixme'd; if/when save+reload
+  // infrastructure lands, replace with a proper round-trip assertion.
 });
 
 test.describe('Demo.docx - Font Support', () => {
