@@ -38,7 +38,22 @@ export const storedMarksRestoreKey = new PluginKey('storedMarksRestore');
 function createStoredMarksRestorePlugin(): Plugin {
   return new Plugin({
     key: storedMarksRestoreKey,
-    appendTransaction(_transactions, _oldState, newState) {
+    appendTransaction(transactions, _oldState, newState) {
+      // Only fire after a doc-CHANGING transaction. A pure selection
+      // move (click into a different cell, arrow-keying around) doesn't
+      // clear PM's storedMarks — so there's no work to do, and
+      // dispatching an extra setStoredMarks tx on every cursor move
+      // produces a 2x transaction multiplier that thrashes downstream
+      // React rerenders (table-more dropdown click was racing against
+      // the rerender and losing its open-state — caught by CI 2026-05-25).
+      //
+      // The bug we DO need to address (P2 #19): after select-all +
+      // Backspace, storedMarks is null and the next typed character
+      // loses inherited formatting. That path always involves a
+      // doc-changing tx (the delete) — so gating on docChanged is
+      // both sufficient and necessary.
+      if (!transactions.some((t) => t.docChanged)) return null;
+
       if (newState.storedMarks && newState.storedMarks.length > 0) return null;
 
       const { selection, schema } = newState;

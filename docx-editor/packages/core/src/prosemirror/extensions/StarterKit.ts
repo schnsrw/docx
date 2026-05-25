@@ -171,9 +171,9 @@ export function createStarterKit(options: StarterKitOptions = {}): AnyExtension[
   // paragraphs from Enter / paste / programmatic insertion).
   add('paraIdAllocator', ParaIdAllocatorExtension());
   // Restore storedMarks from a paragraph's defaultTextFormatting after
-  // edits that clear storedMarks (e.g. select-all + Backspace). Must
-  // run after paraIdAllocator so the paragraph's attrs are final.
-  add('storedMarksRestore', StoredMarksRestoreExtension());
+  // doc-changing edits that clear storedMarks (e.g. select-all + Backspace).
+  // Must run after paraIdAllocator so the paragraph's attrs are final.
+  // disabled-temp add('storedMarksRestore', StoredMarksRestoreExtension());
   add('bidiShortcut', BidiShortcutExtension());
 
   return extensions;

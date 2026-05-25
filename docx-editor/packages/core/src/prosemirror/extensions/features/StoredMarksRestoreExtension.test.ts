@@ -65,12 +65,22 @@ function createEmptyParagraphState(dtf: TextFormatting | null): EditorState {
   return state.apply(state.tr.setSelection(TextSelection.create(state.doc, 1)));
 }
 
+// Helper that mimics the real "select-all + Backspace" path: types text
+// then deletes it, leaving a doc-changing tx in the transaction list.
+// The plugin only fires after doc-changing txs (gate added 2026-05-25
+// to fix the table-more click race — see plugin source for rationale).
+function applyDeleteToEmpty(state: EditorState): EditorState {
+  // Insert text then delete it to produce a doc-changing tx that
+  // leaves the paragraph empty + the selection collapsed at the start.
+  const withText = state.apply(state.tr.insertText('x'));
+  const afterDelete = withText.apply(withText.tr.delete(1, 2));
+  return afterDelete;
+}
+
 describe('StoredMarksRestoreExtension', () => {
-  test('restores bold storedMarks from defaultTextFormatting on selection-change', () => {
+  test('restores bold storedMarks from defaultTextFormatting after a doc-changing tx empties the paragraph', () => {
     const state = createEmptyParagraphState({ bold: true });
-    // applying any transaction triggers appendTransaction; a no-op
-    // SetSelection at the same position is enough.
-    const next = state.apply(state.tr);
+    const next = applyDeleteToEmpty(state);
     expect(next.storedMarks).not.toBeNull();
     expect(next.storedMarks!.length).toBe(1);
     expect(next.storedMarks![0].type.name).toBe('bold');
@@ -82,7 +92,7 @@ describe('StoredMarksRestoreExtension', () => {
       italic: true,
       fontSize: 28,
     });
-    const next = state.apply(state.tr);
+    const next = applyDeleteToEmpty(state);
     const names = next.storedMarks!.map((m) => m.type.name).sort();
     expect(names).toEqual(['bold', 'fontSize', 'italic']);
     const fs = next.storedMarks!.find((m) => m.type.name === 'fontSize');
@@ -91,7 +101,17 @@ describe('StoredMarksRestoreExtension', () => {
 
   test('no-op when defaultTextFormatting is null', () => {
     const state = createEmptyParagraphState(null);
-    const next = state.apply(state.tr);
+    const next = applyDeleteToEmpty(state);
+    expect(next.storedMarks).toBeNull();
+  });
+
+  test('no-op on a pure selection-only transaction (the table-more race gate)', () => {
+    // Plugin must NOT fire when the only change is a selection move.
+    // Otherwise it doubles every cursor-move transaction and races
+    // downstream React rerenders (caught by table-more click failures
+    // in CI 2026-05-25).
+    const state = createEmptyParagraphState({ bold: true });
+    const next = state.apply(state.tr); // empty tx, no docChange
     expect(next.storedMarks).toBeNull();
   });
 
@@ -99,27 +119,27 @@ describe('StoredMarksRestoreExtension', () => {
     const doc = schema.node('doc', null, [
       schema.node('paragraph', { defaultTextFormatting: { bold: true } }, [schema.text('hi')]),
     ]);
-    const state = EditorState.create({ doc, plugins: [plugin] }).apply(
-      // place cursor inside the text
-      EditorState.create({ doc, plugins: [plugin] }).tr.setSelection(TextSelection.create(doc, 2))
-    );
-    expect(state.storedMarks).toBeNull();
+    const state = EditorState.create({ doc, plugins: [plugin] });
+    // Delete one char of "hi" → doc-changing tx, but para still has content.
+    const next = state.apply(state.tr.delete(1, 2));
+    expect(next.storedMarks).toBeNull();
   });
 
   test('no-op when storedMarks is already populated', () => {
     const boldMark = schema.marks.bold.create();
     const state = createEmptyParagraphState({ italic: true });
-    const tr = state.tr.setStoredMarks([boldMark]);
+    // Doc-changing tx with explicit storedMarks override.
+    const tr = state.tr.insertText('x').delete(1, 2).setStoredMarks([boldMark]);
     const next = state.apply(tr);
-    // The plugin's guard should leave the explicit storedMarks alone.
     expect(next.storedMarks).not.toBeNull();
     expect(next.storedMarks!.length).toBe(1);
     expect(next.storedMarks![0].type.name).toBe('bold');
   });
 
-  test('does not infinite-loop: second apply produces stable storedMarks', () => {
+  test('does not infinite-loop: a second apply on the result is a no-op', () => {
     const state = createEmptyParagraphState({ bold: true });
-    const a = state.apply(state.tr);
+    const a = applyDeleteToEmpty(state);
+    // Second apply is a selection-only tx — plugin must not re-fire.
     const b = a.apply(a.tr);
     expect(b.storedMarks).not.toBeNull();
     expect(b.storedMarks!.length).toBe(1);
@@ -128,9 +148,7 @@ describe('StoredMarksRestoreExtension', () => {
 
   test('restored storedMarks apply to subsequent text input', () => {
     const state = createEmptyParagraphState({ bold: true });
-    const a = state.apply(state.tr);
-    // simulate text input at cursor — PM applies storedMarks to the
-    // inserted text run automatically when storedMarks is non-null.
+    const a = applyDeleteToEmpty(state);
     const tr = a.tr.insertText('X');
     const next = a.apply(tr);
     const firstText = next.doc.firstChild!.firstChild!;
