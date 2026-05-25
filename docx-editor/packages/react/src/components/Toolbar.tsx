@@ -226,6 +226,23 @@ export interface ToolbarProps {
    * the next even/odd page).
    */
   onInsertSectionBreak?: (breakType: 'nextPage' | 'continuous' | 'oddPage' | 'evenPage') => void;
+  /**
+   * Callback to insert an inline OOXML field node — PAGE / NUMPAGES /
+   * DATE / TIME / CREATEDATE / SAVEDATE / AUTHOR / FILENAME. PAGE +
+   * NUMPAGES are the primary use in headers/footers; the others
+   * apply anywhere fields are valid (body, header, footer, footnotes).
+   */
+  onInsertField?: (
+    fieldType:
+      | 'PAGE'
+      | 'NUMPAGES'
+      | 'DATE'
+      | 'TIME'
+      | 'CREATEDATE'
+      | 'SAVEDATE'
+      | 'AUTHOR'
+      | 'FILENAME'
+  ) => void;
   /** Callback when user wants to insert a table of contents */
   onInsertTOC?: () => void;
   /** Callback when user wants to insert a shape */
@@ -464,6 +481,7 @@ export function Toolbar({
   showTableInsert = true,
   onInsertPageBreak,
   onInsertSectionBreak,
+  onInsertField,
   onInsertTOC,
   onRefocusEditor,
   currentFormatting,
@@ -886,6 +904,44 @@ export function Toolbar({
                     onMouseDown={(e) => {
                       e.preventDefault();
                       onInsertSectionBreak?.(item.type);
+                      closeMenu();
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ),
+          },
+          // Field insert submenu — PAGE / NUMPAGES are the headline
+          // entries (header/footer page-numbering); DATE / TIME /
+          // CREATEDATE / SAVEDATE / AUTHOR / FILENAME round out the
+          // common set. Round-trip locked in by
+          // __tests__/footer-field-roundtrip.test.ts.
+          {
+            icon: 'tag',
+            label: t('toolbar.insertField'),
+            disabled: !onInsertField,
+            submenuContent: (closeMenu: () => void) => (
+              <div className="py-1 min-w-[200px]">
+                {(
+                  [
+                    { label: t('toolbar.fieldPage'), type: 'PAGE' },
+                    { label: t('toolbar.fieldNumPages'), type: 'NUMPAGES' },
+                    { label: t('toolbar.fieldDate'), type: 'DATE' },
+                    { label: t('toolbar.fieldTime'), type: 'TIME' },
+                    { label: t('toolbar.fieldCreateDate'), type: 'CREATEDATE' },
+                    { label: t('toolbar.fieldSaveDate'), type: 'SAVEDATE' },
+                    { label: t('toolbar.fieldAuthor'), type: 'AUTHOR' },
+                    { label: t('toolbar.fieldFileName'), type: 'FILENAME' },
+                  ] as const
+                ).map((item) => (
+                  <button
+                    key={item.type}
+                    className="w-full text-left px-4 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      onInsertField?.(item.type);
                       closeMenu();
                     }}
                   >

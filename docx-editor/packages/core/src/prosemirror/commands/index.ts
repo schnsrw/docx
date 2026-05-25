@@ -123,6 +123,8 @@ export type { TableContextInfo, BorderPreset } from './table';
 
 // Page break
 export { insertPageBreak } from './pageBreak';
+export { insertField } from './field';
+export type { InsertableFieldType } from './field';
 
 // Image commands
 export { setImageWrapType } from './image';

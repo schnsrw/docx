@@ -218,6 +218,8 @@ import {
   insertPageBreak,
   // Section break command
   insertSectionBreak,
+  // Field insert command (PAGE / NUMPAGES / DATE / …)
+  insertField,
   // Table of Contents command
   generateTOC,
   // Table commands
@@ -253,6 +255,7 @@ import {
   setTableBorderColor,
   setTableBorderWidth,
   type TableContextInfo,
+  type InsertableFieldType,
 } from '@eigenpal/docx-core/prosemirror';
 import { acceptChange, rejectChange } from '@eigenpal/docx-core/prosemirror/commands';
 import { collectHeadings } from '@eigenpal/docx-core/utils';
@@ -2568,6 +2571,21 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     insertPageBreak(view.state, view.dispatch);
     focusActiveEditor();
   }, [getActiveEditorView, focusActiveEditor]);
+
+  // Insert an inline OOXML field node (PAGE / NUMPAGES / DATE / TIME /
+  // CREATEDATE / SAVEDATE / AUTHOR / FILENAME) at the cursor. The
+  // header/footer flow is the primary use; body insertion also works
+  // (Word renders PAGE in body the same way). The round-trip through
+  // parser+serializer is locked in by footer-field-roundtrip.test.ts.
+  const handleInsertField = useCallback(
+    (fieldType: InsertableFieldType) => {
+      const view = getActiveEditorView();
+      if (!view) return;
+      insertField(fieldType)(view.state, view.dispatch);
+      focusActiveEditor();
+    },
+    [getActiveEditorView, focusActiveEditor]
+  );
 
   // Insert a section break of the given OOXML type. Section breaks
   // are a stronger structural divider than page breaks — they let
@@ -5550,6 +5568,7 @@ body { background: white; }
                       onInsertImage={handleInsertImageClick}
                       onInsertPageBreak={handleInsertPageBreak}
                       onInsertSectionBreak={handleInsertSectionBreak}
+                      onInsertField={handleInsertField}
                       onInsertTOC={handleInsertTOC}
                       imageContext={state.pmImageContext}
                       onImageWrapType={handleImageWrapType}

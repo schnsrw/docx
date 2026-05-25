@@ -235,6 +235,7 @@ export function MenuBar() {
     showTableInsert = true,
     onInsertPageBreak,
     onInsertSectionBreak,
+    onInsertField,
     onInsertTOC,
     onRefocusEditor,
   } = ctx;
@@ -646,6 +647,39 @@ export function MenuBar() {
                       onMouseDown={(e) => {
                         e.preventDefault();
                         onInsertSectionBreak?.(item.type);
+                        closeMenu();
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              ),
+            },
+            {
+              icon: 'tag',
+              label: t('toolbar.insertField'),
+              disabled: !onInsertField,
+              submenuContent: (closeMenu: () => void) => (
+                <div className="py-1 min-w-[200px]">
+                  {(
+                    [
+                      { label: t('toolbar.fieldPage'), type: 'PAGE' },
+                      { label: t('toolbar.fieldNumPages'), type: 'NUMPAGES' },
+                      { label: t('toolbar.fieldDate'), type: 'DATE' },
+                      { label: t('toolbar.fieldTime'), type: 'TIME' },
+                      { label: t('toolbar.fieldCreateDate'), type: 'CREATEDATE' },
+                      { label: t('toolbar.fieldSaveDate'), type: 'SAVEDATE' },
+                      { label: t('toolbar.fieldAuthor'), type: 'AUTHOR' },
+                      { label: t('toolbar.fieldFileName'), type: 'FILENAME' },
+                    ] as const
+                  ).map((item) => (
+                    <button
+                      key={item.type}
+                      className="w-full text-left px-4 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        onInsertField?.(item.type);
                         closeMenu();
                       }}
                     >

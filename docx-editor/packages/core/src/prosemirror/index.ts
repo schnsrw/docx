@@ -162,12 +162,14 @@ export {
   setTableBorderWidth,
   // Page break
   insertPageBreak,
+  // Field insert (PAGE / NUMPAGES / DATE / TIME / …)
+  insertField,
   // Section break
   insertSectionBreak,
   // Table of Contents
   generateTOC,
 } from './commands';
-export type { TableContextInfo, BorderPreset } from './commands';
+export type { TableContextInfo, BorderPreset, InsertableFieldType } from './commands';
 
 /** Word `w14:paraId` → ProseMirror position before matching paragraph. */
 export { findStartPosForParaId } from './utils/findStartPosForParaId';
