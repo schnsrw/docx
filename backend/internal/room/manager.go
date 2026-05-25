@@ -225,7 +225,13 @@ func (m *Manager) Join(docID string) (*Room, *Client) {
 	if !ok {
 		r = &Room{docID: docID, clients: make(map[*Client]struct{})}
 		m.rooms[docID] = r
-		// TODO(m2): host.Integration.Fetch + Y.Doc seed.
+		// First-client seed (M2) plugs in here: load the .docx via
+		// host.Integration.Fetch, run it through the headless Bun
+		// pool, and populate the Y.Doc before AddClient so the new
+		// client SyncStep1s against a populated state instead of
+		// the empty default. Tracked under improvement-tracker P0
+		// #1 / P1 #6 / F4. Until then the room is created empty
+		// and clients seed it via their own y-prosemirror update.
 	}
 	id := m.nextID.Add(1)
 	c := r.AddClient(id)
