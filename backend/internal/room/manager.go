@@ -18,6 +18,7 @@
 package room
 
 import (
+	"log/slog"
 	"sync"
 	"sync/atomic"
 )
@@ -47,6 +48,15 @@ type Client struct {
 	// for stable identification in logs. Not meaningful across
 	// process restarts.
 	id uint64
+
+	// drops counts broadcast frames Broadcast() couldn't queue
+	// because Send was full. The y-websocket protocol recovers
+	// (next SyncStep1 catches the client up), but a steady stream
+	// of drops indicates a client persistently behind the rest of
+	// the room. Broadcast logs a warn on every power-of-two
+	// crossing so operators get a signal without log spam from a
+	// chronically slow client.
+	drops atomic.Uint64
 }
 
 // ID returns this client's per-process identifier. Stable for the
@@ -140,7 +150,15 @@ func (r *Room) Broadcast(sender *Client, frame []byte) {
 			// queued
 		default:
 			// Buffer full; drop. The Yjs sync protocol catches
-			// up on the next SyncStep1.
+			// up on the next SyncStep1. Log on power-of-two
+			// crossings — first drop, then 2, 4, 8, ... — so
+			// the operator gets a heads-up on falling-behind
+			// clients without one slow client flooding the log.
+			n := c.drops.Add(1)
+			if n&(n-1) == 0 {
+				slog.Warn("broadcast frame dropped (client buffer full)",
+					"doc", r.docID, "client", c.id, "dropsTotal", n)
+			}
 		}
 	}
 }
@@ -191,6 +209,16 @@ func WithDrainFunc(fn DrainFunc) ManagerOption {
 // host.Integration seed flow. Returns the Room and a fresh
 // Client handle whose `Send` channel the caller should drain
 // from a writer goroutine.
+//
+// `m.mu` is held through `AddClient` to close the race against
+// Leave: if Join released `m.mu` before AddClient, a concurrent
+// Leave could observe `r.Clients() == 0`, delete the room from
+// the registry, and fire the drain — then this Join's new client
+// would end up on an orphaned room that's no longer in the
+// manager. Holding the outer lock through the inner AddClient is
+// safe: lock order is m.mu → r.mu, and Leave follows the same
+// order in its drain branch (m.mu held while it reads
+// r.Clients()).
 func (m *Manager) Join(docID string) (*Room, *Client) {
 	m.mu.Lock()
 	r, ok := m.rooms[docID]
@@ -199,9 +227,9 @@ func (m *Manager) Join(docID string) (*Room, *Client) {
 		m.rooms[docID] = r
 		// TODO(m2): host.Integration.Fetch + Y.Doc seed.
 	}
-	m.mu.Unlock()
 	id := m.nextID.Add(1)
 	c := r.AddClient(id)
+	m.mu.Unlock()
 	return r, c
 }
 

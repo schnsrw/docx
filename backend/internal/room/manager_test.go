@@ -222,6 +222,63 @@ func TestRemoveClientClosesSendChannel(t *testing.T) {
 	}
 }
 
+func TestBroadcastIncrementsDropCounter(t *testing.T) {
+	// Regression: the drop counter must increment on every dropped
+	// frame so operators can detect persistently-slow clients via
+	// the warn-on-power-of-two log signal. Without it, drops are
+	// invisible.
+	m := NewManager()
+	r, slow := m.Join("doc-1")
+	sender := &Client{Send: make(chan []byte, 1)}
+
+	for i := 0; i < outboundQueue; i++ {
+		slow.Send <- []byte{byte(i)}
+	}
+	if got := slow.drops.Load(); got != 0 {
+		t.Fatalf("drops should be 0 before any drop; got %d", got)
+	}
+
+	r.Broadcast(sender, []byte("dropped-1"))
+	r.Broadcast(sender, []byte("dropped-2"))
+	r.Broadcast(sender, []byte("dropped-3"))
+
+	if got := slow.drops.Load(); got != 3 {
+		t.Fatalf("drops after 3 dropped frames = %d; want 3", got)
+	}
+}
+
+func TestJoinLeaveRaceNeverOrphansRooms(t *testing.T) {
+	// Regression for the Manager.Join vs Manager.Leave race: if
+	// Join released m.mu before AddClient, a concurrent Leave on
+	// the same docID could observe Clients()==0, delete the room
+	// from the registry, fire the drain, and then Join's new
+	// client would end up on an orphaned (off-registry) room.
+	// Holding m.mu through AddClient closes the window.
+	//
+	// We don't try to deterministically trigger the race; instead
+	// we hammer Join+Leave on the same docID under load and assert
+	// the manager always reaches a consistent terminal state.
+	const iters = 200
+	m := NewManager()
+	var wg sync.WaitGroup
+	for i := 0; i < iters; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			r, c := m.Join("doc-race")
+			r.RemoveClient(c)
+			m.Leave(r, c)
+		}()
+	}
+	wg.Wait()
+
+	// Every Join was paired with a Leave; the manager must be
+	// empty (no orphaned rooms left in the registry).
+	if got := m.Count(); got != 0 {
+		t.Fatalf("manager should be empty after paired Join/Leave; got %d rooms", got)
+	}
+}
+
 func TestLookupReturnsActiveRoom(t *testing.T) {
 	m := NewManager()
 	if m.Lookup("not-there") != nil {

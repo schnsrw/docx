@@ -365,6 +365,12 @@ func wsHandler(rooms *room.Manager, integration host.Integration) http.HandlerFu
 				http.Error(w, "forbidden", http.StatusForbidden)
 				return
 			}
+			// Non-NotFound / non-Forbidden errors were previously
+			// turned into a generic 502 with no server-side signal
+			// — operators had to reproduce the failure from scratch
+			// to diagnose. Log the actual cause so transient host
+			// errors leave a breadcrumb.
+			log.Printf("ws preflight host.Fetch failed doc=%s: %v", docID, err)
 			http.Error(w, "host integration error", http.StatusBadGateway)
 			return
 		}
