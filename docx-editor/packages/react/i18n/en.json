@@ -205,6 +205,7 @@
       "replaceAllTitle": "Replace all matches",
       "matchCase": "Match case",
       "wholeWords": "Whole words",
+      "useRegex": "Regular expression",
       "toggleReplace": "+ Replace"
     },
     "hyperlink": {

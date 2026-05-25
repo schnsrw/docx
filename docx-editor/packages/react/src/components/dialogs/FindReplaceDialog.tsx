@@ -309,6 +309,11 @@ export function FindReplaceDialog({
   const [showReplace, setShowReplace] = useState(replaceMode);
   const [matchCase, setMatchCase] = useState(false);
   const [matchWholeWord, setMatchWholeWord] = useState(false);
+  // Phase 1.5 U7 — exposes the existing `useRegex` flag in
+  // `FindOptions` (already handled by findReplaceUtils.ts:93-103).
+  // Matches Word's "Use wildcards" and VS Code's "Use Regular
+  // Expression" checkboxes.
+  const [useRegex, setUseRegex] = useState(false);
   const [result, setResult] = useState<FindResult | null>(null);
   const [searchFocused, setSearchFocused] = useState(false);
   const [replaceFocused, setReplaceFocused] = useState(false);
@@ -338,7 +343,11 @@ export function FindReplaceDialog({
       }, 100);
 
       if (initialSearchText) {
-        const searchResult = onFind(initialSearchText, { matchCase, matchWholeWord });
+        const searchResult = onFind(initialSearchText, {
+          matchCase,
+          matchWholeWord,
+          useRegex,
+        });
         setResult(searchResult);
         if (searchResult?.matches && onHighlightMatches) {
           onHighlightMatches(searchResult.matches);
@@ -360,7 +369,7 @@ export function FindReplaceDialog({
       return;
     }
 
-    const searchResult = onFind(searchText, { matchCase, matchWholeWord });
+    const searchResult = onFind(searchText, { matchCase, matchWholeWord, useRegex });
     setResult(searchResult);
 
     if (searchResult?.matches && onHighlightMatches) {
@@ -368,13 +377,21 @@ export function FindReplaceDialog({
     } else if (onClearHighlights) {
       onClearHighlights();
     }
-  }, [searchText, matchCase, matchWholeWord, onFind, onHighlightMatches, onClearHighlights]);
+  }, [
+    searchText,
+    matchCase,
+    matchWholeWord,
+    useRegex,
+    onFind,
+    onHighlightMatches,
+    onClearHighlights,
+  ]);
 
   useEffect(() => {
     if (isOpen && searchText.trim()) {
       performSearch();
     }
-  }, [matchCase, matchWholeWord]);
+  }, [matchCase, matchWholeWord, useRegex]);
 
   const handleSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
@@ -459,7 +476,7 @@ export function FindReplaceDialog({
 
     const success = onReplace(replaceText);
     if (success) {
-      const newResult = onFind(searchText, { matchCase, matchWholeWord });
+      const newResult = onFind(searchText, { matchCase, matchWholeWord, useRegex });
       setResult(newResult);
       if (newResult?.matches && onHighlightMatches) {
         onHighlightMatches(newResult.matches);
@@ -471,6 +488,7 @@ export function FindReplaceDialog({
     searchText,
     matchCase,
     matchWholeWord,
+    useRegex,
     onReplace,
     onFind,
     onHighlightMatches,
@@ -479,7 +497,7 @@ export function FindReplaceDialog({
   const handleReplaceAll = useCallback(() => {
     if (!searchText.trim()) return;
 
-    const count = onReplaceAll(searchText, replaceText, { matchCase, matchWholeWord });
+    const count = onReplaceAll(searchText, replaceText, { matchCase, matchWholeWord, useRegex });
     if (count > 0) {
       setResult({
         matches: [],
@@ -490,7 +508,15 @@ export function FindReplaceDialog({
         onClearHighlights();
       }
     }
-  }, [searchText, replaceText, matchCase, matchWholeWord, onReplaceAll, onClearHighlights]);
+  }, [
+    searchText,
+    replaceText,
+    matchCase,
+    matchWholeWord,
+    useRegex,
+    onReplaceAll,
+    onClearHighlights,
+  ]);
 
   const toggleReplaceMode = useCallback(() => {
     setShowReplace((prev) => {
@@ -691,6 +717,20 @@ export function FindReplaceDialog({
                 onChange={(e) => setMatchWholeWord(e.target.checked)}
               />
               {t('dialogs.findReplace.wholeWords')}
+            </label>
+            <label
+              className="docx-find-replace-dialog-option"
+              style={CHECKBOX_LABEL_STYLE}
+              data-testid="find-replace-use-regex-label"
+            >
+              <input
+                type="checkbox"
+                style={CHECKBOX_STYLE}
+                checked={useRegex}
+                onChange={(e) => setUseRegex(e.target.checked)}
+                data-testid="find-replace-use-regex"
+              />
+              {t('dialogs.findReplace.useRegex')}
             </label>
             {!showReplace && (
               <button
