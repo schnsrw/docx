@@ -164,6 +164,74 @@ Multi-week M2 effort. Design pending.
 
 ---
 
+## Phase 1.5 — Doc-user feature audit (2026-05-26)
+
+**Findings** (full audit in this session): the architecture is sound — parser + serializer + PM schema cover ~90% of canonical Word features. The big gap is **UI affordances for already-supported data-model features**. A user with Word/Docs muscle memory tries to format something we technically parse correctly and finds no button to drive it.
+
+Three buckets, ordered by effort:
+
+### Bucket A — UI for already-implemented data-model features (mechanical, 1-2 sessions each)
+
+Each of these has working parser + serializer + PM schema. They just need a toolbar control / dialog / menu entry / keyboard shortcut.
+
+| ID  | Feature                              | Where the data lives                                  | UX target                                                                          |
+| --- | ------------------------------------ | ----------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| U1  | Character spacing slider/dialog      | `CharacterSpacingExtension` + `formatting.spacing`    | Format menu → Character spacing dialog (expand / condense)                         |
+| U2  | Small caps / All caps toggle buttons | `SmallCapsExtension`, `AllCapsExtension`              | Toolbar Format group toggles (matches Word "Aa" button)                            |
+| U3  | Text effects buttons                 | `EmbossExtension`, `ImprintExtension`, `TextShadowExtension`, `TextOutlineExtension` | Toolbar Text Effects dropdown (Word's "A" with glow icon)                          |
+| U4  | Hidden text toggle                   | `HiddenExtension`                                     | Format → Font → "Hidden" checkbox; also a View → Show Hidden toggle                |
+| U5  | Paragraph indent dialog              | `indentLeft` / `indentRight` / `indentFirstLine` / `hangingIndent` parse + serialize | Format → Paragraph dialog (Word's full paragraph dialog)                           |
+| U6  | Paragraph borders + shading          | Parsed in `paragraphParser`; no PM schema yet         | Format → Borders & Shading dialog                                                  |
+| U7  | Regex toggle in Find                 | `FindReplaceDialog` schema has `useRegex` flag        | Add "Use regex" checkbox to existing dialog                                        |
+| U8  | Restart numbering                    | List `numPr` + `numbering.xml`                        | List context menu → Restart numbering (or right-click on bullet)                   |
+| U9  | Insert section break                 | `insertSectionBreak` command exists                   | Insert menu → Break → Next page / Continuous / Even / Odd page                     |
+| U10 | Columns layout                       | layout-engine + section props support columns         | Page Layout menu → Columns (1 / 2 / 3 / More …)                                    |
+| U11 | Banded rows toggle                   | Table style props parsed                              | Table Design tab → "Banded rows" checkbox                                          |
+| U12 | PAGE / NUMPAGES field insert         | Field nodes + serializer work end-to-end (P1 #8)      | Header/footer toolbar → Insert field → PAGE / NUMPAGES / DATE / TIME               |
+| U13 | Math equation insert                 | `MathExtension` parses OMath                          | Insert menu → Equation (KaTeX-style inline editor)                                 |
+| U14 | Bookmarks management                 | `bookmarkParser.ts` reads/writes                      | Insert menu → Bookmark dialog (add / go to / delete)                               |
+| U15 | Header/Footer first-page + even-odd  | Section properties parsed                             | Header/footer toolbar → "Different first page" + "Different odd & even" checkboxes |
+
+### Bucket B — Features missing entirely (parser + UI both needed)
+
+These are doc-user expectations the codebase doesn't address at all. Each is a multi-session feature.
+
+| ID  | Feature                          | Notes                                                                                                                   |
+| --- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| M1  | Save-as                          | Currently only Save (overwrites the loaded file). Needs filename prompt + new download target.                          |
+| M2  | Recent files                     | Sheet-style local-history list on the home screen.                                                                      |
+| M3  | Doc templates                    | Open from template + Save-as-template. Distinct from the existing plugin-template feature (template engines).           |
+| M4  | Style manager (create / modify)  | Currently can apply heading styles but can't define new ones or edit Normal.                                            |
+| M5  | Image crop                       | Resize works; crop doesn't.                                                                                             |
+| M6  | Cross-references                 | Insert reference to a heading / figure / table number. Different from hyperlinks.                                       |
+| M7  | Update TOC                       | TOC insertion exists; refreshing after content changes does not.                                                        |
+| M8  | Spell-check (proper)             | Currently only the browser-native squiggle. No "ignore once" / "add to dictionary" / language picker.                   |
+| M9  | Language dropdown                | Document-level + paragraph-level language tag (`w:lang`).                                                               |
+| M10 | Mention (@user) in comments      | Comment infrastructure exists; @-trigger autocomplete + permission-aware mention doesn't.                               |
+| M11 | Name a version / compare         | F1 captures entries; can't label or diff two of them.                                                                   |
+| M12 | Presence cursors + awareness     | Y.Doc collab plumbing exists in backend; client doesn't render peer cursors / names.                                    |
+| M13 | Outline collapse / expand        | DocumentOutline lists headings; can't fold sections in the editor body.                                                 |
+| M14 | Pinch-zoom (touch)               | StatusBar has zoom +/-; no touch pinch.                                                                                 |
+| M15 | Long-press context menu (mobile) | Desktop right-click works; mobile long-press doesn't.                                                                   |
+
+### Bucket C — Accessibility / industry-standard UX hardening
+
+Smaller items that round off the polish bar. Most are 1-day fixes.
+
+| ID  | Issue                                | Notes                                                                                                                   |
+| --- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| A1  | `prefers-reduced-motion` not honored | WCAG 2.1 SC 2.3.3. Wrap animations/transitions in `@media (prefers-reduced-motion: reduce)`.                            |
+| A2  | ARIA-live regions for status updates | Track-changes accept/reject, comment resolve, autosave should announce via `role="status" aria-live="polite"`.          |
+| A3  | Keyboard shortcut coverage gaps      | Audit + document every menu action's shortcut. Word/Docs parity is the bar.                                             |
+| A4  | Dialog focus-restore on close        | FocusTrap restores focus inside the dialog, but the trigger element should regain focus on close — already done for some dialogs, not all.   |
+| A5  | Nested menu touch targets            | Toolbar buttons ≥44px on mobile (done); audit dropdown items + context menu rows on touch.                              |
+
+### Triage rule
+
+Bucket A items ship one-per-session as long as Phase 1 stability work doesn't pre-empt them. Bucket B items wait until Bucket A is mostly drained — they're heavier and overlap with Phase 2 polish work. Bucket C runs in parallel with whichever is active.
+
+---
+
 ## Phase 2 — Deployable-product features (deferred until phase 1 stabilizes)
 
 **Scope decision (2026-05-26):** doc repo focuses on stabilizing co-editing, single-doc editing, and editor UX first. The list below is the next bucket — port the equivalent features from the sheet repo (which has all of them shipped and exercised) once phase 1 is solid. Each item references its sheet-side counterpart so the port is bounded.
