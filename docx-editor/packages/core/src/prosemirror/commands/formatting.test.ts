@@ -10,7 +10,15 @@
 import { describe, test, expect } from 'bun:test';
 import { Schema } from 'prosemirror-model';
 import { EditorState, TextSelection } from 'prosemirror-state';
-import { toggleSmallCaps, toggleAllCaps, toggleHidden } from './formatting';
+import {
+  toggleSmallCaps,
+  toggleAllCaps,
+  toggleHidden,
+  toggleEmboss,
+  toggleImprint,
+  toggleTextShadow,
+  toggleTextOutline,
+} from './formatting';
 
 const schema = new Schema({
   nodes: {
@@ -26,6 +34,10 @@ const schema = new Schema({
     smallCaps: { toDOM: () => ['span', 0] },
     allCaps: { toDOM: () => ['span', 0] },
     hidden: { toDOM: () => ['span', 0] },
+    emboss: { toDOM: () => ['span', 0] },
+    imprint: { toDOM: () => ['span', 0] },
+    textShadow: { toDOM: () => ['span', 0] },
+    textOutline: { toDOM: () => ['span', 0] },
   },
 });
 
@@ -39,7 +51,14 @@ function stateWithSelectedText(text: string): EditorState {
 
 function apply(
   state: EditorState,
-  cmd: typeof toggleSmallCaps | typeof toggleAllCaps | typeof toggleHidden
+  cmd:
+    | typeof toggleSmallCaps
+    | typeof toggleAllCaps
+    | typeof toggleHidden
+    | typeof toggleEmboss
+    | typeof toggleImprint
+    | typeof toggleTextShadow
+    | typeof toggleTextOutline
 ): EditorState {
   let next = state;
   cmd(state, (tr) => {
@@ -125,5 +144,53 @@ describe('toggleHidden', () => {
     const state = EditorState.create({ doc });
     const result = toggleHidden(state, () => {});
     expect(result).toBe(false);
+  });
+});
+
+describe('text effects (U3) — emboss / imprint / textShadow / textOutline', () => {
+  // One representative test per mark — the wrapper shape mirrors
+  // toggleSmallCaps / toggleAllCaps / toggleHidden which already have
+  // full coverage above. We pin: applies on selection, toggles off,
+  // coexists with the other three (all four can stack on one run).
+  test.each([
+    ['toggleEmboss', toggleEmboss, 'emboss'],
+    ['toggleImprint', toggleImprint, 'imprint'],
+    ['toggleTextShadow', toggleTextShadow, 'textShadow'],
+    ['toggleTextOutline', toggleTextOutline, 'textOutline'],
+  ] as const)('%s applies and toggles its mark', (_, cmd, markName) => {
+    const a = apply(stateWithSelectedText('hello'), cmd);
+    expect(hasMark(a, markName)).toBe(true);
+    const b = apply(a, cmd);
+    expect(hasMark(b, markName)).toBe(false);
+  });
+
+  test('all four effects coexist on the same selection', () => {
+    const a = apply(stateWithSelectedText('hello'), toggleEmboss);
+    const b = apply(a, toggleImprint);
+    const c = apply(b, toggleTextShadow);
+    const d = apply(c, toggleTextOutline);
+    expect(hasMark(d, 'emboss')).toBe(true);
+    expect(hasMark(d, 'imprint')).toBe(true);
+    expect(hasMark(d, 'textShadow')).toBe(true);
+    expect(hasMark(d, 'textOutline')).toBe(true);
+  });
+
+  test('each command returns false when its mark is missing from the schema', () => {
+    const bareSchema = new Schema({
+      nodes: {
+        doc: { content: 'block+' },
+        paragraph: { group: 'block', content: 'inline*', toDOM: () => ['p', 0] },
+        text: { group: 'inline' },
+      },
+      marks: {},
+    });
+    const doc = bareSchema.node('doc', null, [
+      bareSchema.node('paragraph', null, [bareSchema.text('hello')]),
+    ]);
+    const state = EditorState.create({ doc });
+    expect(toggleEmboss(state, () => {})).toBe(false);
+    expect(toggleImprint(state, () => {})).toBe(false);
+    expect(toggleTextShadow(state, () => {})).toBe(false);
+    expect(toggleTextOutline(state, () => {})).toBe(false);
   });
 });

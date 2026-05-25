@@ -113,6 +113,35 @@ export const toggleHidden: Command = (state, dispatch, view) => {
   return toggleMark(markType)(state, dispatch, view);
 };
 
+// Text effects — emboss / imprint / textShadow / textOutline. Each
+// wraps the matching schema mark provided by TextEffectsExtensions.ts.
+// The visual effect is CSS-driven (text-shadow, text-stroke); OOXML
+// round-trip is handled by the existing parser/serializer pair.
+
+export const toggleEmboss: Command = (state, dispatch, view) => {
+  const markType = state.schema.marks['emboss'];
+  if (!markType) return false;
+  return toggleMark(markType)(state, dispatch, view);
+};
+
+export const toggleImprint: Command = (state, dispatch, view) => {
+  const markType = state.schema.marks['imprint'];
+  if (!markType) return false;
+  return toggleMark(markType)(state, dispatch, view);
+};
+
+export const toggleTextShadow: Command = (state, dispatch, view) => {
+  const markType = state.schema.marks['textShadow'];
+  if (!markType) return false;
+  return toggleMark(markType)(state, dispatch, view);
+};
+
+export const toggleTextOutline: Command = (state, dispatch, view) => {
+  const markType = state.schema.marks['textOutline'];
+  if (!markType) return false;
+  return toggleMark(markType)(state, dispatch, view);
+};
+
 /** Set character spacing (letter-spacing) in twips. Pass 0 to remove. */
 export function setCharacterSpacing(spacingTwips: number): Command {
   return (state, dispatch, view) => {

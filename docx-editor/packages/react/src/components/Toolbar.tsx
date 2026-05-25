@@ -59,6 +59,14 @@ export interface SelectionFormatting {
   allCaps?: boolean;
   /** Whether selected text is hidden (w:vanish) */
   hidden?: boolean;
+  /** Whether selected text has the emboss effect (w:emboss) */
+  emboss?: boolean;
+  /** Whether selected text has the imprint/engrave effect (w:imprint) */
+  imprint?: boolean;
+  /** Whether selected text has a drop-shadow effect (w:shadow) */
+  shadow?: boolean;
+  /** Whether selected text is outlined (w:outline) */
+  outline?: boolean;
   /** Font family of selected text */
   fontFamily?: string;
   /** Font size of selected text (in half-points) */
@@ -107,6 +115,10 @@ export type FormattingAction =
   | 'toggleSmallCaps'
   | 'toggleAllCaps'
   | 'toggleHidden'
+  | 'toggleEmboss'
+  | 'toggleImprint'
+  | 'toggleTextShadow'
+  | 'toggleTextOutline'
   | { type: 'fontFamily'; value: string }
   | { type: 'fontSize'; value: number }
   | { type: 'textColor'; value: ColorValue | string }
@@ -726,6 +738,54 @@ export function Toolbar({
           {
             label: `${currentFormatting?.hidden ? '✓ ' : ''}Hidden`,
             onClick: () => handleFormat('toggleHidden'),
+          } as MenuEntry,
+          {
+            // Text effects submenu — emboss / imprint / outline /
+            // shadow, all CSS-driven and round-trip-clean through the
+            // existing OOXML parser+serializer. The active state
+            // checkmark per row reflects the mark on the selection.
+            label: 'Text effects',
+            submenuContent: (closeMenu: () => void) => (
+              <div className="py-1 min-w-[180px]">
+                {(
+                  [
+                    {
+                      label: 'Emboss',
+                      action: 'toggleEmboss' as const,
+                      active: !!currentFormatting?.emboss,
+                    },
+                    {
+                      label: 'Imprint',
+                      action: 'toggleImprint' as const,
+                      active: !!currentFormatting?.imprint,
+                    },
+                    {
+                      label: 'Outline',
+                      action: 'toggleTextOutline' as const,
+                      active: !!currentFormatting?.outline,
+                    },
+                    {
+                      label: 'Shadow',
+                      action: 'toggleTextShadow' as const,
+                      active: !!currentFormatting?.shadow,
+                    },
+                  ] as const
+                ).map((item) => (
+                  <button
+                    key={item.action}
+                    className="w-full text-left px-4 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleFormat(item.action);
+                      closeMenu();
+                    }}
+                  >
+                    {item.active ? '✓ ' : ''}
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ),
           } as MenuEntry,
           { type: 'separator' as const },
           {

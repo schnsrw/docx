@@ -193,6 +193,18 @@ export function extractSelectionState(state: EditorState): SelectionState | null
       case 'hidden':
         textFormatting.hidden = true;
         break;
+      case 'emboss':
+        textFormatting.emboss = true;
+        break;
+      case 'imprint':
+        textFormatting.imprint = true;
+        break;
+      case 'textShadow':
+        textFormatting.shadow = true;
+        break;
+      case 'textOutline':
+        textFormatting.outline = true;
+        break;
     }
   }
 

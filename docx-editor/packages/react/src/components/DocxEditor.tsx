@@ -205,6 +205,11 @@ import {
   toggleSmallCaps,
   toggleAllCaps,
   toggleHidden,
+  // Text effects (emboss / imprint / shadow / outline)
+  toggleEmboss,
+  toggleImprint,
+  toggleTextShadow,
+  toggleTextOutline,
   setCharacterSpacing,
   // Space before/after
   setSpaceBefore,
@@ -2331,6 +2336,10 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
         smallCaps: textFormatting.smallCaps,
         allCaps: textFormatting.allCaps,
         hidden: textFormatting.hidden,
+        emboss: textFormatting.emboss,
+        imprint: textFormatting.imprint,
+        shadow: textFormatting.shadow,
+        outline: textFormatting.outline,
         fontFamily,
         fontSize,
         color: textColor,
@@ -3175,6 +3184,22 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
       }
       if (action === 'toggleHidden') {
         toggleHidden(view.state, view.dispatch);
+        return;
+      }
+      if (action === 'toggleEmboss') {
+        toggleEmboss(view.state, view.dispatch);
+        return;
+      }
+      if (action === 'toggleImprint') {
+        toggleImprint(view.state, view.dispatch);
+        return;
+      }
+      if (action === 'toggleTextShadow') {
+        toggleTextShadow(view.state, view.dispatch);
+        return;
+      }
+      if (action === 'toggleTextOutline') {
+        toggleTextOutline(view.state, view.dispatch);
         return;
       }
       if (action === 'insertLink') {

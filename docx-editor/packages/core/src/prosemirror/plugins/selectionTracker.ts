@@ -274,6 +274,18 @@ function extractTextFormatting(state: EditorState): TextFormatting {
       case 'hidden':
         formatting.hidden = true;
         break;
+      case 'emboss':
+        formatting.emboss = true;
+        break;
+      case 'imprint':
+        formatting.imprint = true;
+        break;
+      case 'textShadow':
+        formatting.shadow = true;
+        break;
+      case 'textOutline':
+        formatting.outline = true;
+        break;
       case 'characterSpacing':
         if (mark.attrs.spacing != null) {
           formatting.spacing = mark.attrs.spacing;
