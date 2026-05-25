@@ -164,6 +164,38 @@ Multi-week M2 effort. Design pending.
 
 ---
 
+## Phase 2 — Deployable-product features (deferred until phase 1 stabilizes)
+
+**Scope decision (2026-05-26):** doc repo focuses on stabilizing co-editing, single-doc editing, and editor UX first. The list below is the next bucket — port the equivalent features from the sheet repo (which has all of them shipped and exercised) once phase 1 is solid. Each item references its sheet-side counterpart so the port is bounded.
+
+Don't open these until the P0/P1 stability work is closed; a polished admin UI on top of an editor that corrupts on save is wasted effort.
+
+### F5 — Storage backends (memory / local / s3 / postgres)
+
+Implement `host.Integration` (interface already exists in `backend/internal/host/host.go`) for non-inline backends. Sheet model: `apps/server/src/host/integration.ts` + storage section in admin UI.
+
+### F6 — JWT auth + roles + permissions
+
+Anonymous-by-room is fine for the demo; production needs auth. Sheet model: `apps/server/src/auth/jwt.ts` + `auth/types.ts` (HS256, role/permissions/features claims).
+
+### F7 — WOPI client (Nextcloud / SharePoint / Collabora targets)
+
+The `host.go` interface already has `wopi` and `jwtapi` placeholder comments. Sheet model: `apps/server/src/wopi.ts` + unit tests.
+
+### F8 — Admin panel UI
+
+Auth / Branding / Storage / Networking / Limits / Webhooks / BasePath sections. Sheet model: `apps/web/src/admin/` SPA — port section files near-verbatim once the server-side config endpoints (F5/F6) exist.
+
+### F9 — Webhooks
+
+Save / load / drain events fired to configured webhook URLs. Sheet model: `apps/server/src/admin/webhooks.ts`.
+
+### F10 — Branding / white-label runtime config
+
+Reads from admin config (F8), themes the chrome (logo, colors, app name). Sheet model: `BrandingSection.tsx` + the chrome reading `--brand-*` CSS vars from the admin config. Doc currently has only static brand colors in the demo `Home.tsx`.
+
+---
+
 ## Triage rules
 
 - **P0 ships next.** Then P1 in audit order unless a P2 is a daily annoyance.
