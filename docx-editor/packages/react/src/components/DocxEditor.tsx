@@ -1721,46 +1721,28 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
   const historyStateRef = useRef(history.state);
   historyStateRef.current = history.state;
 
-  // Word + character counts for the status bar. Derived from the
-  // Document model by walking paragraphs / runs / hyperlinks and joining
-  // text fragments. Throttled by history.state identity (only recomputes
-  // when the doc actually changes).
+  // Word + character counts for the status bar. Derived from the live
+  // ProseMirror doc (not `history.state` — that only refreshes on major
+  // lifecycle events like open / save / autosave, so the count stayed
+  // stale during typing + undo / redo). Walks every text node via
+  // `descendants` and stitches text fragments. Recomputes whenever
+  // `pmState` flips, which `onSelectionChange` and the post-load effect
+  // already drive on every transaction.
   const { wordCount, charCount } = useMemo(() => {
-    const doc = history.state?.package?.document;
-    if (!doc) return { wordCount: undefined, charCount: undefined };
+    if (!pmState) return { wordCount: undefined, charCount: undefined };
     const parts: string[] = [];
-    const visit = (nodes: readonly unknown[] | undefined): void => {
-      if (!nodes) return;
-      for (const node of nodes) {
-        if (!node || typeof node !== 'object') continue;
-        const n = node as {
-          type?: string;
-          content?: readonly unknown[];
-          text?: string;
-          rows?: readonly { cells?: readonly { content?: readonly unknown[] }[] }[];
-        };
-        if (n.type === 'text' && typeof n.text === 'string') {
-          parts.push(n.text);
-        } else if (n.type === 'run' || n.type === 'hyperlink' || n.type === 'paragraph') {
-          visit(n.content);
-        } else if (n.type === 'table' && n.rows) {
-          for (const row of n.rows) {
-            for (const cell of row.cells ?? []) {
-              visit(cell.content);
-            }
-          }
-        } else if (n.content) {
-          visit(n.content);
-        }
+    pmState.doc.descendants((node) => {
+      if (node.isText && node.text) {
+        parts.push(node.text);
       }
-    };
-    visit((doc as { content?: readonly unknown[] }).content);
+      return true;
+    });
     const text = parts.join('');
     const words = text.trim().length === 0 ? 0 : text.trim().split(/\s+/).length;
     // "characters (no spaces)" matches Word's convention.
     const chars = text.replace(/\s/g, '').length;
     return { wordCount: words, charCount: chars };
-  }, [history.state]);
+  }, [pmState]);
   // Track current border color/width for border presets (like Google Docs)
   const borderSpecRef = useRef({ style: 'single', size: 4, color: { rgb: '000000' } });
   // Cache style resolver to avoid recreating on every selection change
