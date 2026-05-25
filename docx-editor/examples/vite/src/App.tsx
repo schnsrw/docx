@@ -320,6 +320,10 @@ export function App() {
     setDocumentBuffer(null);
     setFileName('Untitled.docx');
     setStatus('');
+    // Switch to the editor view — without this, clicking File > New from
+    // the home/template gallery created the empty doc but left the user
+    // stuck on the gallery. Matches handleSelectTemplate / handleOpenFromHome.
+    setView('editor');
   }, []);
 
   const handleSelectTemplate = useCallback(async (entry: TemplateEntry) => {
@@ -358,11 +362,14 @@ export function App() {
     }
   }, []);
 
-  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    await handleOpenFromHome(file);
-  }, [handleOpenFromHome]);
+  const handleFileSelect = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      await handleOpenFromHome(file);
+    },
+    [handleOpenFromHome]
+  );
 
   const handleSave = useCallback(async () => {
     if (!editorRef.current) return;
@@ -663,9 +670,7 @@ function CollabApp({
           const text = await res.text().catch(() => '');
           throw new Error(text || `HTTP ${res.status}`);
         }
-        const fromHeader = parseFileNameFromDisposition(
-          res.headers.get('Content-Disposition')
-        );
+        const fromHeader = parseFileNameFromDisposition(res.headers.get('Content-Disposition'));
         const buffer = await res.arrayBuffer();
         return { buffer, fileName: fromHeader ?? `${room}.docx` };
       })
@@ -706,12 +711,7 @@ function CollabApp({
   }
 
   if (seed.kind === 'error') {
-    return (
-      <ErrorPanel
-        error={seed.message}
-        onRetry={() => setAttempt((n) => n + 1)}
-      />
-    );
+    return <ErrorPanel error={seed.message} onRetry={() => setAttempt((n) => n + 1)} />;
   }
 
   return (

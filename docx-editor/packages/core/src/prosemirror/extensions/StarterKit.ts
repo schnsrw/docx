@@ -173,7 +173,9 @@ export function createStarterKit(options: StarterKitOptions = {}): AnyExtension[
   // Restore storedMarks from a paragraph's defaultTextFormatting after
   // doc-changing edits that clear storedMarks (e.g. select-all + Backspace).
   // Must run after paraIdAllocator so the paragraph's attrs are final.
-  // disabled-temp add('storedMarksRestore', StoredMarksRestoreExtension());
+  // Gated on docChanged to avoid firing on selection-only transactions
+  // (caught a race against TableMoreDropdown re-renders 2026-05-25).
+  add('storedMarksRestore', StoredMarksRestoreExtension());
   add('bidiShortcut', BidiShortcutExtension());
 
   return extensions;
