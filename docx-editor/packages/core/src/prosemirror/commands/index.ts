@@ -73,6 +73,8 @@ export {
   getStyleId,
   setRtl,
   setLtr,
+  insertSectionBreak,
+  removeSectionBreak,
 } from './paragraph';
 export type { ResolvedStyleAttrs } from './paragraph';
 

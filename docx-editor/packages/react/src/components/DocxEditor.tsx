@@ -211,6 +211,8 @@ import {
   setSpaceAfter,
   // Page break command
   insertPageBreak,
+  // Section break command
+  insertSectionBreak,
   // Table of Contents command
   generateTOC,
   // Table commands
@@ -2557,6 +2559,22 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     insertPageBreak(view.state, view.dispatch);
     focusActiveEditor();
   }, [getActiveEditorView, focusActiveEditor]);
+
+  // Insert a section break of the given OOXML type. Section breaks
+  // are a stronger structural divider than page breaks — they let
+  // the next section have its own page-size / margins / columns /
+  // headers + footers. `nextPage` matches Word's default; the
+  // other three (`continuous` / `evenPage` / `oddPage`) cover the
+  // less-common section-control cases.
+  const handleInsertSectionBreak = useCallback(
+    (breakType: 'nextPage' | 'continuous' | 'oddPage' | 'evenPage') => {
+      const view = getActiveEditorView();
+      if (!view) return;
+      insertSectionBreak(breakType)(view.state, view.dispatch);
+      focusActiveEditor();
+    },
+    [getActiveEditorView, focusActiveEditor]
+  );
 
   // Insert a table of contents at cursor
   const handleInsertTOC = useCallback(() => {
@@ -5506,6 +5524,7 @@ body { background: white; }
                       showTableInsert={true}
                       onInsertImage={handleInsertImageClick}
                       onInsertPageBreak={handleInsertPageBreak}
+                      onInsertSectionBreak={handleInsertSectionBreak}
                       onInsertTOC={handleInsertTOC}
                       imageContext={state.pmImageContext}
                       onImageWrapType={handleImageWrapType}

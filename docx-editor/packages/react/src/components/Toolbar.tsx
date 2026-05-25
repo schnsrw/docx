@@ -207,6 +207,13 @@ export interface ToolbarProps {
   onInsertImage?: () => void;
   /** Callback when user wants to insert a page break */
   onInsertPageBreak?: () => void;
+  /**
+   * Callback to insert a section break. `breakType` mirrors the
+   * OOXML `w:type` values: `nextPage` (default, starts new page),
+   * `continuous` (same page), `evenPage` / `oddPage` (advances to
+   * the next even/odd page).
+   */
+  onInsertSectionBreak?: (breakType: 'nextPage' | 'continuous' | 'oddPage' | 'evenPage') => void;
   /** Callback when user wants to insert a table of contents */
   onInsertTOC?: () => void;
   /** Callback when user wants to insert a shape */
@@ -444,6 +451,7 @@ export function Toolbar({
   onInsertTable,
   showTableInsert = true,
   onInsertPageBreak,
+  onInsertSectionBreak,
   onInsertTOC,
   onRefocusEditor,
   currentFormatting,
@@ -792,6 +800,40 @@ export function Toolbar({
             label: t('toolbar.pageBreak'),
             onClick: onInsertPageBreak,
             disabled: !onInsertPageBreak,
+          },
+          // Section break submenu. The four entries map to OOXML
+          // `w:type`: `nextPage` is the Word default (new page); the
+          // other three are common section-control gestures. Disabled
+          // when no callback is wired so the consumer can hide the
+          // feature entirely by withholding `onInsertSectionBreak`.
+          {
+            icon: 'horizontal_rule',
+            label: t('toolbar.sectionBreak'),
+            disabled: !onInsertSectionBreak,
+            submenuContent: (closeMenu: () => void) => (
+              <div className="py-1 min-w-[200px]">
+                {(
+                  [
+                    { label: t('toolbar.sectionBreakNextPage'), type: 'nextPage' },
+                    { label: t('toolbar.sectionBreakContinuous'), type: 'continuous' },
+                    { label: t('toolbar.sectionBreakEvenPage'), type: 'evenPage' },
+                    { label: t('toolbar.sectionBreakOddPage'), type: 'oddPage' },
+                  ] as const
+                ).map((item) => (
+                  <button
+                    key={item.type}
+                    className="w-full text-left px-4 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      onInsertSectionBreak?.(item.type);
+                      closeMenu();
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            ),
           },
           {
             icon: 'format_list_numbered',

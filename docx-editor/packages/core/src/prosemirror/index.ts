@@ -158,6 +158,8 @@ export {
   setTableBorderWidth,
   // Page break
   insertPageBreak,
+  // Section break
+  insertSectionBreak,
   // Table of Contents
   generateTOC,
 } from './commands';
