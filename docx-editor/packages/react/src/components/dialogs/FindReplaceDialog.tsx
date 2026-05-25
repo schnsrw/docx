@@ -98,7 +98,8 @@ const DIALOG_CONTENT_STYLE: CSSProperties = {
   minWidth: 'min(360px, calc(100vw - 32px))',
   maxWidth: '440px',
   width: '100%',
-  margin: '60px 20px 20px 20px',
+  margin:
+    'clamp(40px, 8vw, 60px) clamp(8px, 2.5vw, 20px) clamp(8px, 2.5vw, 20px) clamp(8px, 2.5vw, 20px)',
   pointerEvents: 'auto',
 };
 

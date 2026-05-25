@@ -32,7 +32,7 @@ const dialogStyle: CSSProperties = {
   minWidth: 'min(360px, calc(100vw - 32px))',
   maxWidth: 440,
   width: '100%',
-  margin: 20,
+  margin: 'clamp(8px, 2.5vw, 20px)',
 };
 
 const headerStyle: CSSProperties = {

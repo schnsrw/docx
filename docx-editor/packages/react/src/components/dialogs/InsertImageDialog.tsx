@@ -84,7 +84,7 @@ const DIALOG_CONTENT_STYLE: CSSProperties = {
   minWidth: '450px',
   maxWidth: '600px',
   width: '100%',
-  margin: '20px',
+  margin: 'clamp(8px, 2.5vw, 20px)',
   maxHeight: '90vh',
   overflow: 'auto',
 };

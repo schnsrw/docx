@@ -73,7 +73,7 @@ const DIALOG_CONTENT_STYLE: CSSProperties = {
   minWidth: 'min(450px, calc(100vw - 32px))',
   maxWidth: '550px',
   width: '100%',
-  margin: '20px',
+  margin: 'clamp(8px, 2.5vw, 20px)',
   maxHeight: '80vh',
   display: 'flex',
   flexDirection: 'column',

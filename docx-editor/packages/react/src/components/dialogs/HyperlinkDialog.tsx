@@ -95,7 +95,7 @@ const DIALOG_CONTENT_STYLE: CSSProperties = {
   minWidth: 'min(400px, calc(100vw - 32px))',
   maxWidth: '500px',
   width: '100%',
-  margin: '20px',
+  margin: 'clamp(8px, 2.5vw, 20px)',
 };
 
 const DIALOG_HEADER_STYLE: CSSProperties = {

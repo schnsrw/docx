@@ -58,7 +58,7 @@ const dialogStyle: CSSProperties = {
   minWidth: 460,
   maxWidth: 540,
   width: '100%',
-  margin: 20,
+  margin: 'clamp(8px, 2.5vw, 20px)',
 };
 
 const headerStyle: CSSProperties = {
