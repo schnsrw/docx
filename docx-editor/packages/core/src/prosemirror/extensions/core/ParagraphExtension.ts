@@ -415,7 +415,7 @@ function setParagraphAttr(attr: string, value: unknown): Command {
   };
 }
 
-function setParagraphAttrsCmd(attrs: Record<string, unknown>): Command {
+export function setParagraphAttrsCmd(attrs: Record<string, unknown>): Command {
   return (state, dispatch) => {
     const { $from, $to } = state.selection;
 

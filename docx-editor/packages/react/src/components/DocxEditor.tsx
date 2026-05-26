@@ -116,6 +116,9 @@ const BookmarksDialog = lazy(() =>
 const CharacterSpacingDialog = lazy(() =>
   import('./dialogs/CharacterSpacingDialog').then((m) => ({ default: m.CharacterSpacingDialog }))
 );
+const ParagraphDialog = lazy(() =>
+  import('./dialogs/ParagraphDialog').then((m) => ({ default: m.ParagraphDialog }))
+);
 const AboutDialog = lazy(() =>
   import('./dialogs/AboutDialog').then((m) => ({ default: m.AboutDialog }))
 );
@@ -219,6 +222,7 @@ import {
   setCharacterSpacing,
   setCharacterAttrs,
   type CharacterAttrs,
+  setParagraphAttrs,
   // Space before/after
   setSpaceBefore,
   setSpaceAfter,
@@ -1457,6 +1461,8 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     position: number | null;
     kerning: number | null;
   }>({ scale: null, spacing: null, position: null, kerning: null });
+  // Paragraph dialog state (Phase 1.5 U5)
+  const [paragraphDialogOpen, setParagraphDialogOpen] = useState(false);
   const [splitCellDialogState, setSplitCellDialogState] = useState({
     isOpen: false,
     initialRows: 1,
@@ -2637,6 +2643,56 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
       const view = getActiveEditorView();
       if (!view) return;
       setCharacterAttrs(value)(view.state, view.dispatch);
+      focusActiveEditor();
+    },
+    [getActiveEditorView, focusActiveEditor]
+  );
+
+  // Open the Paragraph dialog with the cursor paragraph's current attrs.
+  const handleOpenParagraphDialog = useCallback(() => {
+    setParagraphDialogOpen(true);
+  }, []);
+
+  const handleSubmitParagraphDialog = useCallback(
+    (v: {
+      alignment: 'left' | 'center' | 'right' | 'justify';
+      outlineLevel: number | null;
+      indentLeft: number;
+      indentRight: number;
+      special: 'none' | 'firstLine' | 'hanging';
+      specialBy: number;
+      spaceBefore: number;
+      spaceAfter: number;
+      lineSpacingRule: 'auto' | 'exact' | 'atLeast';
+      lineSpacing: number;
+      contextualSpacing: boolean;
+      keepNext: boolean;
+      keepLines: boolean;
+      widowControl: boolean;
+      pageBreakBefore: boolean;
+    }) => {
+      const view = getActiveEditorView();
+      if (!view) return;
+      const indentFirstLine =
+        v.special === 'firstLine' ? v.specialBy : v.special === 'hanging' ? v.specialBy : 0;
+      const hangingIndent = v.special === 'hanging';
+      setParagraphAttrs({
+        alignment: v.alignment,
+        outlineLevel: v.outlineLevel,
+        indentLeft: v.indentLeft || null,
+        indentRight: v.indentRight || null,
+        indentFirstLine: indentFirstLine || null,
+        hangingIndent,
+        spaceBefore: v.spaceBefore || null,
+        spaceAfter: v.spaceAfter || null,
+        lineSpacing: v.lineSpacing || null,
+        lineSpacingRule: v.lineSpacingRule,
+        contextualSpacing: v.contextualSpacing,
+        keepNext: v.keepNext,
+        keepLines: v.keepLines,
+        widowControl: v.widowControl,
+        pageBreakBefore: v.pageBreakBefore,
+      })(view.state, view.dispatch);
       focusActiveEditor();
     },
     [getActiveEditorView, focusActiveEditor]
@@ -5702,6 +5758,7 @@ body { background: white; }
                       onInsertTOC={handleInsertTOC}
                       onOpenBookmarks={() => setBookmarksDialogOpen(true)}
                       onOpenCharacterSpacing={handleOpenCharacterSpacing}
+                      onOpenParagraphDialog={handleOpenParagraphDialog}
                       imageContext={state.pmImageContext}
                       onImageWrapType={handleImageWrapType}
                       onImageTransform={handleImageTransform}
@@ -6328,6 +6385,40 @@ body { background: white; }
                   onClose={() => setCharacterSpacingDialogOpen(false)}
                   initialValue={characterSpacingInitial}
                   onSubmit={handleSubmitCharacterSpacing}
+                />
+              )}
+              {paragraphDialogOpen && (
+                <ParagraphDialog
+                  isOpen={paragraphDialogOpen}
+                  onClose={() => setParagraphDialogOpen(false)}
+                  initialValue={{
+                    alignment:
+                      (state.selectionFormatting.alignment as
+                        | 'left'
+                        | 'center'
+                        | 'right'
+                        | 'justify'
+                        | undefined) ?? 'left',
+                    outlineLevel: null,
+                    indentLeft: state.paragraphIndentLeft ?? 0,
+                    indentRight: state.paragraphIndentRight ?? 0,
+                    special: state.paragraphHangingIndent
+                      ? 'hanging'
+                      : state.paragraphFirstLineIndent > 0
+                        ? 'firstLine'
+                        : 'none',
+                    specialBy: Math.abs(state.paragraphFirstLineIndent ?? 0),
+                    spaceBefore: state.selectionFormatting.spaceBefore ?? 0,
+                    spaceAfter: state.selectionFormatting.spaceAfter ?? 0,
+                    lineSpacingRule: 'auto',
+                    lineSpacing: state.selectionFormatting.lineSpacing ?? 240,
+                    contextualSpacing: false,
+                    keepNext: false,
+                    keepLines: false,
+                    widowControl: true,
+                    pageBreakBefore: false,
+                  }}
+                  onSubmit={handleSubmitParagraphDialog}
                 />
               )}
               {splitCellDialogState.isOpen && (

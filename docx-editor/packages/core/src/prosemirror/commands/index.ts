@@ -47,6 +47,7 @@ export {
 
 // Paragraph formatting
 export {
+  setParagraphAttrs,
   setAlignment,
   alignLeft,
   alignCenter,

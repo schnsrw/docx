@@ -23,6 +23,7 @@ export {
   getStyleId,
   getParagraphTabs,
   getParagraphBidi,
+  setParagraphAttrsCmd as setParagraphAttrs,
 } from '../extensions/core/ParagraphExtension';
 export { isInList, getListInfo } from '../extensions/features/ListExtension';
 

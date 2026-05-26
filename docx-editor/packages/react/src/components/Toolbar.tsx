@@ -251,6 +251,8 @@ export interface ToolbarProps {
   onOpenBookmarks?: () => void;
   /** Open the Character Spacing dialog (Word: Format > Font > Advanced). */
   onOpenCharacterSpacing?: () => void;
+  /** Open the Paragraph dialog (Word: Format > Paragraph). */
+  onOpenParagraphDialog?: () => void;
   /** Callback when user wants to insert a shape */
   onInsertShape?: (data: {
     shapeType: string;

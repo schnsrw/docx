@@ -59,7 +59,8 @@
     "sectionBreakContinuous": null,
     "sectionBreakEvenPage": null,
     "sectionBreakNextPage": null,
-    "sectionBreakOddPage": null
+    "sectionBreakOddPage": null,
+    "paragraph": null
   },
   "formattingBar": {
     "groups": {
@@ -558,6 +559,43 @@
       "spacing": null,
       "spacingBy": null,
       "title": null
+    },
+    "paragraph": {
+      "afterPt": null,
+      "alignCenter": null,
+      "alignJustify": null,
+      "alignLeft": null,
+      "alignRight": null,
+      "alignment": null,
+      "beforePt": null,
+      "bodyText": null,
+      "byInch": null,
+      "contextualSpacing": null,
+      "general": null,
+      "indentation": null,
+      "keepLines": null,
+      "keepNext": null,
+      "leftInch": null,
+      "level": null,
+      "lineAtLeast": null,
+      "lineExact": null,
+      "lineMultiple": null,
+      "lineSpacingRule": null,
+      "lineValueMultiple": null,
+      "lineValuePt": null,
+      "outlineLevel": null,
+      "pageBreakBefore": null,
+      "pagination": null,
+      "rightInch": null,
+      "spacing": null,
+      "special": null,
+      "specialFirstLine": null,
+      "specialHanging": null,
+      "specialNone": null,
+      "tabIndents": null,
+      "tabPagination": null,
+      "title": null,
+      "widowControl": null
     }
   },
   "comments": {

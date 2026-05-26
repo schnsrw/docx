@@ -239,6 +239,7 @@ export function MenuBar() {
     onInsertTOC,
     onOpenBookmarks,
     onOpenCharacterSpacing,
+    onOpenParagraphDialog,
     onRefocusEditor,
   } = ctx;
 
@@ -527,6 +528,12 @@ export function MenuBar() {
               label: t('toolbar.characterSpacing'),
               onClick: onOpenCharacterSpacing,
               disabled: !onOpenCharacterSpacing,
+            } as MenuEntry,
+            {
+              icon: 'format_align_left',
+              label: t('toolbar.paragraph'),
+              onClick: onOpenParagraphDialog,
+              disabled: !onOpenParagraphDialog,
             } as MenuEntry,
             { type: 'separator' as const } as MenuEntry,
             {

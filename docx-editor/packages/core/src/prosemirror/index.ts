@@ -98,6 +98,7 @@ export {
   removeHyperlink,
   insertHyperlink,
   // Paragraph formatting
+  setParagraphAttrs,
   setAlignment,
   alignLeft,
   alignCenter,
