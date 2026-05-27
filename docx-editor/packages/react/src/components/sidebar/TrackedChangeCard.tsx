@@ -1,5 +1,6 @@
 import type { Comment } from '@eigenpal/docx-core/types/content';
 import { MaterialSymbol } from '../ui/Icons';
+import { Tooltip } from '../ui/Tooltip';
 import type { SidebarItemRenderProps } from '../../plugin-api/types';
 import type { TrackedChangeEntry } from './cardUtils';
 import { formatDate, getInitials, avatarStyle, ICON_BUTTON_STYLE, truncateText } from './cardUtils';
@@ -53,26 +54,30 @@ export function TrackedChangeCard({
         </div>
         {isExpanded && (
           <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAccept?.(change.from, change.to);
-              }}
-              title={t('common.accept')}
-              style={ICON_BUTTON_STYLE}
-            >
-              <MaterialSymbol name="check" size={20} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onReject?.(change.from, change.to);
-              }}
-              title={t('common.reject')}
-              style={ICON_BUTTON_STYLE}
-            >
-              <MaterialSymbol name="close" size={20} />
-            </button>
+            <Tooltip content={t('common.accept')}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAccept?.(change.from, change.to);
+                }}
+                aria-label={t('common.accept')}
+                style={ICON_BUTTON_STYLE}
+              >
+                <MaterialSymbol name="check" size={20} />
+              </button>
+            </Tooltip>
+            <Tooltip content={t('common.reject')}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReject?.(change.from, change.to);
+                }}
+                aria-label={t('common.reject')}
+                style={ICON_BUTTON_STYLE}
+              >
+                <MaterialSymbol name="close" size={20} />
+              </button>
+            </Tooltip>
           </div>
         )}
       </div>

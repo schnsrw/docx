@@ -10,6 +10,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from '../../i18n';
+import { Tooltip } from './Tooltip';
 
 // ============================================================================
 // TYPES
@@ -235,15 +236,17 @@ function PopupIconButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      className="ep-hyperlink-popup__icon-btn"
-      style={ICON_BUTTON_STYLE}
-      title={title}
-      onClick={onClick}
-    >
-      {children}
-    </button>
+    <Tooltip content={title}>
+      <button
+        type="button"
+        className="ep-hyperlink-popup__icon-btn"
+        style={ICON_BUTTON_STYLE}
+        aria-label={title}
+        onClick={onClick}
+      >
+        {children}
+      </button>
+    </Tooltip>
   );
 }
 

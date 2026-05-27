@@ -880,33 +880,35 @@ function OutlineToggleButton({
 }) {
   const { t } = useTranslation();
   return (
-    <button
-      className="docx-outline-nav"
-      onClick={onClick}
-      onMouseDown={(e) => e.stopPropagation()}
-      title={t('editor.showDocumentOutline')}
-      style={{
-        position: 'absolute',
-        // Anchor at the page's top-left and track horizontal scroll so the
-        // button doesn't pin to the viewport and overlay the doc.
-        left: OUTLINE_BUTTON_LEFT_OFFSET - scrollLeft,
-        top: topPx,
-        zIndex: 50,
-        background: 'transparent',
-        border: 'none',
-        borderRadius: '50%',
-        padding: 6,
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-      }}
-    >
-      <MaterialSymbol
-        name="format_list_bulleted"
-        size={20}
-        style={{ color: 'var(--doc-text-muted)' }}
-      />
-    </button>
+    <Tooltip content={t('editor.showDocumentOutline')}>
+      <button
+        className="docx-outline-nav"
+        onClick={onClick}
+        onMouseDown={(e) => e.stopPropagation()}
+        aria-label={t('editor.showDocumentOutline')}
+        style={{
+          position: 'absolute',
+          // Anchor at the page's top-left and track horizontal scroll so the
+          // button doesn't pin to the viewport and overlay the doc.
+          left: OUTLINE_BUTTON_LEFT_OFFSET - scrollLeft,
+          top: topPx,
+          zIndex: 50,
+          background: 'transparent',
+          border: 'none',
+          borderRadius: '50%',
+          padding: 6,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <MaterialSymbol
+          name="format_list_bulleted"
+          size={20}
+          style={{ color: 'var(--doc-text-muted)' }}
+        />
+      </button>
+    </Tooltip>
   );
 }
 
@@ -965,32 +967,34 @@ function EditingModeDropdown({
 
   return (
     <div style={{ position: 'relative' }}>
-      <button
-        ref={triggerRef}
-        type="button"
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => setIsOpen(!isOpen)}
-        title={`${t(current.labelKey)} (Ctrl+Shift+E)`}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: compact ? 0 : 4,
-          padding: compact ? '2px 4px' : '2px 6px 2px 4px',
-          border: 'none',
-          background: isOpen ? 'var(--doc-hover, #f3f4f6)' : 'transparent',
-          borderRadius: 4,
-          cursor: 'pointer',
-          fontSize: 13,
-          fontWeight: 400,
-          color: 'var(--doc-text, #374151)',
-          whiteSpace: 'nowrap',
-          height: 28,
-        }}
-      >
-        <MaterialSymbol name={current.icon} size={18} />
-        {!compact && <span>{t(current.labelKey)}</span>}
-        <MaterialSymbol name="arrow_drop_down" size={16} />
-      </button>
+      <Tooltip content={`${t(current.labelKey)} (Ctrl+Shift+E)`}>
+        <button
+          ref={triggerRef}
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={`${t(current.labelKey)} (Ctrl+Shift+E)`}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: compact ? 0 : 4,
+            padding: compact ? '2px 4px' : '2px 6px 2px 4px',
+            border: 'none',
+            background: isOpen ? 'var(--doc-hover, #f3f4f6)' : 'transparent',
+            borderRadius: 4,
+            cursor: 'pointer',
+            fontSize: 13,
+            fontWeight: 400,
+            color: 'var(--doc-text, #374151)',
+            whiteSpace: 'nowrap',
+            height: 28,
+          }}
+        >
+          <MaterialSymbol name={current.icon} size={18} />
+          {!compact && <span>{t(current.labelKey)}</span>}
+          <MaterialSymbol name="arrow_drop_down" size={16} />
+        </button>
+      </Tooltip>
 
       {isOpen && (
         <div
@@ -6411,24 +6415,26 @@ body { background: white; }
                                 }}
                                 data-testid="tracked-changes-action-bar"
                               >
-                                <button
-                                  type="button"
-                                  onClick={handlePreviousChange}
-                                  style={trackedChangesActionBtnStyle}
-                                  aria-label={t('trackedChanges.previous')}
-                                  title={t('trackedChanges.previous')}
-                                >
-                                  <MaterialSymbol name="navigate_before" size={16} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={handleNextChange}
-                                  style={trackedChangesActionBtnStyle}
-                                  aria-label={t('trackedChanges.next')}
-                                  title={t('trackedChanges.next')}
-                                >
-                                  <MaterialSymbol name="navigate_next" size={16} />
-                                </button>
+                                <Tooltip content={t('trackedChanges.previous')}>
+                                  <button
+                                    type="button"
+                                    onClick={handlePreviousChange}
+                                    style={trackedChangesActionBtnStyle}
+                                    aria-label={t('trackedChanges.previous')}
+                                  >
+                                    <MaterialSymbol name="navigate_before" size={16} />
+                                  </button>
+                                </Tooltip>
+                                <Tooltip content={t('trackedChanges.next')}>
+                                  <button
+                                    type="button"
+                                    onClick={handleNextChange}
+                                    style={trackedChangesActionBtnStyle}
+                                    aria-label={t('trackedChanges.next')}
+                                  >
+                                    <MaterialSymbol name="navigate_next" size={16} />
+                                  </button>
+                                </Tooltip>
                                 <span
                                   style={{
                                     width: 1,
@@ -6436,26 +6442,28 @@ body { background: white; }
                                     margin: '0 2px',
                                   }}
                                 />
-                                <button
-                                  type="button"
-                                  onClick={handleAcceptAllChanges}
-                                  style={trackedChangesActionBtnStyle}
-                                  aria-label={t('trackedChanges.acceptAll')}
-                                  title={t('trackedChanges.acceptAll')}
-                                  data-testid="tracked-changes-accept-all"
-                                >
-                                  <MaterialSymbol name="done_all" size={16} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={handleRejectAllChanges}
-                                  style={trackedChangesActionBtnStyle}
-                                  aria-label={t('trackedChanges.rejectAll')}
-                                  title={t('trackedChanges.rejectAll')}
-                                  data-testid="tracked-changes-reject-all"
-                                >
-                                  <MaterialSymbol name="block" size={16} />
-                                </button>
+                                <Tooltip content={t('trackedChanges.acceptAll')}>
+                                  <button
+                                    type="button"
+                                    onClick={handleAcceptAllChanges}
+                                    style={trackedChangesActionBtnStyle}
+                                    aria-label={t('trackedChanges.acceptAll')}
+                                    data-testid="tracked-changes-accept-all"
+                                  >
+                                    <MaterialSymbol name="done_all" size={16} />
+                                  </button>
+                                </Tooltip>
+                                <Tooltip content={t('trackedChanges.rejectAll')}>
+                                  <button
+                                    type="button"
+                                    onClick={handleRejectAllChanges}
+                                    style={trackedChangesActionBtnStyle}
+                                    aria-label={t('trackedChanges.rejectAll')}
+                                    data-testid="tracked-changes-reject-all"
+                                  >
+                                    <MaterialSymbol name="block" size={16} />
+                                  </button>
+                                </Tooltip>
                               </div>
                             )}
                             {allSidebarItems.length > 0 && (

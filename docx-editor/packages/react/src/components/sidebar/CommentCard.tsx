@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Comment } from '@eigenpal/docx-core/types/content';
 import { MaterialSymbol } from '../ui/Icons';
+import { Tooltip } from '../ui/Tooltip';
 import type { SidebarItemRenderProps } from '../../plugin-api/types';
 import {
   getCommentText,
@@ -115,35 +116,37 @@ export function CommentCard({
         </div>
         {isExpanded && (
           <div style={{ display: 'flex', gap: 4, marginTop: 2, position: 'relative' }}>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (comment.done) {
-                  onUnresolve?.(comment.id);
-                } else {
-                  onResolve?.(comment.id);
-                }
-              }}
-              title={comment.done ? t('comments.reopen') : t('comments.resolve')}
-              aria-label={comment.done ? t('comments.reopen') : t('comments.resolve')}
-              style={ICON_BUTTON_STYLE}
-            >
-              <MaterialSymbol name={comment.done ? 'undo' : 'check'} size={20} />
-            </button>
-            <button
-              ref={menuTriggerRef}
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuOpen(!menuOpen);
-              }}
-              title={t('comments.moreOptions')}
-              aria-label={t('comments.moreOptions')}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-              style={ICON_BUTTON_STYLE}
-            >
-              <MaterialSymbol name="more_vert" size={20} />
-            </button>
+            <Tooltip content={comment.done ? t('comments.reopen') : t('comments.resolve')}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (comment.done) {
+                    onUnresolve?.(comment.id);
+                  } else {
+                    onResolve?.(comment.id);
+                  }
+                }}
+                aria-label={comment.done ? t('comments.reopen') : t('comments.resolve')}
+                style={ICON_BUTTON_STYLE}
+              >
+                <MaterialSymbol name={comment.done ? 'undo' : 'check'} size={20} />
+              </button>
+            </Tooltip>
+            <Tooltip content={t('comments.moreOptions')}>
+              <button
+                ref={menuTriggerRef}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(!menuOpen);
+                }}
+                aria-label={t('comments.moreOptions')}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                style={ICON_BUTTON_STYLE}
+              >
+                <MaterialSymbol name="more_vert" size={20} />
+              </button>
+            </Tooltip>
             {menuOpen && (
               <div
                 ref={menuRef}
