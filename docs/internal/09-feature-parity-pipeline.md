@@ -372,30 +372,34 @@ Docs has a `Ctrl+/` overlay that searches commands. We have
 
 Not a feature stream — a quality bar applied to every other stream.
 
-### X1 — Tooltip coverage audit
+### X1 — Tooltip coverage audit 🟡
 
-Today Tooltip is imported from:
-- `Toolbar.tsx`, `DocxEditor.tsx`
-- `TableInsertButtons`, `TableGridPicker`, `TableBorderWidthPicker`,
-  `TableMoreDropdown`, `IconGridDropdown`, `TableMergeButton`,
-  `TableOptionsDropdown`, `TableBorderPicker`, `AlignmentButtons`
+Today Tooltip is imported from `Toolbar.tsx`, `DocxEditor.tsx`,
+`TableInsertButtons`, `TableGridPicker`, `TableBorderWidthPicker`,
+`TableMoreDropdown`, `IconGridDropdown`, `TableMergeButton`,
+`TableOptionsDropdown`, `TableBorderPicker`, `AlignmentButtons`,
+plus (this batch) `TitleBar` (theme toggle), `StatusBar` (zoom
+buttons), `DocumentOutline` (close button).
 
-Gaps to audit: `TitleBar` action buttons, `MenuDropdown` triggers
-(menubar items don't need tooltips per Docs; trigger icon buttons
-like the right-rail panel toggles *do*), `UnifiedSidebar` header
-controls, every dialog's icon-only close/reset/help button.
+Remaining: every dialog's icon-only close/reset/help button.
+`MenuDropdown` triggers stay tooltip-less per Docs convention
+(menubar items have visible text labels). When the right-rail icon
+strip (X7) lands, every strip toggle gets a `Tooltip`.
 
 Rule going forward: any icon-only button gets a `Tooltip`. Buttons
 with visible text labels don't need one *unless* there's a keyboard
-shortcut to surface — then the tooltip shows `Action (Ctrl+K)`
-Docs-style.
+shortcut to surface — then the tooltip shows the label with a
+shortcut chip Docs-style.
 
-### X2 — Keyboard-shortcut chip in tooltips
+### X2 — Keyboard-shortcut chip in tooltips ✅
 
-Tooltip should render shortcut chips when one exists. Already done in
-some menus (`getByRole('menuitem', { name: /^New\b/ })` matches with
-the chip suffix). Generalize: Tooltip component takes an optional
-`shortcut` prop and renders it visually distinct in the same popup.
+`ToolbarButton` already renders `<kbd>` chips inside the Tooltip
+when `shortcut` is passed (see `Toolbar.tsx:440-454`). The pattern
+is in place; consumers just need to pass the `shortcut` prop. New
+non-toolbar buttons should follow the same convention — if a chip
+in the Tooltip popup is needed outside `ToolbarButton`, lift the
+`tooltipContent` builder out of `Toolbar.tsx` into a shared helper
+rather than duplicating the JSX.
 
 ### X3 — Focus-ring consistency
 

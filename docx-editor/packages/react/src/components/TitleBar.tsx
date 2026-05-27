@@ -14,6 +14,7 @@ import { MenuDropdown, SubMenuItem } from './ui/MenuDropdown';
 import type { MenuEntry } from './ui/MenuDropdown';
 import { MenuBarProvider } from './ui/MenuBarContext';
 import { MaterialSymbol } from './ui/Icons';
+import { Tooltip } from './ui/Tooltip';
 import { TableGridInline } from './ui/TableGridInline';
 import { useEditorToolbar } from './EditorToolbarContext';
 import type { FormattingAction } from './Toolbar';
@@ -188,16 +189,17 @@ function ThemeToggleButton() {
         ? 'Theme: light (click for dark)'
         : 'Theme: dark (click for auto)';
   return (
-    <button
-      type="button"
-      onMouseDown={(e) => e.preventDefault()}
-      onClick={() => onSetColorTheme(next)}
-      title={title}
-      aria-label={title}
-      className="flex items-center justify-center w-8 h-8 rounded hover:bg-[color:var(--doc-bg-hover,#f1f3f4)] text-[color:var(--doc-text-on-surface,#1f2937)]"
-    >
-      <MaterialSymbol name={icon} size={18} />
-    </button>
+    <Tooltip content={title}>
+      <button
+        type="button"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => onSetColorTheme(next)}
+        aria-label={title}
+        className="flex items-center justify-center w-8 h-8 rounded hover:bg-[color:var(--doc-bg-hover,#f1f3f4)] text-[color:var(--doc-text-on-surface,#1f2937)]"
+      >
+        <MaterialSymbol name={icon} size={18} />
+      </button>
+    </Tooltip>
   );
 }
 

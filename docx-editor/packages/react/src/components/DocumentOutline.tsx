@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { HeadingInfo } from '@eigenpal/docx-core/utils';
 import { MaterialSymbol } from './ui/Icons';
+import { Tooltip } from './ui/Tooltip';
 import { useTranslation } from '../i18n';
 
 /** @deprecated Use HeadingInfo from utils/headingCollector instead */
@@ -85,23 +86,24 @@ export const DocumentOutline = React.memo(function DocumentOutline({
           padding: '16px 16px 12px',
         }}
       >
-        <button
-          onClick={onClose}
-          aria-label={t('documentOutline.closeAriaLabel')}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 4,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            color: 'var(--doc-text-muted)',
-          }}
-          title={t('documentOutline.closeTitle')}
-        >
-          <MaterialSymbol name="arrow_back" size={20} />
-        </button>
+        <Tooltip content={t('documentOutline.closeTitle')}>
+          <button
+            onClick={onClose}
+            aria-label={t('documentOutline.closeAriaLabel')}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 4,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              color: 'var(--doc-text-muted)',
+            }}
+          >
+            <MaterialSymbol name="arrow_back" size={20} />
+          </button>
+        </Tooltip>
         <span
           style={{
             fontWeight: 400,

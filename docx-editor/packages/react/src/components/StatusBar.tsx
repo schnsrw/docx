@@ -9,6 +9,7 @@
 
 import type { CSSProperties } from 'react';
 import { MaterialSymbol } from './ui/Icons';
+import { Tooltip } from './ui/Tooltip';
 
 export interface StatusBarProps {
   /** 1-based current page index. */
@@ -138,40 +139,43 @@ export function StatusBar({
 
       {onZoomChange && (
         <span style={cellStyle}>
-          <button
-            type="button"
-            className="docx-status-zoom-btn"
-            style={zoomButtonStyle}
-            onClick={zoomOut}
-            onMouseDown={(e) => e.preventDefault()}
-            title="Zoom out (⌘−)"
-            aria-label="Zoom out"
-            disabled={(zoom ?? 1) <= minZoom + 1e-3}
-          >
-            <MaterialSymbol name="remove" size={14} />
-          </button>
-          <button
-            type="button"
-            style={zoomReadoutStyle}
-            onClick={zoomReset}
-            onMouseDown={(e) => e.preventDefault()}
-            title="Reset zoom to 100% (⌘0)"
-            aria-label={`Zoom: ${zoomPct} percent. Click to reset.`}
-          >
-            {zoomPct}%
-          </button>
-          <button
-            type="button"
-            className="docx-status-zoom-btn"
-            style={zoomButtonStyle}
-            onClick={zoomIn}
-            onMouseDown={(e) => e.preventDefault()}
-            title="Zoom in (⌘=)"
-            aria-label="Zoom in"
-            disabled={(zoom ?? 1) >= maxZoom - 1e-3}
-          >
-            <MaterialSymbol name="add" size={14} />
-          </button>
+          <Tooltip content="Zoom out (⌘−)">
+            <button
+              type="button"
+              className="docx-status-zoom-btn"
+              style={zoomButtonStyle}
+              onClick={zoomOut}
+              onMouseDown={(e) => e.preventDefault()}
+              aria-label="Zoom out"
+              disabled={(zoom ?? 1) <= minZoom + 1e-3}
+            >
+              <MaterialSymbol name="remove" size={14} />
+            </button>
+          </Tooltip>
+          <Tooltip content="Reset zoom to 100% (⌘0)">
+            <button
+              type="button"
+              style={zoomReadoutStyle}
+              onClick={zoomReset}
+              onMouseDown={(e) => e.preventDefault()}
+              aria-label={`Zoom: ${zoomPct} percent. Click to reset.`}
+            >
+              {zoomPct}%
+            </button>
+          </Tooltip>
+          <Tooltip content="Zoom in (⌘=)">
+            <button
+              type="button"
+              className="docx-status-zoom-btn"
+              style={zoomButtonStyle}
+              onClick={zoomIn}
+              onMouseDown={(e) => e.preventDefault()}
+              aria-label="Zoom in"
+              disabled={(zoom ?? 1) >= maxZoom - 1e-3}
+            >
+              <MaterialSymbol name="add" size={14} />
+            </button>
+          </Tooltip>
         </span>
       )}
     </div>
