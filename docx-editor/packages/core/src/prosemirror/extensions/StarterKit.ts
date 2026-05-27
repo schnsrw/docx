@@ -69,6 +69,7 @@ import { ParaIdAllocatorExtension } from './features/ParaIdAllocatorExtension';
 import { StoredMarksRestoreExtension } from './features/StoredMarksRestoreExtension';
 import { BidiShortcutExtension } from './features/BidiShortcutExtension';
 import { PasteStyleInlinerExtension } from './features/PasteStyleInlinerExtension';
+import { SmartQuotesExtension } from './features/SmartQuotesExtension';
 
 export interface StarterKitOptions {
   /** Extensions to disable by name */
@@ -177,6 +178,11 @@ export function createStarterKit(options: StarterKitOptions = {}): AnyExtension[
   // (caught a race against TableMoreDropdown re-renders 2026-05-25).
   add('storedMarksRestore', StoredMarksRestoreExtension());
   add('bidiShortcut', BidiShortcutExtension());
+  // Typographic substitutions (smart quotes, em dash, ellipsis) as
+  // the user types. Defaults on, matching Word + Docs. Disable via
+  // `createStarterKit({ disable: ['smartQuotes'] })` when authoring
+  // technical content where straight quotes matter (e.g. code).
+  add('smartQuotes', SmartQuotesExtension());
 
   return extensions;
 }

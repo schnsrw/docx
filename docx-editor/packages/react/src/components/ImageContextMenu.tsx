@@ -253,9 +253,7 @@ export const ImageContextMenu: React.FC<ImageContextMenuProps> = ({
               >
                 <MaterialSymbol name={ICON_BY_HINT[option.iconHint]} size={ICON_SIZE} />
               </span>
-              <span style={{ flex: 1 }}>
-                {t(`imageWrap.menu.${option.i18nLabelKey}` as never)}
-              </span>
+              <span style={{ flex: 1 }}>{t(`imageWrap.menu.${option.i18nLabelKey}` as never)}</span>
               {isCurrent && (
                 <span
                   style={{ fontSize: '11px', color: 'var(--doc-primary, #2563eb)' }}
