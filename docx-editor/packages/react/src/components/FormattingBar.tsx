@@ -25,6 +25,7 @@ import { TableBorderColorPicker } from './ui/TableBorderColorPicker';
 import { TableBorderWidthPicker } from './ui/TableBorderWidthPicker';
 import { TableCellFillPicker } from './ui/TableCellFillPicker';
 import { TableMoreDropdown } from './ui/TableMoreDropdown';
+import { TableStyleGallery } from './ui/TableStyleGallery';
 import { ImageWrapDropdown } from './ui/ImageWrapDropdown';
 import { ImageTransformDropdown } from './ui/ImageTransformDropdown';
 import type { TableAction } from './ui/TableToolbar';
@@ -690,6 +691,7 @@ export function FormattingBar(explicitProps: FormattingBarProps) {
             theme={theme}
             value={tableContext?.cellBackgroundColor}
           />
+          <TableStyleGallery documentStyles={documentStyles} onAction={handleTableAction} />
           <TableMoreDropdown
             onAction={handleTableAction}
             disabled={disabled}
