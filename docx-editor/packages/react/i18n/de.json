@@ -62,7 +62,8 @@
     "sectionBreakNextPage": null,
     "sectionBreakOddPage": null,
     "paragraph": null,
-    "bordersAndShading": null
+    "bordersAndShading": null,
+    "customSpacing": null
   },
   "formattingBar": {
     "groups": {
@@ -561,43 +562,6 @@
       "spacingBy": null,
       "title": null
     },
-    "paragraph": {
-      "afterPt": null,
-      "alignCenter": null,
-      "alignJustify": null,
-      "alignLeft": null,
-      "alignRight": null,
-      "alignment": null,
-      "beforePt": null,
-      "bodyText": null,
-      "byInch": null,
-      "contextualSpacing": null,
-      "general": null,
-      "indentation": null,
-      "keepLines": null,
-      "keepNext": null,
-      "leftInch": null,
-      "level": null,
-      "lineAtLeast": null,
-      "lineExact": null,
-      "lineMultiple": null,
-      "lineSpacingRule": null,
-      "lineValueMultiple": null,
-      "lineValuePt": null,
-      "outlineLevel": null,
-      "pageBreakBefore": null,
-      "pagination": null,
-      "rightInch": null,
-      "spacing": null,
-      "special": null,
-      "specialFirstLine": null,
-      "specialHanging": null,
-      "specialNone": null,
-      "tabIndents": null,
-      "tabPagination": null,
-      "title": null,
-      "widowControl": null
-    },
     "bordersShading": {
       "color": null,
       "colorHex": null,
@@ -630,6 +594,25 @@
       "tabShading": null,
       "title": null,
       "widthPt": null
+    },
+    "customSpacing": {
+      "afterPt": null,
+      "atPt": null,
+      "beforePt": null,
+      "contextualSpacing": null,
+      "keepLines": null,
+      "keepNext": null,
+      "lineSpacing": null,
+      "multipleOf": null,
+      "pageBreakBefore": null,
+      "pagination": null,
+      "paragraphSpacing": null,
+      "rule": null,
+      "rule_atLeast": null,
+      "rule_auto": null,
+      "rule_exact": null,
+      "title": null,
+      "widowControl": null
     }
   },
   "comments": {

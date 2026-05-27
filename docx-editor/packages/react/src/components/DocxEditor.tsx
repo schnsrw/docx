@@ -117,8 +117,8 @@ const BookmarksDialog = lazy(() =>
 const CharacterSpacingDialog = lazy(() =>
   import('./dialogs/CharacterSpacingDialog').then((m) => ({ default: m.CharacterSpacingDialog }))
 );
-const ParagraphDialog = lazy(() =>
-  import('./dialogs/ParagraphDialog').then((m) => ({ default: m.ParagraphDialog }))
+const CustomSpacingDialog = lazy(() =>
+  import('./dialogs/CustomSpacingDialog').then((m) => ({ default: m.CustomSpacingDialog }))
 );
 const BordersAndShadingDialog = lazy(() =>
   import('./dialogs/BordersAndShadingDialog').then((m) => ({
@@ -2752,61 +2752,6 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
       setParagraphAttrs({
         borders: anyBorder ? borders : null,
         shading,
-      })(view.state, view.dispatch);
-      focusActiveEditor();
-    },
-    [getActiveEditorView, focusActiveEditor]
-  );
-
-  const handleSubmitParagraphDialog = useCallback(
-    (v: {
-      alignment: 'left' | 'center' | 'right' | 'justify';
-      outlineLevel: number | null;
-      indentLeft: number;
-      indentRight: number;
-      special: 'none' | 'firstLine' | 'hanging';
-      specialBy: number;
-      spaceBefore: number;
-      spaceAfter: number;
-      lineSpacingRule: 'auto' | 'exact' | 'atLeast';
-      lineSpacing: number;
-      contextualSpacing: boolean;
-      keepNext: boolean;
-      keepLines: boolean;
-      widowControl: boolean;
-      pageBreakBefore: boolean;
-    }) => {
-      const view = getActiveEditorView();
-      if (!view) return;
-      // Collapse degenerate "hanging with 0 value" / "firstLine with 0 value"
-      // to plain "none". The serializer writes w:hanging from the same slot
-      // as w:firstLine and uses the hangingIndent flag to choose attribute;
-      // letting hangingIndent=true through with value=0 produces w:hanging="0"
-      // which is meaningless OOXML.
-      let indentFirstLine: number | null = null;
-      let hangingIndent = false;
-      if (v.special === 'firstLine' && v.specialBy > 0) {
-        indentFirstLine = v.specialBy;
-      } else if (v.special === 'hanging' && v.specialBy > 0) {
-        indentFirstLine = v.specialBy;
-        hangingIndent = true;
-      }
-      setParagraphAttrs({
-        alignment: v.alignment,
-        outlineLevel: v.outlineLevel,
-        indentLeft: v.indentLeft || null,
-        indentRight: v.indentRight || null,
-        indentFirstLine,
-        hangingIndent,
-        spaceBefore: v.spaceBefore || null,
-        spaceAfter: v.spaceAfter || null,
-        lineSpacing: v.lineSpacing || null,
-        lineSpacingRule: v.lineSpacingRule,
-        contextualSpacing: v.contextualSpacing,
-        keepNext: v.keepNext,
-        keepLines: v.keepLines,
-        widowControl: v.widowControl,
-        pageBreakBefore: v.pageBreakBefore,
       })(view.state, view.dispatch);
       focusActiveEditor();
     },
@@ -6558,37 +6503,35 @@ body { background: white; }
                 />
               )}
               {paragraphDialogOpen && (
-                <ParagraphDialog
+                <CustomSpacingDialog
                   isOpen={paragraphDialogOpen}
                   onClose={() => setParagraphDialogOpen(false)}
                   initialValue={{
-                    alignment:
-                      (state.selectionFormatting.alignment as
-                        | 'left'
-                        | 'center'
-                        | 'right'
-                        | 'justify'
-                        | undefined) ?? 'left',
-                    outlineLevel: null,
-                    indentLeft: state.paragraphIndentLeft ?? 0,
-                    indentRight: state.paragraphIndentRight ?? 0,
-                    special: state.paragraphHangingIndent
-                      ? 'hanging'
-                      : state.paragraphFirstLineIndent > 0
-                        ? 'firstLine'
-                        : 'none',
-                    specialBy: Math.abs(state.paragraphFirstLineIndent ?? 0),
-                    spaceBefore: state.selectionFormatting.spaceBefore ?? 0,
-                    spaceAfter: state.selectionFormatting.spaceAfter ?? 0,
                     lineSpacingRule: 'auto',
                     lineSpacing: state.selectionFormatting.lineSpacing ?? 240,
+                    spaceBefore: state.selectionFormatting.spaceBefore ?? 0,
+                    spaceAfter: state.selectionFormatting.spaceAfter ?? 0,
                     contextualSpacing: false,
                     keepNext: false,
                     keepLines: false,
                     widowControl: true,
                     pageBreakBefore: false,
                   }}
-                  onSubmit={handleSubmitParagraphDialog}
+                  onChange={(v) => {
+                    const view = getActiveEditorView();
+                    if (!view) return;
+                    setParagraphAttrs({
+                      lineSpacing: v.lineSpacing || null,
+                      lineSpacingRule: v.lineSpacingRule,
+                      spaceBefore: v.spaceBefore || null,
+                      spaceAfter: v.spaceAfter || null,
+                      contextualSpacing: v.contextualSpacing,
+                      keepNext: v.keepNext,
+                      keepLines: v.keepLines,
+                      widowControl: v.widowControl,
+                      pageBreakBefore: v.pageBreakBefore,
+                    })(view.state, view.dispatch);
+                  }}
                 />
               )}
               {splitCellDialogState.isOpen && (
