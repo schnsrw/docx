@@ -76,6 +76,18 @@ export function VerticalRuler({
   const [dragging, setDragging] = useState<MarkerType | null>(null);
   const [hoveredMarker, setHoveredMarker] = useState<MarkerType | null>(null);
   const rulerRef = useRef<HTMLDivElement>(null);
+  // Anchor captured at drag-start so the drag delta is computed
+  // against a stable reference, not the live bounding rect. Without
+  // this, changing the margin during a drag re-lays the page, which
+  // shifts the ruler's screen position, which changes the rect, which
+  // changes the next mouse→twips calculation — the pin oscillates
+  // ("shakes"), especially noticeable when the user reverses
+  // direction mid-drag.
+  const dragAnchorRef = useRef<{
+    startClientY: number;
+    startTopMarginTwips: number;
+    startBottomMarginTwips: number;
+  } | null>(null);
 
   // Get page dimensions
   const pageHeightTwips = sectionProps?.pageHeight ?? DEFAULT_PAGE_HEIGHT_TWIPS;
@@ -92,29 +104,50 @@ export function VerticalRuler({
     (e: React.MouseEvent, marker: MarkerType) => {
       if (!editable) return;
       e.preventDefault();
+      // Capture the anchor on drag-start: the mouse Y at this instant
+      // + the margin values at this instant. The drag handler computes
+      // a screen-pixel delta from the start mouse Y, NOT an absolute
+      // position from the (potentially shifting) ruler rect. See the
+      // dragAnchorRef declaration above for the full rationale.
+      dragAnchorRef.current = {
+        startClientY: e.clientY,
+        startTopMarginTwips: topMarginTwips,
+        startBottomMarginTwips: bottomMarginTwips,
+      };
       setDragging(marker);
     },
-    [editable]
+    [editable, topMarginTwips, bottomMarginTwips]
   );
 
   // Handle drag
   const handleDrag = useCallback(
     (e: MouseEvent) => {
-      if (!dragging || !rulerRef.current) return;
+      const anchor = dragAnchorRef.current;
+      if (!dragging || !anchor) return;
 
-      const rect = rulerRef.current.getBoundingClientRect();
-      const y = e.clientY - rect.top;
-
-      const positionTwips = pixelsToTwips(y / zoom);
+      // Screen-pixel delta from drag start. Layout shifts during the
+      // drag do NOT poison this value because we never look at the
+      // ruler's current bounding rect.
+      const dyPx = e.clientY - anchor.startClientY;
+      const dyTwips = pixelsToTwips(dyPx / zoom);
 
       if (dragging === 'topMargin') {
+        // Dragging down (positive dy) → larger top margin.
         const maxMargin = pageHeightTwips - bottomMarginTwips - 720;
-        const newMargin = Math.max(0, Math.min(positionTwips, maxMargin));
+        const newMargin = Math.max(
+          0,
+          Math.min(anchor.startTopMarginTwips + dyTwips, maxMargin),
+        );
         onTopMarginChange?.(Math.round(newMargin));
       } else if (dragging === 'bottomMargin') {
-        const fromBottom = pageHeightTwips - positionTwips;
+        // Dragging down (positive dy) → smaller bottom margin
+        // (bottom edge of the content area moves down with the
+        // pin, so the bottom margin shrinks).
         const maxMargin = pageHeightTwips - topMarginTwips - 720;
-        const newMargin = Math.max(0, Math.min(fromBottom, maxMargin));
+        const newMargin = Math.max(
+          0,
+          Math.min(anchor.startBottomMarginTwips - dyTwips, maxMargin),
+        );
         onBottomMarginChange?.(Math.round(newMargin));
       }
     },
@@ -132,6 +165,7 @@ export function VerticalRuler({
   // Handle drag end
   const handleDragEnd = useCallback(() => {
     setDragging(null);
+    dragAnchorRef.current = null;
   }, []);
 
   // Add/remove document event listeners

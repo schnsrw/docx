@@ -103,6 +103,21 @@ export function HorizontalRuler({
   const [dragValue, setDragValue] = useState<number | null>(null);
   const [dragPositionPx, setDragPositionPx] = useState<number | null>(null);
   const rulerRef = useRef<HTMLDivElement>(null);
+  // Anchor captured at drag-start so each mousemove computes a screen-
+  // pixel delta against a stable reference instead of re-reading the
+  // ruler's current bounding rect. Without this, changing a margin or
+  // indent during the drag re-flows the page, shifts the ruler on
+  // screen, changes the rect on the next mousemove, and the pin
+  // oscillates ("shakes") — most visible when the user reverses drag
+  // direction. Same pattern lives in VerticalRuler.
+  const dragAnchorRef = useRef<{
+    startClientX: number;
+    startLeftMarginTwips: number;
+    startRightMarginTwips: number;
+    startFirstLineIndentTwips: number;
+    startLeftIndentTwips: number;
+    startRightIndentTwips: number;
+  } | null>(null);
 
   // Page dimensions
   const pageWidthTwips = sectionProps?.pageWidth ?? DEFAULT_PAGE_WIDTH_TWIPS;
@@ -131,50 +146,91 @@ export function HorizontalRuler({
       if (!editable) return;
       e.preventDefault();
       e.stopPropagation();
+      // Snapshot the mouse position + every margin/indent value at
+      // drag-start. The handler below derives the new value from
+      // (mouse delta + start value), never from the live ruler rect.
+      // See dragAnchorRef declaration for the full why.
+      dragAnchorRef.current = {
+        startClientX: e.clientX,
+        startLeftMarginTwips: leftMarginTwips,
+        startRightMarginTwips: rightMarginTwips,
+        startFirstLineIndentTwips: effectiveFirstLineIndent,
+        startLeftIndentTwips: indentLeft,
+        startRightIndentTwips: indentRight,
+      };
       setDragging(marker);
     },
-    [editable]
+    [
+      editable,
+      leftMarginTwips,
+      rightMarginTwips,
+      effectiveFirstLineIndent,
+      indentLeft,
+      indentRight,
+    ]
   );
 
   const handleDrag = useCallback(
     (e: MouseEvent) => {
-      if (!dragging || !rulerRef.current) return;
+      const anchor = dragAnchorRef.current;
+      if (!dragging || !anchor) return;
 
-      const rect = rulerRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      setDragPositionPx(x);
-      const positionTwips = pixelsToTwips(x / zoom);
+      // Screen-pixel delta from drag start. Page reflow during the
+      // drag does NOT poison this value because we don't look at the
+      // ruler's current bounding rect.
+      const dxPx = e.clientX - anchor.startClientX;
+      const dxTwips = pixelsToTwips(dxPx / zoom);
 
       if (dragging === 'leftMargin') {
+        // Drag right = larger left margin.
         const maxMargin = pageWidthTwips - rightMarginTwips - 720;
-        const rounded = Math.round(Math.max(0, Math.min(positionTwips, maxMargin)));
+        const rounded = Math.round(
+          Math.max(0, Math.min(anchor.startLeftMarginTwips + dxTwips, maxMargin)),
+        );
         setDragValue(rounded);
+        // dragPositionPx kept for the value-tooltip overlay — express
+        // it as the marker's new screen position derived from the
+        // ANCHOR value, not from rect.left. The tooltip just needs a
+        // monotonic px value; absolute accuracy isn't required.
+        setDragPositionPx(twipsToPixels(rounded) * zoom);
         onLeftMarginChange?.(rounded);
       } else if (dragging === 'rightMargin') {
-        const fromRight = pageWidthTwips - positionTwips;
+        // Drag right = smaller right margin (the right edge moves
+        // right with the pin).
         const maxMargin = pageWidthTwips - leftMarginTwips - 720;
-        const rounded = Math.round(Math.max(0, Math.min(fromRight, maxMargin)));
+        const rounded = Math.round(
+          Math.max(0, Math.min(anchor.startRightMarginTwips - dxTwips, maxMargin)),
+        );
         setDragValue(rounded);
+        setDragPositionPx(pageWidthPx - twipsToPixels(rounded) * zoom);
         onRightMarginChange?.(rounded);
       } else if (dragging === 'firstLineIndent') {
-        const base = leftMarginTwips + indentLeft;
-        const indentFromBase = positionTwips - base;
         const maxIndent = contentTwips - indentLeft - indentRight - 720;
-        const rounded = Math.round(Math.max(-indentLeft, Math.min(indentFromBase, maxIndent)));
+        const rounded = Math.round(
+          Math.max(
+            -indentLeft,
+            Math.min(anchor.startFirstLineIndentTwips + dxTwips, maxIndent),
+          ),
+        );
         setDragValue(rounded);
+        setDragPositionPx(leftMarginPx + indentLeftPx + twipsToPixels(rounded) * zoom);
         onFirstLineIndentChange?.(rounded);
       } else if (dragging === 'leftIndent') {
-        const indentFromMargin = positionTwips - leftMarginTwips;
         const maxIndent = contentTwips - indentRight - 720;
-        const rounded = Math.round(Math.max(0, Math.min(indentFromMargin, maxIndent)));
+        const rounded = Math.round(
+          Math.max(0, Math.min(anchor.startLeftIndentTwips + dxTwips, maxIndent)),
+        );
         setDragValue(rounded);
+        setDragPositionPx(leftMarginPx + twipsToPixels(rounded) * zoom);
         onIndentLeftChange?.(rounded);
       } else if (dragging === 'rightIndent') {
-        const rightEdge = pageWidthTwips - rightMarginTwips;
-        const indentFromRight = rightEdge - positionTwips;
+        // Drag right = smaller right indent.
         const maxIndent = contentTwips - indentLeft - 720;
-        const rounded = Math.round(Math.max(0, Math.min(indentFromRight, maxIndent)));
+        const rounded = Math.round(
+          Math.max(0, Math.min(anchor.startRightIndentTwips - dxTwips, maxIndent)),
+        );
         setDragValue(rounded);
+        setDragPositionPx(pageWidthPx - rightMarginPx - twipsToPixels(rounded) * zoom);
         onIndentRightChange?.(rounded);
       }
     },
@@ -182,10 +238,14 @@ export function HorizontalRuler({
       dragging,
       zoom,
       pageWidthTwips,
+      pageWidthPx,
       leftMarginTwips,
+      leftMarginPx,
       rightMarginTwips,
+      rightMarginPx,
       contentTwips,
       indentLeft,
+      indentLeftPx,
       indentRight,
       onLeftMarginChange,
       onRightMarginChange,
@@ -199,6 +259,7 @@ export function HorizontalRuler({
     setDragging(null);
     setDragValue(null);
     setDragPositionPx(null);
+    dragAnchorRef.current = null;
   }, []);
 
   useEffect(() => {
