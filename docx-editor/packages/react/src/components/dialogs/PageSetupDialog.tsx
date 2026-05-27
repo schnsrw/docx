@@ -135,6 +135,8 @@ const inputStyle: CSSProperties = {
   border: '1px solid var(--doc-border)',
   borderRadius: 4,
   fontSize: 13,
+  background: 'var(--doc-surface)',
+  color: 'var(--doc-text-on-surface)',
 };
 
 const selectStyle: CSSProperties = {

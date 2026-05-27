@@ -79,6 +79,8 @@ const selectStyle: CSSProperties = {
 };
 
 const inputStyle: CSSProperties = {
+  background: 'var(--doc-surface)',
+  color: 'var(--doc-text-on-surface)',
   width: 60,
   padding: '4px 8px',
   border: '1px solid var(--doc-border, #ccc)',

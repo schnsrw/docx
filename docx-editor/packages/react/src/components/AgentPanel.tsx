@@ -279,7 +279,8 @@ export function AgentPanel({
               transition: 'background 0.15s',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = '#f1f3f4';
+              (e.currentTarget as HTMLButtonElement).style.background =
+                'var(--doc-bg-hover, #f1f3f4)';
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLButtonElement).style.background = 'transparent';

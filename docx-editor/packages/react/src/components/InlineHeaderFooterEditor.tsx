@@ -475,7 +475,7 @@ function OptionsMenu({
               insertField('PAGE');
             }}
             onMouseOver={(e) => {
-              (e.target as HTMLElement).style.backgroundColor = '#f1f3f4';
+              (e.target as HTMLElement).style.backgroundColor = 'var(--doc-bg-hover, #f1f3f4)';
             }}
             onMouseOut={(e) => {
               (e.target as HTMLElement).style.backgroundColor = 'transparent';
@@ -491,7 +491,7 @@ function OptionsMenu({
               insertField('NUMPAGES');
             }}
             onMouseOver={(e) => {
-              (e.target as HTMLElement).style.backgroundColor = '#f1f3f4';
+              (e.target as HTMLElement).style.backgroundColor = 'var(--doc-bg-hover, #f1f3f4)';
             }}
             onMouseOut={(e) => {
               (e.target as HTMLElement).style.backgroundColor = 'transparent';
@@ -513,7 +513,7 @@ function OptionsMenu({
               }}
               data-testid="hf-toggle-titlepg"
               onMouseOver={(e) => {
-                (e.target as HTMLElement).style.backgroundColor = '#f1f3f4';
+                (e.target as HTMLElement).style.backgroundColor = 'var(--doc-bg-hover, #f1f3f4)';
               }}
               onMouseOut={(e) => {
                 (e.target as HTMLElement).style.backgroundColor = 'transparent';
@@ -536,7 +536,7 @@ function OptionsMenu({
               }}
               data-testid="hf-toggle-evenodd"
               onMouseOver={(e) => {
-                (e.target as HTMLElement).style.backgroundColor = '#f1f3f4';
+                (e.target as HTMLElement).style.backgroundColor = 'var(--doc-bg-hover, #f1f3f4)';
               }}
               onMouseOut={(e) => {
                 (e.target as HTMLElement).style.backgroundColor = 'transparent';
@@ -558,7 +558,7 @@ function OptionsMenu({
                 onRemove();
               }}
               onMouseOver={(e) => {
-                (e.target as HTMLElement).style.backgroundColor = '#f1f3f4';
+                (e.target as HTMLElement).style.backgroundColor = 'var(--doc-bg-hover, #f1f3f4)';
               }}
               onMouseOut={(e) => {
                 (e.target as HTMLElement).style.backgroundColor = 'transparent';
@@ -575,7 +575,7 @@ function OptionsMenu({
               onClose();
             }}
             onMouseOver={(e) => {
-              (e.target as HTMLElement).style.backgroundColor = '#f1f3f4';
+              (e.target as HTMLElement).style.backgroundColor = 'var(--doc-bg-hover, #f1f3f4)';
             }}
             onMouseOut={(e) => {
               (e.target as HTMLElement).style.backgroundColor = 'transparent';

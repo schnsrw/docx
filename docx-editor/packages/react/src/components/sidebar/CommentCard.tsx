@@ -181,7 +181,8 @@ export function CommentCard({
                     fontFamily: 'inherit',
                   }}
                   onMouseOver={(e) => {
-                    (e.target as HTMLElement).style.backgroundColor = '#f1f3f4';
+                    (e.target as HTMLElement).style.backgroundColor =
+                      'var(--doc-bg-hover, #f1f3f4)';
                   }}
                   onMouseOut={(e) => {
                     (e.target as HTMLElement).style.backgroundColor = 'transparent';

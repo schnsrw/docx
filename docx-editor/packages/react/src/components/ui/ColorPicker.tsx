@@ -175,7 +175,8 @@ const S_APPLY_BTN: CSSProperties = {
   padding: '0 10px',
   border: '1px solid var(--doc-border, #ccc)',
   borderRadius: '3px',
-  backgroundColor: '#f5f5f5',
+  backgroundColor: 'var(--doc-bg-subtle, #f5f5f5)',
+  color: 'var(--doc-text-on-surface)',
   fontSize: '12px',
   cursor: 'pointer',
 };

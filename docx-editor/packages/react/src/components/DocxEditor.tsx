@@ -6510,7 +6510,7 @@ body { background: white; }
                               height: 28,
                               borderRadius: 6,
                               border: '1px solid rgba(26, 115, 232, 0.3)',
-                              backgroundColor: '#fff',
+                              backgroundColor: 'var(--doc-surface, #fff)',
                               color: 'var(--doc-primary)',
                               cursor: 'pointer',
                               display: 'flex',
@@ -6526,7 +6526,8 @@ body { background: white; }
                                 '0 1px 4px rgba(26, 115, 232, 0.3)';
                             }}
                             onMouseOut={(e) => {
-                              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fff';
+                              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                                'var(--doc-surface, #fff)';
                               (e.currentTarget as HTMLButtonElement).style.boxShadow =
                                 '0 1px 3px rgba(60,64,67,0.2)';
                             }}

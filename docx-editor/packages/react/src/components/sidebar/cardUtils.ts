@@ -102,7 +102,7 @@ export function submitButtonStyle(enabled: boolean): CSSProperties {
     fontSize: 14,
     border: 'none',
     borderRadius: 20,
-    background: enabled ? 'var(--doc-primary)' : '#f1f3f4',
+    background: enabled ? 'var(--doc-primary)' : 'var(--doc-bg-hover, #f1f3f4)',
     color: enabled ? '#fff' : 'var(--doc-text-subtle)',
     cursor: enabled ? 'pointer' : 'default',
     fontWeight: 500,

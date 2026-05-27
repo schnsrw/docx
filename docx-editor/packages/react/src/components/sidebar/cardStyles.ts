@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 export const CARD_STYLE_COLLAPSED: CSSProperties = {
   padding: '8px 10px',
   borderRadius: 8,
-  backgroundColor: '#f8fbff',
+  backgroundColor: 'var(--doc-surface-muted, #f8fbff)',
   cursor: 'pointer',
   boxShadow: '0 1px 3px rgba(60,64,67,0.2), 0 2px 6px rgba(60,64,67,0.08)',
 };

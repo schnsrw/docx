@@ -98,6 +98,8 @@ const labelStyle: CSSProperties = {
 };
 
 const inputStyle: CSSProperties = {
+  background: 'var(--doc-surface)',
+  color: 'var(--doc-text-on-surface)',
   flex: 1,
   padding: '6px 8px',
   border: '1px solid var(--doc-border)',
