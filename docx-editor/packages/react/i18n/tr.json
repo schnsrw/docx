@@ -101,7 +101,8 @@
     "imagePropertiesShortcut": "Görsel özellikleri (alternatif metin, kenarlık)...",
     "clearFormatting": "Biçimlendirmeyi temizle",
     "allCaps": null,
-    "smallCaps": null
+    "smallCaps": null,
+    "addComment": null
   },
   "alignment": {
     "alignLeft": "Sola hizala",

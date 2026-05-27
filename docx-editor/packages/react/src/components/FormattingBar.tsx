@@ -108,6 +108,7 @@ export function FormattingBar(explicitProps: FormattingBarProps) {
     onTableAction,
     onInsertImage,
     onOpenParagraphDialog,
+    onAddComment,
     inline = false,
   } = props as FormattingBarProps;
 
@@ -544,6 +545,16 @@ export function FormattingBar(explicitProps: FormattingBarProps) {
             ariaLabel={t('toolbar.image')}
           >
             <MaterialSymbol name="image" size={ICON_SIZE} />
+          </ToolbarButton>
+        )}
+        {onAddComment && (
+          <ToolbarButton
+            onClick={onAddComment}
+            disabled={disabled}
+            title={t('formattingBar.addComment')}
+            ariaLabel={t('formattingBar.addComment')}
+          >
+            <MaterialSymbol name="add_comment" size={ICON_SIZE} />
           </ToolbarButton>
         )}
       </ToolbarGroup>

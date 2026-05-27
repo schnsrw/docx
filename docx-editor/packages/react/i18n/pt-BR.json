@@ -101,7 +101,8 @@
     "imagePropertiesShortcut": "Propriedades da imagem (texto alternativo, borda)...",
     "clearFormatting": "Limpar formatação",
     "allCaps": null,
-    "smallCaps": null
+    "smallCaps": null,
+    "addComment": null
   },
   "alignment": {
     "alignLeft": "Alinhar à esquerda",

@@ -101,7 +101,8 @@
     "imagePropertiesShortcut": "图片属性(替代文本、边框)...",
     "clearFormatting": "清除格式",
     "allCaps": null,
-    "smallCaps": null
+    "smallCaps": null,
+    "addComment": null
   },
   "alignment": {
     "alignLeft": "左对齐",

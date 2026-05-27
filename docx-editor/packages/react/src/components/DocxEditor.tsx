@@ -2607,6 +2607,28 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     [getActiveEditorView, focusActiveEditor]
   );
 
+  // Start the add-comment flow from a toolbar/menu trigger (mirrors the
+  // floating "+" button + context-menu addComment paths). Selection
+  // must be non-empty; when empty, the toolbar button is disabled.
+  const handleStartAddComment = useCallback(() => {
+    const view = pagedEditorRef.current?.getView();
+    if (!view) return;
+    const { from, to } = view.state.selection;
+    if (from === to) return;
+    const yPos = findSelectionYPosition(scrollContainerRef.current, editorContentRef.current, from);
+    setCommentSelectionRange({ from, to });
+    const pendingMark = view.state.schema.marks.comment.create({
+      commentId: PENDING_COMMENT_ID,
+    });
+    const tr = view.state.tr.addMark(from, to, pendingMark);
+    tr.setSelection(TextSelection.create(tr.doc, to));
+    view.dispatch(tr);
+    setAddCommentYPosition(yPos);
+    setShowCommentsSidebar(true);
+    setIsAddingComment(true);
+    setFloatingCommentBtn(null);
+  }, []);
+
   // Insert a page break at cursor
   const handleInsertPageBreak = useCallback(() => {
     const view = getActiveEditorView();
@@ -5830,6 +5852,7 @@ body { background: white; }
                       onOpenCharacterSpacing={handleOpenCharacterSpacing}
                       onOpenParagraphDialog={handleOpenParagraphDialog}
                       onOpenBordersShading={handleOpenBordersShading}
+                      onAddComment={handleStartAddComment}
                       imageContext={state.pmImageContext}
                       onImageWrapType={handleImageWrapType}
                       onImageTransform={handleImageTransform}

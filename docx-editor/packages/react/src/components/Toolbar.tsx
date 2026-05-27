@@ -267,6 +267,8 @@ export interface ToolbarProps {
   onOpenParagraphDialog?: () => void;
   /** Open the Borders and Shading dialog (Word: Format > Borders and Shading). */
   onOpenBordersShading?: () => void;
+  /** Add a comment on the current selection (Docs: speech-bubble toolbar button). */
+  onAddComment?: () => void;
   /** Callback when user wants to insert a shape */
   onInsertShape?: (data: {
     shapeType: string;
