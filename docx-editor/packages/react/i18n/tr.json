@@ -782,7 +782,8 @@
     "alignTableCenter": "Tabloyu ortala",
     "alignTableRight": "Tabloyu sağa hizala",
     "tableOptionsMenu": "Tablo seçenekleri menüsü",
-    "tableOptions": "Tablo seçenekleri"
+    "tableOptions": "Tablo seçenekleri",
+    "distributeRows": null
   },
   "imageTransform": {
     "tooltip": "Dönüştür",

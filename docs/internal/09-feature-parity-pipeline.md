@@ -157,11 +157,15 @@ dropdown. Adds discoverability.
 Verify it works smoothly (no flicker, snaps to min-width, respects %
 widths). If broken or absent — P1.
 
-### B3 — Distribute rows / columns evenly ❌
+### B3 — Distribute rows / columns evenly ✅
 
-Two buttons in `TableMoreDropdown`: "Distribute rows" and "Distribute
-columns". Word + Docs both have it. Schema already supports row heights
-and column widths; this is pure command-layer work.
+Both shipped. `distributeColumns` was already present; `distributeRows`
+added in this batch as a mirror command (averages explicit row heights
+or falls back to the 360-twip default when no row has a height set
+yet). Wired into both `TableMoreDropdown` and `TableOptionsDropdown`
+right above the existing columns entry, plus dispatch in
+`DocxEditor.tsx`. No tests added — `distributeColumns` has no test
+either and inventing a scaffold for this one would set a new bar.
 
 ### B4 — Pin table header row ❌
 

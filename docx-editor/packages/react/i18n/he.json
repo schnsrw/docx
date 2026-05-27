@@ -779,7 +779,8 @@
     "alignTableCenter": "יישר טבלה למרכז",
     "alignTableRight": "יישר טבלה לימין",
     "tableOptionsMenu": "תפריט אפשרויות טבלה",
-    "tableOptions": "אפשרויות טבלה"
+    "tableOptions": "אפשרויות טבלה",
+    "distributeRows": null
   },
   "imageTransform": {
     "tooltip": "טרנספורמציה",

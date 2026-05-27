@@ -118,6 +118,7 @@ export {
   setRowHeight,
   toggleHeaderRow,
   distributeColumns,
+  distributeRows,
   autoFitContents,
   setTableProperties,
   applyTableStyle,

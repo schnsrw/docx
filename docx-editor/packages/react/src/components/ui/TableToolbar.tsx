@@ -72,6 +72,7 @@ export type TableAction =
   | { type: 'rowHeight'; height: number | null; rule?: 'auto' | 'atLeast' | 'exact' }
   | { type: 'toggleHeaderRow' }
   | { type: 'distributeColumns' }
+  | { type: 'distributeRows' }
   | { type: 'autoFitContents' }
   | {
       type: 'tableProperties';

@@ -1825,6 +1825,55 @@ export const TablePluginExtension = createExtension({
       };
     }
 
+    function distributeRows(): Command {
+      return (state, dispatch) => {
+        const context = getTableContext(state);
+        if (!context.isInTable || context.tablePos === undefined || !context.table) return false;
+
+        if (dispatch) {
+          let tr = state.tr;
+          const table = context.table;
+
+          // Average the explicit row heights; fall back to 360 twips
+          // (the same default the row spec uses elsewhere) when no
+          // row has a height set yet. heightRule = 'atLeast' so
+          // contents that overflow still grow the row — matches what
+          // Word and Docs do.
+          let totalHeight = 0;
+          let rowsWithHeight = 0;
+          let rowCount = 0;
+          table.forEach((row) => {
+            if (row.type.name !== 'tableRow') return;
+            rowCount += 1;
+            const h = row.attrs.height as number | null;
+            if (h && h > 0) {
+              totalHeight += h;
+              rowsWithHeight += 1;
+            }
+          });
+          if (rowCount === 0) return false;
+          const equalHeight =
+            rowsWithHeight > 0 ? Math.floor(totalHeight / rowsWithHeight) : 360;
+
+          let rowPos = context.tablePos + 1;
+          table.forEach((row) => {
+            if (row.type.name === 'tableRow') {
+              tr = tr.setNodeMarkup(rowPos, undefined, {
+                ...row.attrs,
+                height: equalHeight,
+                heightRule: 'atLeast',
+              });
+            }
+            rowPos += row.nodeSize;
+          });
+
+          dispatch(tr.scrollIntoView());
+        }
+
+        return true;
+      };
+    }
+
     function distributeColumns(): Command {
       return (state, dispatch) => {
         const context = getTableContext(state);
@@ -2421,6 +2470,7 @@ export const TablePluginExtension = createExtension({
           setRowHeight(height, rule),
         toggleHeaderRow: () => toggleHeaderRow(),
         distributeColumns: () => distributeColumns(),
+        distributeRows: () => distributeRows(),
         autoFitContents: () => autoFitContents(),
         setTableProperties: (props: {
           width?: number | null;

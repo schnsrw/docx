@@ -1107,7 +1107,7 @@ export class EditorPage {
       await inlinePicker.click();
     } else {
       await this.page.getByRole('button', { name: /^Insert$/ }).click();
-      const tableMenuItem = this.page.getByRole('button', { name: /^Table$/ }).first();
+      const tableMenuItem = this.page.getByRole('menuitem', { name: /^Table$/ }).first();
       await tableMenuItem.hover();
     }
 
@@ -1372,8 +1372,10 @@ export class EditorPage {
     // Wait for any pending changes
     await this.page.waitForTimeout(200);
     // Same story as newDocument(): Save moved inside the File dropdown.
+    // Items inside the dropdown carry role="menuitem" per the popup-menu
+    // pattern — query by that, not by 'button'.
     await this.page.getByRole('button', { name: 'File' }).click();
-    await this.page.getByRole('button', { name: /^Save\b/ }).click();
+    await this.page.getByRole('menuitem', { name: /^Save\b/ }).click();
     // Wait for download or save confirmation
     await this.page.waitForTimeout(500);
   }

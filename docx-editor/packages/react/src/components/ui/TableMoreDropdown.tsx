@@ -295,6 +295,9 @@ export function TableMoreDropdown({
           {menuItem('headerRow', 'table_rows', t('tableAdvanced.toggleHeaderRow'), {
             type: 'toggleHeaderRow',
           })}
+          {menuItem('distributeRows', 'table_rows', t('tableAdvanced.distributeRows'), {
+            type: 'distributeRows',
+          })}
           {menuItem('distribute', 'view_column', t('tableAdvanced.distributeColumns'), {
             type: 'distributeColumns',
           })}

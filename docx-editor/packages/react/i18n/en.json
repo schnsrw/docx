@@ -771,6 +771,7 @@
     "height": "Height",
     "toggleHeaderRow": "Toggle header row",
     "distributeColumns": "Distribute columns evenly",
+    "distributeRows": "Distribute rows evenly",
     "autoFit": "Auto-fit to contents",
     "tableProperties": "Table properties...",
     "tableAlignment": "Table alignment",

@@ -779,7 +779,8 @@
     "alignTableCenter": "Wyśrodkuj tabelę",
     "alignTableRight": "Wyrównaj tabelę do prawej",
     "tableOptionsMenu": "Menu opcji tabeli",
-    "tableOptions": "Opcje tabeli"
+    "tableOptions": "Opcje tabeli",
+    "distributeRows": null
   },
   "imageTransform": {
     "tooltip": "Przekształcanie",

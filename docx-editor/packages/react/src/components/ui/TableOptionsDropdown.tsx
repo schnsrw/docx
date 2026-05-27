@@ -573,6 +573,27 @@ function HeaderRowRow({ onAction }: { onAction: (action: TableAction) => void })
 // DISTRIBUTE / AUTO-FIT SUBCOMPONENTS
 // ============================================================================
 
+function DistributeRowsRow({ onAction }: { onAction: (action: TableAction) => void }) {
+  const { t } = useTranslation();
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+
+  return (
+    <button
+      type="button"
+      style={{
+        ...menuItemStyles,
+        backgroundColor: hoveredItem === 'main' ? 'var(--doc-bg-hover)' : 'transparent',
+      }}
+      onMouseEnter={() => setHoveredItem('main')}
+      onMouseLeave={() => setHoveredItem(null)}
+      onClick={() => onAction({ type: 'distributeRows' })}
+    >
+      <MaterialSymbol name="table_rows" size={18} />
+      <span style={{ flex: 1 }}>{t('tableAdvanced.distributeRows')}</span>
+    </button>
+  );
+}
+
 function DistributeColumnsRow({ onAction }: { onAction: (action: TableAction) => void }) {
   const { t } = useTranslation();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -876,6 +897,7 @@ export function TableOptionsDropdown({
           <NoWrapRow onAction={handleAction} />
           <RowHeightRow onAction={handleAction} />
           <HeaderRowRow onAction={handleAction} />
+          <DistributeRowsRow onAction={handleAction} />
           <DistributeColumnsRow onAction={handleAction} />
           <AutoFitRow onAction={handleAction} />
           <TableAlignmentRow onAction={handleAction} justification={currentJustification} />

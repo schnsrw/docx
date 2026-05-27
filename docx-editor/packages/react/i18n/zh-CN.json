@@ -779,7 +779,8 @@
     "alignTableCenter": "表格居中对齐",
     "alignTableRight": "表格右对齐",
     "tableOptionsMenu": "表格选项菜单",
-    "tableOptions": "表格选项"
+    "tableOptions": "表格选项",
+    "distributeRows": null
   },
   "imageTransform": {
     "tooltip": "变换",

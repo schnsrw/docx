@@ -282,6 +282,7 @@ import {
   setRowHeight,
   toggleHeaderRow,
   distributeColumns,
+  distributeRows,
   autoFitContents,
   setTableProperties,
   applyTableStyle,
@@ -3382,6 +3383,8 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
               toggleHeaderRow()(view.state, view.dispatch);
             } else if (action.type === 'distributeColumns') {
               distributeColumns()(view.state, view.dispatch);
+            } else if (action.type === 'distributeRows') {
+              distributeRows()(view.state, view.dispatch);
             } else if (action.type === 'autoFitContents') {
               autoFitContents()(view.state, view.dispatch);
             } else if (action.type === 'openTableProperties') {

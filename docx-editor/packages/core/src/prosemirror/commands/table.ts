@@ -179,6 +179,15 @@ export function distributeColumns(): (
 ) => boolean {
   return cmds.distributeColumns();
 }
+// Row distribution (mirrors distributeColumns; averages row heights
+// or falls back to the 360-twip default when no row has an explicit
+// height set yet).
+export function distributeRows(): (
+  state: EditorState,
+  dispatch?: (tr: Transaction) => void
+) => boolean {
+  return cmds.distributeRows();
+}
 export function autoFitContents(): (
   state: EditorState,
   dispatch?: (tr: Transaction) => void
