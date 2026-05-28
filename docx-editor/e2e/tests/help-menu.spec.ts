@@ -49,4 +49,18 @@ test.describe('Help menu', () => {
     const env = url.searchParams.get('env') ?? '';
     expect(env).toContain('viewport');
   });
+
+  test('Help > Search the menus opens the command palette', async ({ page }) => {
+    await page.getByRole('button', { name: 'Help' }).click();
+    await page.getByRole('menuitem', { name: 'Search the menus' }).click();
+    await expect(page.getByTestId('command-palette-input')).toBeVisible({ timeout: 3000 });
+  });
+
+  test('Help > Keyboard shortcuts opens the shortcuts dialog', async ({ page }) => {
+    await page.getByRole('button', { name: 'Help' }).click();
+    await page.getByRole('menuitem', { name: 'Keyboard shortcuts' }).click();
+    await expect(page.getByRole('dialog', { name: 'Keyboard Shortcuts' })).toBeVisible({
+      timeout: 3000,
+    });
+  });
 });

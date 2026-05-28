@@ -66,7 +66,9 @@
     "customSpacing": null,
     "footnote": null,
     "horizontalLine": null,
-    "specialCharacters": null
+    "specialCharacters": null,
+    "keyboardShortcuts": null,
+    "searchMenus": null
   },
   "formattingBar": {
     "groups": {

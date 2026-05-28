@@ -151,6 +151,9 @@ const AboutDialog = lazy(() =>
 const CommandPaletteDialog = lazy(() =>
   import('./dialogs/CommandPaletteDialog').then((m) => ({ default: m.CommandPaletteDialog }))
 );
+const KeyboardShortcutsDialog = lazy(() =>
+  import('./dialogs/KeyboardShortcutsDialog').then((m) => ({ default: m.KeyboardShortcutsDialog }))
+);
 import { MaterialSymbol } from './ui/Icons';
 import { Tooltip } from './ui/Tooltip';
 import {
@@ -2097,6 +2100,7 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
   // Command palette state (⌘⇧P / Ctrl+Shift+P). Searchable list of every
   // menu action, sourced from the same callbacks the menus use.
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
 
   // Color theme: 'auto' (follow OS) | 'light' | 'dark'. Persisted in
   // localStorage. editor.css selects `[data-theme="dark"]` and
@@ -2696,6 +2700,12 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
       if (cmdOrCtrl && e.altKey && !e.shiftKey && e.code === 'KeyM') {
         e.preventDefault();
         shortcutActionsRef.current.startComment?.();
+      }
+
+      // Mod+/ → keyboard-shortcuts dialog (Google Docs binding).
+      if (cmdOrCtrl && !e.shiftKey && !e.altKey && e.key === '/') {
+        e.preventDefault();
+        setShowKeyboardShortcuts(true);
       }
 
       // Mod+Shift+L → toggle bullet list. Word convention; also matches
@@ -6210,6 +6220,8 @@ body { background: white; }
                       onExportTxt={handleExportTxt}
                       onReportBug={handleReportBug}
                       onShowAbout={handleShowAbout}
+                      onOpenCommandPalette={() => setShowCommandPalette(true)}
+                      onOpenKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
                       onSetColorTheme={handleSetColorTheme}
                       colorTheme={colorTheme}
                       isDirty={isDirty}
@@ -7085,6 +7097,12 @@ body { background: white; }
                 onStop={voiceTyping.stop}
               />
               {showAbout && <AboutDialog isOpen={showAbout} onClose={() => setShowAbout(false)} />}
+              {showKeyboardShortcuts && (
+                <KeyboardShortcutsDialog
+                  isOpen={showKeyboardShortcuts}
+                  onClose={() => setShowKeyboardShortcuts(false)}
+                />
+              )}
               {showCommandPalette && (
                 <CommandPaletteDialog
                   isOpen={showCommandPalette}

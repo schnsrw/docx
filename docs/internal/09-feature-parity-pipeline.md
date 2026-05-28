@@ -474,23 +474,22 @@ Toggle that shows paragraph marks, tabs, spaces. Word feature; useful
 for advanced users. Add as a CSS class toggle on the layout-painter
 output.
 
-### F7 — Help → search the menus 🟡 (works via shortcut; no Help entry)
+### F7 — Help → search the menus ✅
 
-`CommandPaletteDialog` is mounted in `DocxEditor` and opens on
-`Ctrl/Cmd+Shift+P`. The remaining gap is purely discoverability: no Help
-**menu** entry that opens it. Adding one needs an `onOpenCommandPalette`
-prop threaded `DocxEditor → EditorToolbar → Toolbar` (the Help menu is
-gated on `onReportBug || onShowAbout`) plus an i18n label and a non-`raw`
-icon (there is no `search` glyph in `iconMap` yet).
+Help → "Search the menus" (the Google Docs label, top of the Help menu)
+opens the `CommandPaletteDialog`, which is also bound to `Ctrl/Cmd+Shift+P`.
+Wired via an `onOpenCommandPalette` prop on `ToolbarProps` →
+`EditorToolbar` context → `MenuBar` (the menubar Help dropdown in
+`TitleBar.tsx`). Tested in `help-menu.spec.ts`. (Text-only item — no
+`search` glyph in `iconMap`; left without an icon rather than shipping a
+guessed SVG path.)
 
-### F8 — Help → keyboard shortcuts 🟡 (dialog not mounted in-editor)
+### F8 — Help → keyboard shortcuts ✅
 
-`KeyboardShortcutsDialog` + `useKeyboardShortcutsDialog` (Ctrl+/, F1)
-exist but are **only exported from the package barrel** — `DocxEditor`
-does not render the dialog, so there's no in-editor shortcut or Help
-entry today (embedders wire their own). Real work: mount the dialog +
-open-state in `DocxEditor`, bind Ctrl+/, and add the Help-menu entry
-alongside F7.
+`KeyboardShortcutsDialog` is now mounted in `DocxEditor` (lazy), opened
+by `Ctrl/Cmd+/` (Google Docs binding) and by Help → "Keyboard shortcuts"
+(via the same `onOpenKeyboardShortcuts` → `MenuBar` path as F7). Tested
+in `help-menu.spec.ts`.
 
 ---
 

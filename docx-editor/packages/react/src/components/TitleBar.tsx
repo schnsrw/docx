@@ -226,6 +226,8 @@ export function MenuBar() {
     onExportTxt,
     onReportBug,
     onShowAbout,
+    onOpenCommandPalette,
+    onOpenKeyboardShortcuts,
     onSetColorTheme,
     colorTheme,
     zoom,
@@ -783,6 +785,15 @@ export function MenuBar() {
           label={t('toolbar.help')}
           disabled={disabled}
           items={[
+            ...(onOpenCommandPalette
+              ? [
+                  {
+                    label: t('toolbar.searchMenus'),
+                    onClick: onOpenCommandPalette,
+                  } as MenuEntry,
+                  { type: 'separator' as const } as MenuEntry,
+                ]
+              : []),
             {
               icon: 'bug_report',
               label: t('toolbar.reportIssue'),
@@ -795,6 +806,15 @@ export function MenuBar() {
                     icon: 'info',
                     label: 'About Casual Editor',
                     onClick: onShowAbout,
+                  } as MenuEntry,
+                ]
+              : []),
+            ...(onOpenKeyboardShortcuts
+              ? [
+                  { type: 'separator' as const } as MenuEntry,
+                  {
+                    label: t('toolbar.keyboardShortcuts'),
+                    onClick: onOpenKeyboardShortcuts,
                   } as MenuEntry,
                 ]
               : []),

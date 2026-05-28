@@ -335,6 +335,10 @@ export interface ToolbarProps {
   onReportBug?: () => void;
   /** Help → About — opens the About dialog. */
   onShowAbout?: () => void;
+  /** Help → Search the menus — opens the command palette. */
+  onOpenCommandPalette?: () => void;
+  /** Help → Keyboard shortcuts — opens the shortcuts dialog. */
+  onOpenKeyboardShortcuts?: () => void;
   /** Theme picker — host sets colorTheme. `'auto'` follows OS preference. */
   onSetColorTheme?: (theme: 'light' | 'dark' | 'auto') => void;
   /** Current colorTheme setting; drives the title-bar toggle's icon. */
