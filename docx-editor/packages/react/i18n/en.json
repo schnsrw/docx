@@ -522,6 +522,14 @@
         "symbols": "*, †, ‡, ..."
       }
     },
+    "wordCount": {
+      "title": "Word count",
+      "pages": "Pages",
+      "words": "Words",
+      "characters": "Characters",
+      "charactersNoSpaces": "Characters excluding spaces",
+      "paragraphs": "Paragraphs"
+    },
     "keyboardShortcuts": {
       "ariaLabel": "Keyboard Shortcuts",
       "searchPlaceholder": "Search shortcuts...",

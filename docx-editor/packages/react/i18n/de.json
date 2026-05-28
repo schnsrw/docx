@@ -618,6 +618,14 @@
       "rule_exact": null,
       "title": null,
       "widowControl": null
+    },
+    "wordCount": {
+      "characters": null,
+      "charactersNoSpaces": null,
+      "pages": null,
+      "paragraphs": null,
+      "title": null,
+      "words": null
     }
   },
   "comments": {

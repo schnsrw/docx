@@ -129,11 +129,14 @@ Insert structured citation (APA / MLA / Chicago), maintain bibliography
 section. Schema-level work — citations need to round-trip in .docx as
 bibliography fields. Big scope; queue last.
 
-### A7 — Word-count panel 🟡
+### A7 — Word-count panel ✅
 
-Status bar shows live count. Docs also has a dialog (`Ctrl+Shift+C`)
-that breaks down: words, characters, characters excluding spaces, pages.
-Cheap to add — wrap the existing computation in a dialog component.
+Dialog shipped (`WordCountDialog`) with five rows: pages, words,
+characters, characters excluding spaces, paragraphs. Triggered
+via Edit → Word count or `Ctrl+Shift+C` (Google Docs binding).
+Computation lives in DocxEditor's existing wordCount memo,
+extended to also produce characters-with-spaces + paragraph
+count from the per-paragraph text walk.
 
 ---
 
@@ -251,10 +254,15 @@ any missing — easy fix.
 This is where industry-standard polish lives. None of these are
 shipped today.
 
-### D1 — Smart quotes engine ❌
+### D1 — Smart quotes engine ✅
 
-`"hello"` → `"hello"`, `it's` → `it's`. Toggleable in Tools → Preferences.
-Implementation: ProseMirror input rule. ~80 lines.
+Shipped as `SmartQuotesExtension`. Handles " / ' (opening vs
+closing via prev-char heuristic), -- → em dash, ... → ellipsis.
+Plugin uses `handleTextInput` for single-transaction
+replacements so a single Ctrl+Z reverts. On by default;
+opt out via `createStarterKit({ disable: ['smartQuotes'] })`.
+8/8 unit tests. The Tools → Preferences toggle (D7) is the
+next user-facing surface for this.
 
 ### D2 — Autocorrect / autocomplete ❌
 

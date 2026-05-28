@@ -236,6 +236,7 @@ export function MenuBar() {
     canRedo,
     onOpenFind,
     onOpenFindReplace,
+    onOpenWordCount,
     onToggleSpellCheck,
     spellCheckEnabled,
     currentFormatting,
@@ -490,6 +491,17 @@ export function MenuBar() {
               shortcut: '⌘A',
               onClick: () => handleFormat('selectAll'),
             } as MenuEntry,
+            ...(onOpenWordCount
+              ? [
+                  { type: 'separator' as const } as MenuEntry,
+                  {
+                    icon: 'format_list_numbered',
+                    label: 'Word count',
+                    shortcut: '⌘⇧C',
+                    onClick: onOpenWordCount,
+                  } as MenuEntry,
+                ]
+              : []),
             ...(onToggleSpellCheck
               ? [
                   { type: 'separator' as const } as MenuEntry,

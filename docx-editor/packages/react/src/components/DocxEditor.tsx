@@ -123,6 +123,9 @@ const PageSetupDialog = lazy(() =>
 const FilePropertiesDialog = lazy(() =>
   import('./dialogs/FilePropertiesDialog').then((m) => ({ default: m.FilePropertiesDialog }))
 );
+const WordCountDialog = lazy(() =>
+  import('./dialogs/WordCountDialog').then((m) => ({ default: m.WordCountDialog }))
+);
 const BookmarksDialog = lazy(() =>
   import('./dialogs/BookmarksDialog').then((m) => ({ default: m.BookmarksDialog }))
 );
@@ -1870,20 +1873,38 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
   // `descendants` and stitches text fragments. Recomputes whenever
   // `pmState` flips, which `onSelectionChange` and the post-load effect
   // already drive on every transaction.
-  const { wordCount, charCount } = useMemo(() => {
-    if (!pmState) return { wordCount: undefined, charCount: undefined };
-    const parts: string[] = [];
+  const { wordCount, charCount, charCountWithSpaces, paragraphCount } = useMemo(() => {
+    if (!pmState) {
+      return {
+        wordCount: undefined,
+        charCount: undefined,
+        charCountWithSpaces: undefined,
+        paragraphCount: undefined,
+      };
+    }
+    const paraTexts: string[] = [];
     pmState.doc.descendants((node) => {
-      if (node.isText && node.text) {
-        parts.push(node.text);
+      if (node.type.name === 'paragraph') {
+        paraTexts.push(node.textContent);
+        return false;
       }
       return true;
     });
-    const text = parts.join('');
+    const text = paraTexts.join('\n');
     const words = text.trim().length === 0 ? 0 : text.trim().split(/\s+/).length;
+    // Word's "characters (with spaces)" includes the joined newlines
+    // implicit between paragraphs. Mirror Word: count whitespace
+    // collapsed into a single space per paragraph break.
+    const charsWith = text.length;
     // "characters (no spaces)" matches Word's convention.
     const chars = text.replace(/\s/g, '').length;
-    return { wordCount: words, charCount: chars };
+    const paragraphs = paraTexts.filter((p) => p.trim().length > 0).length;
+    return {
+      wordCount: words,
+      charCount: chars,
+      charCountWithSpaces: charsWith,
+      paragraphCount: paragraphs,
+    };
   }, [pmState]);
   // Track current border color/width for border presets (like Google Docs)
   const borderSpecRef = useRef({ style: 'single', size: 4, color: { rgb: '000000' } });
@@ -2022,6 +2043,10 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
   // File → Properties dialog state.
   const [showFileProperties, setShowFileProperties] = useState(false);
   const handleOpenFileProperties = useCallback(() => setShowFileProperties(true), []);
+
+  // Word count dialog state (Ctrl+Shift+C, also surfaced via Edit menu).
+  const [showWordCount, setShowWordCount] = useState(false);
+  const handleOpenWordCount = useCallback(() => setShowWordCount(true), []);
 
   // Help → About dialog state.
   const [showAbout, setShowAbout] = useState(false);
@@ -2648,6 +2673,13 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
         const next: EditorMode =
           current === 'editing' ? 'suggesting' : current === 'suggesting' ? 'viewing' : 'editing';
         setEditingModeRef.current(next);
+      }
+
+      // Mod+Shift+C → open Word count dialog (Google Docs convention).
+      // Same dialog the Edit → Word count menu item opens.
+      if (cmdOrCtrl && e.shiftKey && !e.altKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        setShowWordCount(true);
       }
 
       // Mod+Shift+V → paste without formatting (Google Docs + Word
@@ -6114,6 +6146,7 @@ body { background: white; }
                       onOpenImageProperties={handleOpenImageProperties}
                       onPageSetup={handleOpenPageSetup}
                       onFileProperties={handleOpenFileProperties}
+                      onOpenWordCount={handleOpenWordCount}
                       onExportPdf={handleExportPdf}
                       onExportOdt={handleExportOdt}
                       onExportMd={handleExportMd}
@@ -6971,6 +7004,19 @@ body { background: white; }
                     if (!pkg) return;
                     const next = { ...(pkg.properties ?? {}), ...edits };
                     pkg.properties = next;
+                  }}
+                />
+              )}
+              {showWordCount && (
+                <WordCountDialog
+                  isOpen={showWordCount}
+                  onClose={() => setShowWordCount(false)}
+                  stats={{
+                    words: wordCount ?? 0,
+                    characters: charCountWithSpaces ?? 0,
+                    charactersNoSpaces: charCount ?? 0,
+                    paragraphs: paragraphCount ?? 0,
+                    pages: scrollPageInfo.totalPages,
                   }}
                 />
               )}

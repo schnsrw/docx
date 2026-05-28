@@ -164,6 +164,8 @@ export interface ToolbarProps {
   onOpenFind?: () => void;
   /** Callback to open Find & Replace dialog (Ctrl+H) */
   onOpenFindReplace?: () => void;
+  /** Callback to open Word Count dialog (Ctrl+Shift+C in Google Docs). */
+  onOpenWordCount?: () => void;
   /** Callback to toggle browser spellcheck on the editor */
   onToggleSpellCheck?: () => void;
   /** Whether spellcheck is currently enabled */
