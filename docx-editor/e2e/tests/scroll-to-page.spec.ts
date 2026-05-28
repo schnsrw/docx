@@ -10,6 +10,11 @@ import * as path from 'path';
 
 test.describe('scrollToPage / getTotalPages (issue #280)', () => {
   test.beforeEach(async ({ page }) => {
+    // Loading the ~50-page, 1 MB fixture and laying it out is genuinely slow
+    // on constrained CI runners (2 vCPU); the default 30 s test budget gets
+    // eaten by load + layout before the scroll wait can finish. Triple it so
+    // the in-viewport wait has room rather than racing the test timeout.
+    test.slow();
     const editor = new EditorPage(page);
     await editor.goto();
     await editor.waitForReady();
