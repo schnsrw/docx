@@ -938,6 +938,18 @@
   border-radius: 4px;
 }
 
+/* X3 — opt-in focus ring utility for raw <button>s outside the menubar
+   that aren't using the shared Button primitive (which rings via Tailwind).
+   Add `className="ep-focus-ring"` to surface a keyboard-only outline that
+   matches the menu-item rule above. Outline-offset is +2 because these
+   buttons usually sit on top of content rather than inside a menu row,
+   so an outside ring reads more clearly. */
+.ep-root .ep-focus-ring:focus-visible {
+  outline: 2px solid var(--doc-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* X4 — dialog open animation. Backdrop fades in; the dialog shell
    scales up subtly from 96% to 100% over the same beat. Both consume the
    shared --doc-anim-base token so timings stay coherent if we ever retune

@@ -862,6 +862,7 @@ export function Toolbar({
                 ).map((item) => (
                   <button
                     key={item.action}
+                    role="menuitem"
                     className="w-full text-left px-4 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -890,6 +891,7 @@ export function Toolbar({
                 ].map((item) => (
                   <button
                     key={item.value}
+                    role="menuitem"
                     className="w-full text-left px-4 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -989,6 +991,7 @@ export function Toolbar({
                 ).map((item) => (
                   <button
                     key={item.type}
+                    role="menuitem"
                     className="w-full text-left px-4 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
                     onMouseDown={(e) => {
                       e.preventDefault();
@@ -1027,6 +1030,7 @@ export function Toolbar({
                 ).map((item) => (
                   <button
                     key={item.type}
+                    role="menuitem"
                     className="w-full text-left px-4 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
                     onMouseDown={(e) => {
                       e.preventDefault();

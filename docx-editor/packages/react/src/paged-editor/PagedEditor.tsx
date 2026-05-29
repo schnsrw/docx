@@ -4202,6 +4202,7 @@ const PagedEditorComponent = forwardRef<PagedEditorRef, PagedEditorProps>(
           {tableInsertButton && (
             <button
               type="button"
+              className="ep-focus-ring"
               onMouseDown={handleTableInsertClick}
               onMouseEnter={clearTableInsertTimer}
               onMouseLeave={() => setTableInsertButton(null)}
