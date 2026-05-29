@@ -4994,6 +4994,38 @@ body { background: white; }
 
   // File → Make a copy: download the current content as "Copy of <name>.docx".
   // The original document is unchanged, so we don't touch the dirty flag.
+  // F2 — Email as attachment. Browsers can't auto-attach the downloaded
+  // file to a mailto draft (security), so the honest version is to do
+  // both: trigger the .docx download, then open the user's mail client
+  // with subject/body pre-filled. They drag the downloaded file in.
+  const handleEmailAsAttachment = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const buffer = await handleSave();
+      if (!buffer) return;
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = window.document.createElement('a');
+      a.href = url;
+      const base = (documentName?.trim() || 'document').replace(/\.docx$/i, '');
+      const fileName = `${base}.docx`;
+      a.download = fileName;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+
+      const subject = encodeURIComponent(base);
+      const body = encodeURIComponent(
+        `Attached: ${fileName}\n\n(The file was downloaded to your machine — please attach it to this email.)`
+      );
+      window.open(`mailto:?subject=${subject}&body=${body}`, '_blank', 'noopener');
+      toast.success(`Downloaded ${fileName}. Drag it into the email window to attach.`);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [handleSave, documentName]);
+
   const handleMakeCopy = useCallback(async () => {
     setIsSaving(true);
     try {
@@ -6445,6 +6477,7 @@ body { background: white; }
                       onOpen={handleOpenDocument}
                       onSave={handleDownloadDocument}
                       onMakeCopy={handleMakeCopy}
+                      onEmailAsAttachment={handleEmailAsAttachment}
                       onNew={onNew}
                       showZoomControl={showZoomControl}
                       zoom={state.zoom}

@@ -510,11 +510,15 @@ is unchanged). Wired through `onMakeCopy` on `ToolbarProps` → `MenuBar`.
 Tested in `file-make-a-copy.spec.ts` (item visible + download filename),
 visually verified.
 
-### F2 — Email as attachment ❌
+### F2 — Email as attachment ✅
 
-`mailto:` link with subject = doc title, downloaded .docx attached.
-Browser security blocks the attach; ship "Download + open mail" as the
-honest version, or skip.
+File → "Email as attachment…" triggers the same save/serialize path
+as File → Save, downloads the `.docx`, then opens a `mailto:` draft
+with subject = document title and body = a one-line "Attached:
+…" note explaining that the browser can't auto-attach (security)
+and instructing the user to drag the just-downloaded file into the
+email window. A success toast nudges the same. The "honest version"
+the parity note called for. e2e in `email-as-attachment.spec.ts`.
 
 ### F3 — Page setup parity ✅ (apply-to scope deferred)
 

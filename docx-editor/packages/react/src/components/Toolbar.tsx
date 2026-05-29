@@ -351,6 +351,8 @@ export interface ToolbarProps {
   onOpenBuildingBlocks?: () => void;
   /** Insert → Convert selection to table — auto-detects delimiter (B8). */
   onConvertSelectionToTable?: () => void;
+  /** File → "Email as attachment" — download + open mailto (F2). */
+  onEmailAsAttachment?: () => void;
   /** View → Show formatting marks — toggles ¶ / → / ↵ overlay (F6). */
   onToggleShowFormattingMarks?: () => void;
   /** Current state of the formatting-marks toggle — drives the checkmark. */

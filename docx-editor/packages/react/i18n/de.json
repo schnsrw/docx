@@ -77,7 +77,8 @@
     "buildingBlocks": null,
     "showFormattingMarks": null,
     "wordCount": null,
-    "convertToTable": null
+    "convertToTable": null,
+    "emailAsAttachment": null
   },
   "formattingBar": {
     "groups": {

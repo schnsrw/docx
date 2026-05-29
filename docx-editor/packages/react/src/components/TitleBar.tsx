@@ -219,6 +219,7 @@ export function MenuBar() {
     onOpen,
     onSave,
     onMakeCopy,
+    onEmailAsAttachment,
     onPageSetup,
     onFileProperties,
     onExportPdf,
@@ -292,7 +293,14 @@ export function MenuBar() {
   const hasPrintOrPageSetup = (showPrintButton && onPrint) || onPageSetup;
   const hasExport = onExportPdf || onExportOdt || onExportMd || onExportTxt;
   const hasFileMenu =
-    hasPrintOrPageSetup || onNew || onOpen || onSave || onFileProperties || hasExport;
+    hasPrintOrPageSetup ||
+    onNew ||
+    onOpen ||
+    onSave ||
+    onMakeCopy ||
+    onEmailAsAttachment ||
+    onFileProperties ||
+    hasExport;
 
   return (
     <MenuBarProvider>
@@ -347,7 +355,15 @@ export function MenuBar() {
                     } as MenuEntry,
                   ]
                 : []),
-              ...((onOpen || onSave || onMakeCopy) &&
+              ...(onEmailAsAttachment
+                ? [
+                    {
+                      label: t('toolbar.emailAsAttachment'),
+                      onClick: onEmailAsAttachment,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...((onOpen || onSave || onMakeCopy || onEmailAsAttachment) &&
               (hasPrintOrPageSetup || onFileProperties || hasExport)
                 ? [{ type: 'separator' as const } as MenuEntry]
                 : []),

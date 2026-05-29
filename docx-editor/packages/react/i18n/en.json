@@ -77,7 +77,8 @@
     "buildingBlocks": "Building blocks…",
     "showFormattingMarks": "Show non-printing characters",
     "wordCount": "Word count",
-    "convertToTable": "Convert selection to table"
+    "convertToTable": "Convert selection to table",
+    "emailAsAttachment": "Email as attachment…"
   },
   "suggestingBanner": {
     "title": "Suggesting",
