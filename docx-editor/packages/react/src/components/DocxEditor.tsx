@@ -946,12 +946,10 @@ function EditingModeDropdown({
     return () => mql.removeEventListener('change', handler);
   }, []);
 
-  useEffect(() => {
-    if (!isOpen || !triggerRef.current) return;
-    const rect = triggerRef.current.getBoundingClientRect();
-    // Align dropdown to right edge of trigger so it doesn't overflow the screen
-    setPos({ top: rect.bottom + 2, left: rect.right - 220 });
-  }, [isOpen]);
+  // Position is computed in the trigger's onClick from e.currentTarget (see
+  // below) so it works even when triggerRef is null — the <Tooltip> wrapper
+  // can swallow the ref, which previously left the menu pinned at {0,0} (top
+  // of the page) instead of under its right-aligned trigger.
 
   useEffect(() => {
     if (!isOpen) return;
@@ -981,7 +979,16 @@ function EditingModeDropdown({
           ref={triggerRef}
           type="button"
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={(e) => {
+            if (!isOpen) {
+              const r = e.currentTarget.getBoundingClientRect();
+              // Right-align the 220px menu to the trigger, clamped into the
+              // viewport so it never runs off-screen or pins to a corner.
+              const left = Math.max(8, Math.min(r.right, window.innerWidth - 8) - 220);
+              setPos({ top: r.bottom + 2, left });
+            }
+            setIsOpen(!isOpen);
+          }}
           aria-label={`${t(current.labelKey)} (Ctrl+Shift+E)`}
           style={{
             display: 'flex',
