@@ -32,6 +32,12 @@ export { ExtensionManager } from './ExtensionManager';
 export { createStarterKit } from './StarterKit';
 export type { StarterKitOptions } from './StarterKit';
 
+// Runtime preferences — read by SmartQuotes/Autocorrect each keystroke.
+// Tools → Preferences dialog mutates these; the React layer persists to
+// localStorage on mount and on change.
+export { editorPreferences, setEditorPreference } from './features/editorPreferences';
+export type { EditorPreferences } from './features/editorPreferences';
+
 // Re-export specific extensions consumers commonly customize
 export {
   ParagraphChangeTrackerExtension,

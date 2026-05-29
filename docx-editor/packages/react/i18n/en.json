@@ -69,7 +69,9 @@
     "help": "Help",
     "reportIssue": "Report issue",
     "searchMenus": "Search the menus",
-    "keyboardShortcuts": "Keyboard shortcuts"
+    "keyboardShortcuts": "Keyboard shortcuts",
+    "tools": "Tools",
+    "preferences": "Preferences…"
   },
   "formattingBar": {
     "groups": {

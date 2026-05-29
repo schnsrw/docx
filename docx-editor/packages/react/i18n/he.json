@@ -69,7 +69,9 @@
     "specialCharacters": null,
     "keyboardShortcuts": null,
     "searchMenus": null,
-    "makeCopy": null
+    "makeCopy": null,
+    "preferences": null,
+    "tools": null
   },
   "formattingBar": {
     "groups": {

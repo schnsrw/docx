@@ -341,6 +341,8 @@ export interface ToolbarProps {
   onOpenCommandPalette?: () => void;
   /** Help → Keyboard shortcuts — opens the shortcuts dialog. */
   onOpenKeyboardShortcuts?: () => void;
+  /** Tools → Preferences — opens the smart-quotes / autocorrect preferences dialog. */
+  onOpenPreferences?: () => void;
   /** Theme picker — host sets colorTheme. `'auto'` follows OS preference. */
   onSetColorTheme?: (theme: 'light' | 'dark' | 'auto') => void;
   /** Current colorTheme setting; drives the title-bar toggle's icon. */

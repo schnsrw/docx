@@ -26,6 +26,7 @@ import { Plugin } from 'prosemirror-state';
 import { createExtension } from '../create';
 import { Priority } from '../types';
 import type { ExtensionRuntime } from '../types';
+import { editorPreferences } from './editorPreferences';
 
 const OPEN_DOUBLE = '“';
 const CLOSE_DOUBLE = '”';
@@ -65,6 +66,8 @@ export const SmartQuotesExtension = createExtension({
             // Return true to consume the original input; false to
             // let PM insert the typed character as-is.
             handleTextInput(view, from, to, text) {
+              // Honor the runtime toggle from Tools → Preferences.
+              if (!editorPreferences.smartQuotes) return false;
               // Only handle single-character inserts. Anything longer
               // is almost certainly an IME or paste-via-input which
               // we don't want to second-guess.

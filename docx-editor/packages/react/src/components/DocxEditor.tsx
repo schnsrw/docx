@@ -154,6 +154,9 @@ const CommandPaletteDialog = lazy(() =>
 const KeyboardShortcutsDialog = lazy(() =>
   import('./dialogs/KeyboardShortcutsDialog').then((m) => ({ default: m.KeyboardShortcutsDialog }))
 );
+const PreferencesDialog = lazy(() =>
+  import('./dialogs/PreferencesDialog').then((m) => ({ default: m.PreferencesDialog }))
+);
 import { MaterialSymbol } from './ui/Icons';
 import { Tooltip } from './ui/Tooltip';
 import {
@@ -163,6 +166,11 @@ import {
 } from './TextContextMenu';
 import { ImageContextMenu, useImageContextMenu } from './ImageContextMenu';
 import { setImageWrapType, type ImageLayoutTarget } from '@eigenpal/docx-core/prosemirror/commands';
+import {
+  editorPreferences,
+  setEditorPreference,
+  type EditorPreferences,
+} from '@eigenpal/docx-core/prosemirror/extensions';
 import type { WrapType } from '@eigenpal/docx-core/docx/wrapTypes';
 import {
   captureInlinePositionEmu,
@@ -2108,6 +2116,48 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
   // menu action, sourced from the same callbacks the menus use.
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [showPreferences, setShowPreferences] = useState(false);
+  // Editor preferences — smart quotes / autocorrect runtime toggles.
+  // Lazy-init from localStorage and hydrate the core singleton so the
+  // smart-quotes/autocorrect plugins see the persisted values on the very
+  // first keystroke, not just after a re-render.
+  const [preferences, setPreferences] = useState<EditorPreferences>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = window.localStorage.getItem('docx-editor-prefs');
+        if (raw) {
+          const parsed = JSON.parse(raw) as Partial<EditorPreferences>;
+          if (typeof parsed.smartQuotes === 'boolean') {
+            editorPreferences.smartQuotes = parsed.smartQuotes;
+          }
+          if (typeof parsed.autocorrect === 'boolean') {
+            editorPreferences.autocorrect = parsed.autocorrect;
+          }
+        }
+      } catch {
+        // Corrupted localStorage — fall through to defaults.
+      }
+    }
+    return { ...editorPreferences };
+  });
+  const handlePreferenceChange = useCallback(
+    <K extends keyof EditorPreferences>(key: K, value: EditorPreferences[K]) => {
+      setEditorPreference(key, value);
+      setPreferences((prev) => {
+        const next = { ...prev, [key]: value };
+        if (typeof window !== 'undefined') {
+          try {
+            window.localStorage.setItem('docx-editor-prefs', JSON.stringify(next));
+          } catch {
+            // Quota exceeded / private mode — fail silently; runtime
+            // setting still applies for the current session.
+          }
+        }
+        return next;
+      });
+    },
+    []
+  );
 
   // Color theme: 'auto' (follow OS) | 'light' | 'dark'. Persisted in
   // localStorage. editor.css selects `[data-theme="dark"]` and
@@ -6254,6 +6304,7 @@ body { background: white; }
                       onShowAbout={handleShowAbout}
                       onOpenCommandPalette={() => setShowCommandPalette(true)}
                       onOpenKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
+                      onOpenPreferences={() => setShowPreferences(true)}
                       onSetColorTheme={handleSetColorTheme}
                       colorTheme={colorTheme}
                       isDirty={isDirty}
@@ -7133,6 +7184,14 @@ body { background: white; }
                 <KeyboardShortcutsDialog
                   isOpen={showKeyboardShortcuts}
                   onClose={() => setShowKeyboardShortcuts(false)}
+                />
+              )}
+              {showPreferences && (
+                <PreferencesDialog
+                  isOpen={showPreferences}
+                  onClose={() => setShowPreferences(false)}
+                  preferences={preferences}
+                  onChange={handlePreferenceChange}
                 />
               )}
               {showCommandPalette && (

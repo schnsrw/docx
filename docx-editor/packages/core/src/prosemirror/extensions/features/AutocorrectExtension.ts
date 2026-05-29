@@ -30,6 +30,7 @@ import { Plugin } from 'prosemirror-state';
 import { createExtension } from '../create';
 import { Priority } from '../types';
 import type { ExtensionRuntime } from '../types';
+import { editorPreferences } from './editorPreferences';
 
 /** Symbol sequences keyed by the full literal the user types. */
 const SYMBOLS: Record<string, string> = {
@@ -97,6 +98,8 @@ export const AutocorrectExtension = createExtension({
         new Plugin({
           props: {
             handleTextInput(view, from, to, text) {
+              // Honor the runtime toggle from Tools → Preferences.
+              if (!editorPreferences.autocorrect) return false;
               if (text.length !== 1) return false;
               const { state } = view;
 

@@ -229,6 +229,7 @@ export function MenuBar() {
     onShowAbout,
     onOpenCommandPalette,
     onOpenKeyboardShortcuts,
+    onOpenPreferences,
     onSetColorTheme,
     colorTheme,
     zoom,
@@ -790,6 +791,20 @@ export function MenuBar() {
             },
           ]}
         />
+
+        {/* Tools Menu — gated on having at least one Tools item. */}
+        {onOpenPreferences && (
+          <MenuDropdown
+            label={t('toolbar.tools')}
+            disabled={disabled}
+            items={[
+              {
+                label: t('toolbar.preferences'),
+                onClick: onOpenPreferences,
+              } as MenuEntry,
+            ]}
+          />
+        )}
 
         {/* Help Menu */}
         <MenuDropdown
