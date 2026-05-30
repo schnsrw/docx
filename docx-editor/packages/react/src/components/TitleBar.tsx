@@ -239,6 +239,7 @@ export function MenuBar() {
     onOpenDictionary,
     onOpenTranslate,
     onOpenExplore,
+    onOpenCitations,
     onSetColorTheme,
     colorTheme,
     zoom,
@@ -865,7 +866,8 @@ export function MenuBar() {
           onOpenWordCount ||
           onOpenDictionary ||
           onOpenTranslate ||
-          onOpenExplore) && (
+          onOpenExplore ||
+          onOpenCitations) && (
           <MenuDropdown
             label={t('toolbar.tools')}
             disabled={disabled}
@@ -906,6 +908,14 @@ export function MenuBar() {
                     {
                       label: t('toolbar.explore'),
                       onClick: onOpenExplore,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onOpenCitations
+                ? [
+                    {
+                      label: t('toolbar.citations'),
+                      onClick: onOpenCitations,
                     } as MenuEntry,
                   ]
                 : []),

@@ -82,7 +82,8 @@
     "convertToText": null,
     "dictionary": null,
     "translate": null,
-    "explore": null
+    "explore": null,
+    "citations": null
   },
   "formattingBar": {
     "groups": {

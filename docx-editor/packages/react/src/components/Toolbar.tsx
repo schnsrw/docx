@@ -359,6 +359,8 @@ export interface ToolbarProps {
   onOpenTranslate?: () => void;
   /** Tools → Explore — opens the Wikipedia lookup dialog (A3). */
   onOpenExplore?: () => void;
+  /** Tools → Citations — opens the local citations manager (A6 v0). */
+  onOpenCitations?: () => void;
   /** File → "Email as attachment" — download + open mailto (F2). */
   onEmailAsAttachment?: () => void;
   /** View → Show formatting marks — toggles ¶ / → / ↵ overlay (F6). */

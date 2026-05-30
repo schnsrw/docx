@@ -176,6 +176,9 @@ const TranslateDialog = lazy(() =>
 const ExploreDialog = lazy(() =>
   import('./dialogs/ExploreDialog').then((m) => ({ default: m.ExploreDialog }))
 );
+const CitationsDialog = lazy(() =>
+  import('./dialogs/CitationsDialog').then((m) => ({ default: m.CitationsDialog }))
+);
 import { MaterialSymbol } from './ui/Icons';
 import { Tooltip } from './ui/Tooltip';
 import {
@@ -376,6 +379,10 @@ import {
 // turns the selected paragraphs into a table in one click. The reverse
 // direction (table → text) lives alongside it.
 import { convertSelectionToTable, convertTableToText } from '../utils/convertTextToTable';
+
+// Citations manager (A6 v0) — localStorage CRUD; the host renders the
+// formatted citation text and threads in a hyperlink for the URL.
+import { loadCitations, addCitation, removeCitation, type Citation } from '../utils/citations';
 
 // ============================================================================
 // TYPES
@@ -2181,6 +2188,9 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
   // A3 — explore (Wikipedia lookup). Seeds the query from the selection.
   const [showExplore, setShowExplore] = useState(false);
   const [exploreQuery, setExploreQuery] = useState<string | null>(null);
+  // A6 v0 — citations manager. Local-only storage.
+  const [showCitations, setShowCitations] = useState(false);
+  const [citations, setCitations] = useState<Citation[]>(() => loadCitations());
   // Editor preferences — smart quotes / autocorrect runtime toggles.
   // Lazy-init from localStorage and hydrate the core singleton so the
   // smart-quotes/autocorrect plugins see the persisted values on the very
@@ -4693,6 +4703,46 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     convertTableToText(view);
   }, [getActiveEditorView]);
 
+  // A6 — citations manager handlers. Local-only storage; the Insert
+  // action writes formatted text at the cursor and wraps the URL
+  // substring (if present) in a hyperlink mark so the link is clickable.
+  const handleOpenCitations = useCallback(() => {
+    setShowCitations(true);
+  }, []);
+
+  const handleAddCitation = useCallback((input: Omit<Citation, 'id' | 'createdAt'>) => {
+    setCitations(addCitation(input));
+  }, []);
+
+  const handleDeleteCitation = useCallback((id: string) => {
+    setCitations(removeCitation(id));
+  }, []);
+
+  const handleInsertCitation = useCallback(
+    (formatted: string, url?: string) => {
+      const view = getActiveEditorView();
+      if (!view) return;
+      const { schema } = view.state;
+      // Two-phase insert: drop the citation text, then add a hyperlink
+      // mark over the URL substring so clicking it navigates. Keeping
+      // the entire citation as a single paragraph lets the user style
+      // it (italic title, etc.) without further wrangling.
+      const tr = view.state.tr.insertText(formatted);
+      if (url) {
+        const hyperlinkType = schema.marks.hyperlink;
+        const idx = formatted.lastIndexOf(url);
+        if (hyperlinkType && idx >= 0) {
+          const start = tr.selection.from - (formatted.length - idx);
+          const end = start + url.length;
+          tr.addMark(start, end, hyperlinkType.create({ href: url }));
+        }
+      }
+      view.dispatch(tr);
+      focusActiveEditor();
+    },
+    [getActiveEditorView, focusActiveEditor]
+  );
+
   // A3 — open the Explore dialog (Wikipedia summary lookup). Seeds the
   // query from the current selection; "Cite this" inserts a hyperlink
   // at the cursor via the existing hyperlink command.
@@ -6638,6 +6688,7 @@ body { background: white; }
                       onOpenDictionary={handleOpenDictionary}
                       onOpenTranslate={handleOpenTranslate}
                       onOpenExplore={handleOpenExplore}
+                      onOpenCitations={handleOpenCitations}
                       onSetColorTheme={handleSetColorTheme}
                       colorTheme={colorTheme}
                       isDirty={isDirty}
@@ -7579,6 +7630,16 @@ body { background: white; }
                   onClose={() => setShowExplore(false)}
                   initialQuery={exploreQuery}
                   onCite={handleExploreCite}
+                />
+              )}
+              {showCitations && (
+                <CitationsDialog
+                  isOpen={showCitations}
+                  onClose={() => setShowCitations(false)}
+                  citations={citations}
+                  onAdd={handleAddCitation}
+                  onDelete={handleDeleteCitation}
+                  onInsert={handleInsertCitation}
                 />
               )}
               {showCommandPalette && (

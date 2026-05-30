@@ -157,11 +157,18 @@ helper's fourth adopter). Whole-document translate is the future
 follow-up that needs a paid provider — out of scope until then.
 e2e in `translate-dialog.spec.ts` mocks the endpoint.
 
-### A6 — Citations panel ❌
+### A6 — Citations panel 🟡 (v0 manager shipped)
 
-Insert structured citation (APA / MLA / Chicago), maintain bibliography
-section. Schema-level work — citations need to round-trip in .docx as
-bibliography fields. Big scope; queue last.
+Tools → Citations opens a local-only citation manager. Two regions:
+add-form (author, title, year, URL — first two required) on top, a
+list of saved entries on the bottom with a shared APA/MLA/Chicago
+radio chooser. Each row has Insert (drops the formatted text at the
+cursor and wraps the URL substring in a hyperlink mark) and Delete.
+Storage is `localStorage` (`docx-editor-citations`) — same pattern
+as Building Blocks; the `.docx` bibliography-field round-trip is
+the future follow-up the original parity note named ("queue last").
+e2e in `citations-dialog.spec.ts`, unit tests cover the storage CRUD
++ all three format strings.
 
 ### A7 — Word-count panel ✅
 
