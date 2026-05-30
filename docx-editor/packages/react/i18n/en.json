@@ -661,7 +661,9 @@
         "startComment": "New comment",
         "startCommentDescription": "Add a comment on the current selection",
         "bulletList": "Bullet list",
-        "bulletListDescription": "Toggle a bullet list on the current paragraphs"
+        "bulletListDescription": "Toggle a bullet list on the current paragraphs",
+        "documentOutline": "Show document outline",
+        "documentOutlineDescription": "Toggle the document outline panel"
       },
       "noResults": "No shortcuts found matching \"{query}\"",
       "pressEscToClose": "Press {key} to close",

@@ -571,7 +571,9 @@
         "startComment": null,
         "startCommentDescription": null,
         "wordCount": null,
-        "wordCountDescription": null
+        "wordCountDescription": null,
+        "documentOutline": null,
+        "documentOutlineDescription": null
       },
       "noResults": "לא נמצאו קיצורים עבור \"{query}\"",
       "pressEscToClose": "לחץ {key} כדי לסגור",

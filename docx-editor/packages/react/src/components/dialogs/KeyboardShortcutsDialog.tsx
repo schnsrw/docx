@@ -571,6 +571,15 @@ const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
     keys: 'Ctrl+Shift+L',
     category: 'formatting',
   },
+  {
+    id: 'document-outline',
+    name: 'Show document outline',
+    nameKey: 'dialogs.keyboardShortcuts.shortcuts.documentOutline',
+    description: 'Toggle the document outline panel',
+    descriptionKey: 'dialogs.keyboardShortcuts.shortcuts.documentOutlineDescription',
+    keys: 'Ctrl+Shift+H',
+    category: 'view',
+  },
 ];
 
 // ============================================================================

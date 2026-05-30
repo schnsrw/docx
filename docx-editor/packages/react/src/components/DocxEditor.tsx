@@ -388,6 +388,9 @@ import { loadCitations, addCitation, removeCitation, type Citation } from '../ut
 // drop into an image node at the cursor.
 import { generateShape, type ShapeType } from '../utils/shapes';
 
+// Platform-aware shortcut formatter (⌘ on Mac, Ctrl elsewhere).
+import { formatShortcut } from '../lib/platform';
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -948,13 +951,15 @@ function OutlineToggleButton({
   scrollLeft?: number;
 }) {
   const { t } = useTranslation();
+  const shortcut = formatShortcut('Ctrl+Shift+H');
+  const tooltip = `${t('editor.showDocumentOutline')} (${shortcut})`;
   return (
-    <Tooltip content={t('editor.showDocumentOutline')}>
+    <Tooltip content={tooltip}>
       <button
         className="docx-outline-nav"
         onClick={onClick}
         onMouseDown={(e) => e.stopPropagation()}
-        aria-label={t('editor.showDocumentOutline')}
+        aria-label={tooltip}
         style={{
           position: 'absolute',
           // Anchor at the page's top-left and track horizontal scroll so the
@@ -2880,6 +2885,16 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
       if (cmdOrCtrl && e.shiftKey && !e.altKey && e.key.toLowerCase() === 'y') {
         e.preventDefault();
         handleOpenDictionary();
+      }
+
+      // Mod+Shift+H → toggle document outline. Mod+H (no shift) opens
+      // Find & Replace, so the shifted variant is the obvious free slot.
+      // Mac users can't easily use Mod+Alt+H — that's "Hide Others" at
+      // the system level — so the shift-modifier shortcut is the
+      // cross-platform-safe choice.
+      if (cmdOrCtrl && e.shiftKey && !e.altKey && e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        handleToggleOutline();
       }
 
       // Mod+Shift+V → paste without formatting (Google Docs + Word

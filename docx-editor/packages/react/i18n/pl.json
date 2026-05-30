@@ -571,7 +571,9 @@
         "startComment": null,
         "startCommentDescription": null,
         "wordCount": null,
-        "wordCountDescription": null
+        "wordCountDescription": null,
+        "documentOutline": null,
+        "documentOutlineDescription": null
       },
       "noResults": "Nie znaleziono skrótów pasujących do \"{query}\"",
       "pressEscToClose": "Naciśnij {key}, aby zamknąć",

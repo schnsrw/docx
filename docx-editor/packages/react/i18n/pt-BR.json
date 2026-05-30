@@ -571,7 +571,9 @@
         "startComment": null,
         "startCommentDescription": null,
         "wordCount": null,
-        "wordCountDescription": null
+        "wordCountDescription": null,
+        "documentOutline": null,
+        "documentOutlineDescription": null
       },
       "noResults": "Nenhum atalho encontrado para \"{query}\"",
       "pressEscToClose": "Pressione {key} para fechar",

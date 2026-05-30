@@ -571,7 +571,9 @@
         "startComment": null,
         "startCommentDescription": null,
         "wordCount": null,
-        "wordCountDescription": null
+        "wordCountDescription": null,
+        "documentOutline": null,
+        "documentOutlineDescription": null
       },
       "noResults": "\"{query}\" eşleşen kısayol yok",
       "pressEscToClose": "Kapatmak için {key} tuşuna bas",
