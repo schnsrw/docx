@@ -133,6 +133,23 @@ export function StatusBar({
           {formatCount(charCount, 'character')}
         </span>
       )}
+      {wordCount !== undefined &&
+        wordCount > 0 &&
+        // Reading-time estimate at the prose-average 200 wpm — the same
+        // assumption Medium and several Docs add-ons make. Rounded up so
+        // the user is more likely to over-budget than under-budget.
+        (() => {
+          const minutes = Math.max(1, Math.ceil(wordCount / 200));
+          return (
+            <span
+              style={cellStyle}
+              aria-label={`Estimated ${minutes} minute read`}
+              data-testid="status-reading-time"
+            >
+              ~{minutes} min read
+            </span>
+          );
+        })()}
 
       {/* Spacer pushes zoom to the right. */}
       <span style={{ flex: 1 }} />
