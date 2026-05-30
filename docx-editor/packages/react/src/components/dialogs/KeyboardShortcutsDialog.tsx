@@ -580,6 +580,15 @@ const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
     keys: 'Ctrl+Shift+H',
     category: 'view',
   },
+  {
+    id: 'page-break',
+    name: 'Insert page break',
+    nameKey: 'dialogs.keyboardShortcuts.shortcuts.pageBreak',
+    description: 'Insert a page break at the cursor',
+    descriptionKey: 'dialogs.keyboardShortcuts.shortcuts.pageBreakDescription',
+    keys: 'Ctrl+Enter',
+    category: 'editing',
+  },
 ];
 
 // ============================================================================

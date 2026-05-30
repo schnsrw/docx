@@ -574,7 +574,9 @@
         "wordCount": null,
         "wordCountDescription": null,
         "documentOutline": null,
-        "documentOutlineDescription": null
+        "documentOutlineDescription": null,
+        "pageBreak": null,
+        "pageBreakDescription": null
       },
       "noResults": "\"{query}\" eşleşen kısayol yok",
       "pressEscToClose": "Kapatmak için {key} tuşuna bas",

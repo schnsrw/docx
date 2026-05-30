@@ -574,7 +574,9 @@
         "wordCount": null,
         "wordCountDescription": null,
         "documentOutline": null,
-        "documentOutlineDescription": null
+        "documentOutlineDescription": null,
+        "pageBreak": null,
+        "pageBreakDescription": null
       },
       "noResults": "לא נמצאו קיצורים עבור \"{query}\"",
       "pressEscToClose": "לחץ {key} כדי לסגור",

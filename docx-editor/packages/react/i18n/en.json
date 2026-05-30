@@ -664,7 +664,9 @@
         "bulletList": "Bullet list",
         "bulletListDescription": "Toggle a bullet list on the current paragraphs",
         "documentOutline": "Show document outline",
-        "documentOutlineDescription": "Toggle the document outline panel"
+        "documentOutlineDescription": "Toggle the document outline panel",
+        "pageBreak": "Insert page break",
+        "pageBreakDescription": "Insert a page break at the cursor"
       },
       "noResults": "No shortcuts found matching \"{query}\"",
       "pressEscToClose": "Press {key} to close",

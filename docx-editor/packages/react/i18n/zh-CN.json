@@ -574,7 +574,9 @@
         "wordCount": null,
         "wordCountDescription": null,
         "documentOutline": null,
-        "documentOutlineDescription": null
+        "documentOutlineDescription": null,
+        "pageBreak": null,
+        "pageBreakDescription": null
       },
       "noResults": "未找到与 \"{query}\" 匹配的快捷方式",
       "pressEscToClose": "按 {key} 关闭",

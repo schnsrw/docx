@@ -574,7 +574,9 @@
         "wordCount": null,
         "wordCountDescription": null,
         "documentOutline": null,
-        "documentOutlineDescription": null
+        "documentOutlineDescription": null,
+        "pageBreak": null,
+        "pageBreakDescription": null
       },
       "noResults": "Keine Tastenkombinationen für \"{query}\" gefunden",
       "pressEscToClose": "{key} drücken, um zu schließen",
