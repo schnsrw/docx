@@ -195,8 +195,15 @@ test.describe('Cursor-Only Alignment Operations', () => {
 
     await page.keyboard.press('Home');
 
-    // Use keyboard shortcut
-    const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
+    // PM's keymap reads platform from `navigator.platform` to resolve
+    // `Mod-` to `Meta`/`Control`. Playwright's Chromium reports
+    // `Win32` even on macOS — so we ask the page what it thinks rather
+    // than going by `process.platform` (which would flip to Meta on
+    // the Mac host and miss the binding entirely).
+    const usesMeta = await page.evaluate(() =>
+      navigator.platform.toUpperCase().includes('MAC')
+    );
+    const modifier = usesMeta ? 'Meta' : 'Control';
     await page.keyboard.press(`${modifier}+e`);
 
     const paragraph = page.locator('.ProseMirror p');
