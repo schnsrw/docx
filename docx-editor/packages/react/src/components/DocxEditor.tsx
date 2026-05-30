@@ -6705,6 +6705,8 @@ body { background: white; }
                       rulerVisible={showRulerEffective}
                       onToggleShowFormattingMarks={handleToggleShowFormattingMarks}
                       showFormattingMarks={showFormattingMarks}
+                      onToggleOutline={handleToggleOutline}
+                      outlineVisible={showOutline}
                       imageContext={state.pmImageContext}
                       onImageWrapType={handleImageWrapType}
                       onImageTransform={handleImageTransform}

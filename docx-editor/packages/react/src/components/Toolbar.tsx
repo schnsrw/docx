@@ -359,6 +359,10 @@ export interface ToolbarProps {
   onToggleShowFormattingMarks?: () => void;
   /** Current state of the formatting-marks toggle — drives the checkmark. */
   showFormattingMarks?: boolean;
+  /** View → Show document outline — toggles the outline panel (Ctrl+Shift+H). */
+  onToggleOutline?: () => void;
+  /** Current state of the outline panel — drives the View-menu checkmark. */
+  outlineVisible?: boolean;
   /** Theme picker — host sets colorTheme. `'auto'` follows OS preference. */
   onSetColorTheme?: (theme: 'light' | 'dark' | 'auto') => void;
   /** Current colorTheme setting; drives the title-bar toggle's icon. */

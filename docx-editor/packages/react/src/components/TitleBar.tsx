@@ -274,6 +274,8 @@ export function MenuBar() {
     rulerVisible,
     onToggleShowFormattingMarks,
     showFormattingMarks,
+    onToggleOutline,
+    outlineVisible,
     onRefocusEditor,
   } = ctx;
 
@@ -636,7 +638,11 @@ export function MenuBar() {
         />
 
         {/* View Menu — zoom + ruler + theme. Shown if any is wired. */}
-        {(onZoomChange || onSetColorTheme || onToggleShowRuler || onToggleShowFormattingMarks) && (
+        {(onZoomChange ||
+          onSetColorTheme ||
+          onToggleShowRuler ||
+          onToggleShowFormattingMarks ||
+          onToggleOutline) && (
           <MenuDropdown
             label="View"
             disabled={disabled}
@@ -680,6 +686,15 @@ export function MenuBar() {
                     {
                       label: `${showFormattingMarks ? '✓ ' : ''}${t('toolbar.showFormattingMarks')}`,
                       onClick: onToggleShowFormattingMarks,
+                    } as MenuEntry,
+                  ]
+                : []),
+              ...(onToggleOutline
+                ? [
+                    {
+                      label: `${outlineVisible ? '✓ ' : ''}${t('toolbar.showOutline')}`,
+                      shortcut: '⌘⇧H',
+                      onClick: onToggleOutline,
                     } as MenuEntry,
                   ]
                 : []),

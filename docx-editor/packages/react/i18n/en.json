@@ -76,6 +76,7 @@
     "accessibility": "Accessibility…",
     "buildingBlocks": "Building blocks…",
     "showFormattingMarks": "Show non-printing characters",
+    "showOutline": "Show document outline",
     "wordCount": "Word count",
     "convertToTable": "Convert selection to table",
     "convertToText": "Convert table to text",
