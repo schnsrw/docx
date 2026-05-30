@@ -154,10 +154,39 @@ export function CommandPaletteDialog({ isOpen, onClose, items }: CommandPaletteD
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return items;
-    return items.filter((item) => {
-      const hay = [item.label, item.path, item.shortcut ?? '', item.id].join(' ').toLowerCase();
-      return hay.includes(q);
-    });
+    // Fuzzy scorer: each character of the query must appear in the
+    // haystack in order. Higher score means tighter match:
+    //   - +5 when the match lands on a word boundary (start of string,
+    //     after a space, after `>` for nested labels).
+    //   - +3 when consecutive query characters land in adjacent
+    //     positions of the haystack.
+    //   - -1 per skipped character before the next match (so a tighter
+    //     run beats a sprawling one).
+    // Falls back to substring filtering for the no-fuzzy-match case so
+    // a single typo doesn't blow up the whole list — same intent the
+    // original code expressed.
+    const scored = items
+      .map((item) => {
+        const hay = [item.label, item.path, item.shortcut ?? '', item.id].join(' ').toLowerCase();
+        let score = 0;
+        let qi = 0;
+        let lastMatch = -1;
+        for (let hi = 0; hi < hay.length && qi < q.length; hi++) {
+          if (hay[hi] === q[qi]) {
+            const prev = hay[hi - 1];
+            if (hi === 0 || prev === ' ' || prev === '>') score += 5;
+            if (lastMatch === hi - 1) score += 3;
+            score -= hi - lastMatch - 1;
+            lastMatch = hi;
+            qi++;
+          }
+        }
+        if (qi < q.length) return null;
+        return { item, score };
+      })
+      .filter((x): x is { item: (typeof items)[number]; score: number } => x !== null)
+      .sort((a, b) => b.score - a.score);
+    return scored.map((x) => x.item);
   }, [items, query]);
 
   useEffect(() => {
