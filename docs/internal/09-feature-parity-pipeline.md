@@ -128,10 +128,18 @@ version:
 
 Defer if user demand is unclear.
 
-### A4 — Dictionary panel ❌
+### A4 — Dictionary panel ✅
 
-Lightweight. Selection → free dictionary API (e.g. dictionaryapi.dev).
-Two-line definition + part-of-speech. Shortcut `Ctrl+Shift+Y` per Docs.
+Tools → Dictionary + `Ctrl/Cmd+Shift+Y` (Google Docs binding) opens a
+lookup dialog. Seeds the input from the current selection's first
+whitespace-token, so highlighting "hello world" pre-fills "hello".
+The lookup hits `api.dictionaryapi.dev` (free, no API key) and the
+result lists every meaning's part-of-speech + the first definition.
+Loading and error states route through `PanelState` so they match
+the rest of the editor's chrome (PanelState's third adopter after
+VersionHistoryPanel and DocumentOutline). e2e in
+`dictionary-dialog.spec.ts` mocks the endpoint so the run is
+deterministic offline.
 
 ### A5 — Translate document ❌
 
@@ -650,11 +658,12 @@ copy, opt-in icon — quiet on purpose. ARIA roles auto-pick
 (`status` for empty/loading, `alert` for error; `aria-live="polite"`
 on loading).
 
-Adopters so far: `VersionHistoryPanel` (the original `emptyHint`
-slot), `DocumentOutline` (the no-headings hint). Remaining side
-panels (comments sidebar, agent) and any future right-rail panels
-should adopt the helper rather than re-inventing the chrome, which
-leaves this 🟡 until they migrate.
+Adopters so far: `VersionHistoryPanel` (empty), `DocumentOutline`
+(empty), `DictionaryDialog` (loading + error + retry — the first
+non-empty-state adopter). Comments sidebar already returns `null`
+when empty (no inline chrome to migrate). Remaining panels (agent)
+and any future right-rail panels should adopt the helper rather than
+re-inventing the chrome, which leaves this 🟡 until they migrate.
 
 ### X6 — i18n
 

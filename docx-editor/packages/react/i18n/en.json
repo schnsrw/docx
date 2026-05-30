@@ -79,7 +79,8 @@
     "wordCount": "Word count",
     "convertToTable": "Convert selection to table",
     "convertToText": "Convert table to text",
-    "emailAsAttachment": "Email as attachment…"
+    "emailAsAttachment": "Email as attachment…",
+    "dictionary": "Dictionary"
   },
   "suggestingBanner": {
     "title": "Suggesting",

@@ -167,6 +167,9 @@ const AccessibilityDialog = lazy(() =>
 const BuildingBlocksDialog = lazy(() =>
   import('./dialogs/BuildingBlocksDialog').then((m) => ({ default: m.BuildingBlocksDialog }))
 );
+const DictionaryDialog = lazy(() =>
+  import('./dialogs/DictionaryDialog').then((m) => ({ default: m.DictionaryDialog }))
+);
 import { MaterialSymbol } from './ui/Icons';
 import { Tooltip } from './ui/Tooltip';
 import {
@@ -2161,6 +2164,11 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     content: unknown;
     preview: string;
   } | null>(null);
+  // A4 — dictionary lookup. Captures the selected word at open time so
+  // the dialog can show "looking up <word>" loading state without a
+  // re-fetch on every render.
+  const [showDictionary, setShowDictionary] = useState(false);
+  const [dictionaryWord, setDictionaryWord] = useState<string | null>(null);
   // Editor preferences — smart quotes / autocorrect runtime toggles.
   // Lazy-init from localStorage and hydrate the core singleton so the
   // smart-quotes/autocorrect plugins see the persisted values on the very
@@ -2838,6 +2846,14 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
       if (cmdOrCtrl && e.shiftKey && !e.altKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
         setShowWordCount(true);
+      }
+
+      // Mod+Shift+Y → open Dictionary dialog (Google Docs convention, A4).
+      // Same dialog the Tools → Dictionary menu item opens, with the
+      // current selection (if any) pre-filled.
+      if (cmdOrCtrl && e.shiftKey && !e.altKey && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        handleOpenDictionary();
       }
 
       // Mod+Shift+V → paste without formatting (Google Docs + Word
@@ -4663,6 +4679,27 @@ export const DocxEditor = forwardRef<DocxEditorRef, DocxEditorProps>(function Do
     const view = getActiveEditorView();
     if (!view) return;
     convertTableToText(view);
+  }, [getActiveEditorView]);
+
+  // A4 — open the dictionary dialog. Seeds the input from the selection
+  // (collapsed selection → null, dialog shows the bare input).
+  const handleOpenDictionary = useCallback(() => {
+    const view = getActiveEditorView();
+    if (view) {
+      const { from, to } = view.state.selection;
+      if (from !== to) {
+        const raw = view.state.doc.textBetween(from, to, ' ', ' ').trim();
+        // Take just the first whitespace-delimited token — the dictionary
+        // endpoint is single-word; multi-word selections would 404.
+        const firstWord = raw.split(/\s+/)[0] ?? '';
+        setDictionaryWord(firstWord.length > 0 ? firstWord : null);
+      } else {
+        setDictionaryWord(null);
+      }
+    } else {
+      setDictionaryWord(null);
+    }
+    setShowDictionary(true);
   }, [getActiveEditorView]);
 
   // Watermark apply/clear handler (C5) — writes into the doc-level
@@ -6538,6 +6575,7 @@ body { background: white; }
                       onConvertTableToText={
                         state.pmTableContext?.isInTable ? handleConvertTableToText : undefined
                       }
+                      onOpenDictionary={handleOpenDictionary}
                       onSetColorTheme={handleSetColorTheme}
                       colorTheme={colorTheme}
                       isDirty={isDirty}
@@ -7457,6 +7495,13 @@ body { background: white; }
                   onSaveSelection={handleSaveBuildingBlock}
                   onInsert={handleInsertBuildingBlock}
                   onDelete={handleDeleteBuildingBlock}
+                />
+              )}
+              {showDictionary && (
+                <DictionaryDialog
+                  isOpen={showDictionary}
+                  onClose={() => setShowDictionary(false)}
+                  initialWord={dictionaryWord}
                 />
               )}
               {showCommandPalette && (

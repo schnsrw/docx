@@ -79,7 +79,8 @@
     "wordCount": null,
     "convertToTable": null,
     "emailAsAttachment": null,
-    "convertToText": null
+    "convertToText": null,
+    "dictionary": null
   },
   "formattingBar": {
     "groups": {

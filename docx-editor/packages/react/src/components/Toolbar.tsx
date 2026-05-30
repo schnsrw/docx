@@ -353,6 +353,8 @@ export interface ToolbarProps {
   onConvertSelectionToTable?: () => void;
   /** Insert → Convert table to text — only available when the cursor is in a table (B8). */
   onConvertTableToText?: () => void;
+  /** Tools → Dictionary — opens the lookup dialog seeded with the selection (A4). */
+  onOpenDictionary?: () => void;
   /** File → "Email as attachment" — download + open mailto (F2). */
   onEmailAsAttachment?: () => void;
   /** View → Show formatting marks — toggles ¶ / → / ↵ overlay (F6). */
