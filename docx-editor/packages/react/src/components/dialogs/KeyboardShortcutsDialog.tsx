@@ -513,6 +513,64 @@ const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
     altKeys: 'F1',
     category: 'view',
   },
+  // Wired in DocxEditor's global keydown handler but missing from this
+  // dialog before — power users would memorize them from the menu chips
+  // instead. Mirroring them here also lets the search field find them.
+  {
+    id: 'command-palette',
+    name: 'Search the menus',
+    nameKey: 'dialogs.keyboardShortcuts.shortcuts.commandPalette',
+    description: 'Open the command palette',
+    descriptionKey: 'dialogs.keyboardShortcuts.shortcuts.commandPaletteDescription',
+    keys: 'Ctrl+Shift+P',
+    category: 'view',
+    common: true,
+  },
+  {
+    id: 'word-count',
+    name: 'Word count',
+    nameKey: 'dialogs.keyboardShortcuts.shortcuts.wordCount',
+    description: 'Show the word count dialog',
+    descriptionKey: 'dialogs.keyboardShortcuts.shortcuts.wordCountDescription',
+    keys: 'Ctrl+Shift+C',
+    category: 'editing',
+  },
+  {
+    id: 'dictionary',
+    name: 'Dictionary',
+    nameKey: 'dialogs.keyboardShortcuts.shortcuts.dictionary',
+    description: 'Look up the selected word',
+    descriptionKey: 'dialogs.keyboardShortcuts.shortcuts.dictionaryDescription',
+    keys: 'Ctrl+Shift+Y',
+    category: 'editing',
+  },
+  {
+    id: 'cycle-mode',
+    name: 'Cycle editing mode',
+    nameKey: 'dialogs.keyboardShortcuts.shortcuts.cycleMode',
+    description: 'Switch between editing, suggesting, and viewing',
+    descriptionKey: 'dialogs.keyboardShortcuts.shortcuts.cycleModeDescription',
+    keys: 'Ctrl+Shift+E',
+    category: 'editing',
+  },
+  {
+    id: 'start-comment',
+    name: 'New comment',
+    nameKey: 'dialogs.keyboardShortcuts.shortcuts.startComment',
+    description: 'Add a comment on the current selection',
+    descriptionKey: 'dialogs.keyboardShortcuts.shortcuts.startCommentDescription',
+    keys: 'Ctrl+Alt+M',
+    category: 'editing',
+  },
+  {
+    id: 'bullet-list',
+    name: 'Bullet list',
+    nameKey: 'dialogs.keyboardShortcuts.shortcuts.bulletList',
+    description: 'Toggle a bullet list on the current paragraphs',
+    descriptionKey: 'dialogs.keyboardShortcuts.shortcuts.bulletListDescription',
+    keys: 'Ctrl+Shift+L',
+    category: 'formatting',
+  },
 ];
 
 // ============================================================================
